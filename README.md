@@ -5,3 +5,5 @@ Commit do Raphael 10/03/2026
 Commit do Kauan Alves Aragão (11/03/26)
 
 Commit do Paulo Victor(12/03/2026)
+
+Commit da Tatiana Pasold (12/03/2026)
