@@ -1,7 +1,3 @@
-Testando branch e commit
-
-
-
-
-
+Meu primeiro commit no projeto SPRB-BD!
 Linha adicionada pelo computador
+Linha adicionada pelo GitHub
