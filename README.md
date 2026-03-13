@@ -12,4 +12,16 @@ Commit do Matheus Bianchesi (13/03/2026)
 
 Commit da Raphaela Monteiro (13/03/2026)
 
+Commit de Augusto Nascimento (13/03/2026)
+
+Commit do Daniel Sahadi (13/03/2026)
+
+Commit do João Victor Canedo (13/03/2026)
+
+Commit do Luiz Carlos Ferreira (13/03/2026)
+
+Commit do César Sales (13/03/2026)
+
+Commit do Sávio Jenner Vianna Silva Rennó (13/03/2026)
+
 Commit do Danilo Miranda (13/03/2026)
