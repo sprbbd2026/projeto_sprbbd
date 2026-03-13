@@ -19,3 +19,6 @@ Commit do Daniel Sahadi (13/03/2026)
 Commit do João Victor Canedo (13/03/2026)
 
 Commit do Luiz Carlos Ferreira (13/03/2026)
+
+Commit do César Sales (13/03/2026)
+
