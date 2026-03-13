@@ -16,3 +16,4 @@ Commit de Augusto Nascimento (13/03/2026)
 
 Commit do Daniel Sahadi (13/03/2026)
 
+Commit do João Victor Canedo (13/03/2026)
