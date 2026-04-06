@@ -1,12 +1,12 @@
 # 🛰️ SPRB-BD
 
-Api feita com **FastAPI**, **PostgreSQL**, **Alembic** e gerenciamento super rápido de pacotes pelo **UV**.
+API feita com **FastAPI**, **PostgreSQL**, **Alembic** e gerenciamento super rápido de pacotes pelo **UV**.
 
 ---
 
 ## 🛠️ Requisitos de Sistema
 
-Para rodar esse projeto você precisa ter na máquina:
+Para rodar o projeto você precisa ter na máquina:
 - **[Docker](https://www.docker.com/)** e **Docker Compose**
 - **[UV](https://github.com/astral-sh/uv)** (gerenciador Python)
 
@@ -43,7 +43,7 @@ DATABASE_URL=<SUA_URL_DO_BANCO>
 DATABASE_KEY=<SUA_SENHA_AQUI>
 ```
 
-### 4. Liga pra nós! 🔥
+### 4. Só Rodar 🔥
 O banco está montado e o ecossistema tá pronto. Agora é só iniciar o servidor do FastAPI. 
 
 ```bash
@@ -51,7 +51,7 @@ uv run uvicorn app.main:app --reload
 ```
 
 --
-Pronto! O servidor já está rodando e a documentação interativa da sua API está disponível nas seguintes rotas:
+Pronto! O servidor já está rodando e a documentação interativa da API está disponível nas seguintes rotas:
 
 - 🟢 **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (Interface gráfica para testar as rotas nativamente, sem precisar do Postman)
 - 📝 **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) (Visualização alternativa da documentação, excelente para leitura)
