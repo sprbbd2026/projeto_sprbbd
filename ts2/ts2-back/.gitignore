@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Environment Variables
+.env
+.env.*
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
+
+# Alembic
+alembic.ini
+# (Opcional) se quiser ignorar as pastas de banco local do docker
+postgres_data/
