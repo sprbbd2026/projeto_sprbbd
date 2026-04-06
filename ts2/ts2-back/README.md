@@ -39,8 +39,8 @@ A aplicação lê os dados do banco a partir de um arquivo `.env`.
 Crie um arquivo chamado `.env` na pasta `ts2-back` contendo as exatas configurações abaixo:
 
 ```env
-DATABASE_URL=<SUA_URL_DO_BANCO>
-DATABASE_KEY=<SUA_SENHA_AQUI>
+DATABASE_URL=<CONSULTAR_COM_SCRUM_MASTER>
+DATABASE_KEY=<CONSULTAR_COM_SCRUM_MASTER>
 ```
 
 ### 4. Só Rodar 🔥
