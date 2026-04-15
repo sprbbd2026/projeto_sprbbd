@@ -1,59 +1,77 @@
-Commit do Geison 10/03/2026
+# 🛰️ Projeto SPRB-BD
 
-Commit do Raphael 10/03/2026
+**Projeto Acadêmico para um Sistema de Posicionamento Regional Brasileiro em Banco de Dados (SPRB-BD)**
 
-Commit do Kauan Alves Aragão (11/03/26)
+*The Academic Project for a Brazilian Data Base — Regional Positioning System (BDB-RPS)*
 
-Commit do Paulo Victor(12/03/2026)
+Este repositório e o material associado integram um **Estudo de Caso** no formato **Interdisciplinary Problem-Based Learning (IPBL)**, desenvolvido no **1º semestre de 2026**, com foco em centralizar materiais de aulas, listas, relações de alunos e artefatos produzidos.
 
-Commit da Tatiana Pasold (12/03/2026)
+**Navegação típica do portal (referência):** Home · Disciplinas · Repositório do projeto · Sprints · Documentação geral (artefatos) · Apresentação final · Artigos.
 
-Commit do Matheus Bianchesi (13/03/2026)
+> **Uso do material:** todo o conteúdo publicado no portal deve ser utilizado **somente para fins acadêmicos**.
 
-Commit da Raphaela Monteiro (13/03/2026)
+---
 
-Commit de Augusto Nascimento (13/03/2026)
+## 👨‍🏫 Professores
 
-Commit do Daniel Sahadi (13/03/2026)
+| Nome | E-mail |
+|------|--------|
+| Prof. Dr. Adilson Marques da Cunha | [cunha@ita.br](mailto:cunha@ita.br) |
+| Prof. Dr. Luiz Alberto Vieira Dias | [vdias@ita.br](mailto:vdias@ita.br) |
 
-Commit do João Victor Canedo (13/03/2026)
+---
 
-Commit do Luiz Carlos Ferreira (13/03/2026)
+## 🤝 Colaboradores
 
-Commit do César Sales (13/03/2026)
+| Nome | E-mail |
+|------|--------|
+| Prof. Dr. Lineu F. S. Mialaret | [lmialaret@terra.com.br](mailto:lmialaret@terra.com.br) |
+| Gildárcio S. Gonçalves | [gildarciosousa@gmail.com](mailto:gildarciosousa@gmail.com) |
+| Victor A. P. Cavichioli | [vivictoaraujo@gmail.com](mailto:vivictoaraujo@gmail.com) |
+| Juliana Medeiros F. da Silva | [juliana.medeirosmfs@gmail.com](mailto:juliana.medeirosmfs@gmail.com) |
 
-Commit do Sávio Jenner Vianna Silva Rennó (13/03/2026)
+---
 
-Commit do Danilo Miranda (13/03/2026)
+## 🏛️ Instituição
 
-Commit do João Pedro Prevot (13/03/2026)
+**Aeronautics Institute of Technology — ITA**
 
-Commit do Luiz Fernando da Cunha Silva (13/03/2026)
+© 2026 SPRB-BD — All rights reserved for SPRB-BD and GPES.
 
-Commit do José Alberto Feijão Tizon (13/03/2026)
+---
 
-Commit do Felipe Viana Andrade (13/03/2026)
+## 📂 Estrutura deste repositório
 
-Commit do Paulo Cesar Façanha (13/03/2026)
+| Pasta | Descrição |
+|-------|-----------|
+| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend (React, Vite, TypeScript). Ver [README do front](ts2/ts2-front/README.md). |
+| [`ts2/ts2-back/`](ts2/ts2-back/) | Backend (FastAPI, PostgreSQL). Ver [README do back](ts2/ts2-back/README.md). |
 
-Commit do Matheus Felipe Ramos Borges (13/03/2026)
+---
 
-Commit de Marcelo Loiola (13/03/2026)
+## 🏃 Sprint 1 (TS#02)
 
-Commit de Fabio Caballero (16/03/2026)
+Escopo da sprint conforme planejamento do time (status e responsáveis podem ser atualizados no GitHub / quadro do projeto).
 
-Commit de Gabriel Souza Tedesco (16/03/2026)
+### Artefatos e ferramentas
 
-Commit de Danilo Carlos da Silva (17/03/2026)
+| Recurso | Link |
+|---------|------|
+| Repositório GitHub (organização) | [github.com/sprbbd2026](https://github.com/sprbbd2026) |
+| Kanban | [Project board no GitHub](https://github.com/users/sprbbd2026/projects/6/views/2) |
+| Burndown Chart | [Planilha Google](https://docs.google.com/spreadsheets/d/1Pc5yUxPV-RvyLq4gXpbr9fyPO5WH-2ELpKsUCLFSbcM/edit?pli=1&gid=1744797886#gid=1744797886) |
+| Refinamento técnico (documento) | [Google Docs](https://docs.google.com/document/d/1FlXOk5sRu6t3USotYFapx73YS7bIFjOx3y7yC-tyBg4/edit?tab=t.9t43qbiffxu6) |
+| Pasta Swagger (referência sugerida) | [Google Drive](https://drive.google.com/drive/u/1/folders/1ysrnkCaY6yHw4YALDFMUeFhqJPjkq1a6) |
+| Template de planilha de testes | [Google Sheets](https://docs.google.com/spreadsheets/d/1e9oa5HCPT6-N6Obtg8d9KT_kb0JJlWIw/edit?gid=1077019325#gid=1077019325) |
 
-Commit de Davi Teixeira Lessa (17/03/2026)
+### User Stories da Sprint 1
 
-Commit do Renan Mariano Machado (17/03/2026)
+#### 1.2.1 — Tela de Cadastro de Usuário (Desenvolvedor)
 
-Commit de Willian Nelton Teleken (18/03/2026)
+**Responsável (planejado):** Diogo · **Planning Poker:** 3 · **Issue:** [#29](https://github.com/sprbbd2026/projeto_sprbbd/issues/29)
 
-Commit de Lucas Ulrich Rafagnin (19/03/2026)
+**História:** *Como* desenvolvedor, *quero* uma tela de cadastro de usuário *para* registrar usuários no sistema.
 
-Commit de Luís Fernando Ribeiro Mendonça (20/03/2026)
+**Entregas e critérios (resumo):**
 
 Commit de Roger J. G. Gamito (10/04/2026)
