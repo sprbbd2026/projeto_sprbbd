@@ -1,8 +1,8 @@
 export default function App() {
   return (
-    <div>
-      <h1>Meu App</h1>
-      <p>Projeto limpo</p>
+    <div className="hero">
+      <h1>SPRB-BD</h1>
+      <p>Controle Satelital</p>
     </div>
   )
 }
