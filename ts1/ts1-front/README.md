@@ -1,78 +1,73 @@
-# 🛰️ SPRB-BD Frontend (TS1)
+# React + TypeScript + Vite
 
-Interface do sistema **SPRB-BD: Controle Satelital**, desenvolvida com **React**, **TypeScript** e **Vite**.  
-Ícones utilizando **Lucide React**.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
----
+Currently, two official plugins are available:
 
-## 📌 Sobre o projeto
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-Este frontend é responsável pela interface de controle e interação com o sistema satelital, permitindo acesso, cadastro e comunicação com a API.
+## React Compiler
 
----
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## 🛠️ Requisitos de sistema
+## Expanding the ESLint configuration
 
-Para desenvolver e rodar o projeto localmente você precisa de:
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-- **Node.js** (versão LTS recomendada, já inclui npm)
-- Navegador atualizado (Chrome, Firefox, Safari ou Edge)
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
 
----
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
 
-## ⚙️ Passo a passo
-
-Siga os passos abaixo para executar o projeto pela primeira vez.
-
-### 1. Clonar o repositório e acessar a pasta
-
-```bash
-git clone https://github.com/sprbbd2026/projeto_sprbbd
-cd ts1/ts1-frontend
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
 
-### 2. Instalar dependências
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```bash
-npm install
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
 ```
-
-### 3. Executar o projeto
-
-```bash
-npm run dev
-```
-
-Após isso, o Vite exibirá um endereço local, geralmente:
-
-👉 [http://localhost:5173/](http://localhost:5173/)
-
-Abra no navegador para visualizar a aplicação.
-
----
-
-## ⌨️ Comandos úteis
-
-| Comando       | Descrição               |
-| ------------- | ----------------------- |
-| `npm install` | Instala as dependências |
-| `npm run dev` | Executa o frontend      |
-
----
-
-## 📁 Estrutura do projeto
-
-- `src/pages/` — páginas da aplicação (ex: login, cadastro)
-- `src/components/` — componentes reutilizáveis
-- `src/services/` — integração com API (HTTP)
-- `public/` — arquivos estáticos
-
----
-
-## 📝 Documentação das tecnologias
-
-> [https://vitejs.dev/](https://vitejs.dev/)
-
-> [https://react.dev/](https://react.dev/)
-
-> [https://www.typescriptlang.org/](https://www.typescriptlang.org/)
