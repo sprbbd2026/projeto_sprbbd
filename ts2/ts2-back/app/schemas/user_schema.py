@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
@@ -6,10 +7,8 @@ class UserBase(BaseModel):
     nome: str
     sobrenome: str
     email: EmailStr
-    data_nascimento: str
+    data_nascimento: date
     documento: str
-    latitude: str
-    longitude: str
 
 
 class UserCreate(UserBase):
@@ -21,10 +20,8 @@ class UserUpdate(BaseModel):
     sobrenome: Optional[str] = None
     email: Optional[EmailStr] = None
     senha: Optional[str] = Field(default=None, min_length=8)
-    data_nascimento: Optional[str] = None
+    data_nascimento: Optional[date] = None
     documento: Optional[str] = None
-    latitude: Optional[str] = None
-    longitude: Optional[str] = None
 
 
 class UserUpdateBody(UserUpdate):

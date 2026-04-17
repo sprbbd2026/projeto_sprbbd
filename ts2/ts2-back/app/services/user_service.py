@@ -16,8 +16,6 @@ def create_user(db: Session, user: UserCreate):
         senha=user.senha,
         data_nascimento=user.data_nascimento,
         documento=user.documento,
-        latitude=user.latitude,
-        longitude=user.longitude
     )
     db.add(db_user)
     try:
