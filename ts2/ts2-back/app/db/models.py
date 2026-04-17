@@ -82,6 +82,7 @@ class Usuario(Base):
     __tablename__ = "usuarios"
 
     id = Column("id_usuario", Integer, primary_key=True, index=True)
+    uuid = Column("uuid", String(36), nullable=False, unique=True, index=True)
     nome = Column(String, nullable=False)
     sobrenome = Column(String, nullable=False)
     data_nascimento = Column(Date, nullable=False)

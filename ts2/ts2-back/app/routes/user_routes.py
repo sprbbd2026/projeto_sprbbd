@@ -10,7 +10,7 @@ from app.schemas.user_schema import (
     UserUpdateBody,
 )
 from app.services.user_service import (
-    EmailJaCadastradoError,
+    CadastroConflitoError,
     create_user,
     delete_user,
     get_users,
@@ -23,11 +23,8 @@ router = APIRouter()
 def create(user: UserCreate, db: Session = Depends(get_db)):
     try:
         return create_user(db, user)
-    except EmailJaCadastradoError:
-        raise HTTPException(
-            status_code=409,
-            detail="Já existe um usuário cadastrado com este e-mail.",
-        )
+    except CadastroConflitoError as e:
+        raise HTTPException(status_code=409, detail=e.detail)
 
 @router.get("/users", response_model=list[UserResponse])
 def list_users(db: Session = Depends(get_db)):
@@ -41,11 +38,8 @@ def update(body: UserUpdateBody, db: Session = Depends(get_db)):
     )
     try:
         updated = update_user(db, body.id, patch)
-    except EmailJaCadastradoError:
-        raise HTTPException(
-            status_code=409,
-            detail="Já existe um usuário cadastrado com este e-mail.",
-        )
+    except CadastroConflitoError as e:
+        raise HTTPException(status_code=409, detail=e.detail)
     if not updated:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     return updated
