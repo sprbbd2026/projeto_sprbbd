@@ -5,211 +5,307 @@ import {
   Loader2,
   Lock,
   Mail,
-  MapPin,
-  Navigation,
+  Map,
   User,
 } from 'lucide-react'
-import { type FormEvent, useEffect, useState } from 'react'
-import type { AuthMode } from '../components/ui/AuthModeSwitch'
-import { AuthModeSwitch } from '../components/ui/AuthModeSwitch'
+import { type FormEvent, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { LoginMapShell } from '../components/auth/LoginMapShell'
 import { Button } from '../components/ui/Button'
 import { InputField } from '../components/ui/InputField'
-import { UsersTable } from '../components/ui/UsersTable'
 import { useUsers } from '../hooks/useUsers'
+import { loginRequest } from '../services/authService'
+import { useAuthStore } from '../store/authStore'
 import { useUserStore } from '../store/userStore'
-import styles from './Login.module.css'
+import { getRequestErrorMessage } from '../utils/error'
+
+type AuthMode = 'login' | 'register'
 
 export default function Login() {
-  const { users, loading, error, fetchUsers, createUser, clearError } = useUsers()
+  const navigate = useNavigate()
+  const setAccessToken = useAuthStore((s) => s.setAccessToken)
+  const { loading, createUser, clearError } = useUsers()
   const [mode, setMode] = useState<AuthMode>('login')
-  const [loginHint, setLoginHint] = useState(false)
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [finishingSignUp, setFinishingSignUp] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
-  useEffect(() => {
-    void fetchUsers()
-  }, [fetchUsers])
-
-  function handleLogin(e: FormEvent<HTMLFormElement>) {
+  async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoginHint(true)
+    setFormError(null)
+    clearError()
+    setLoginLoading(true)
+    const fd = new FormData(e.currentTarget)
+    const email = String(fd.get('email') ?? '')
+    const password = String(fd.get('password') ?? '')
+    try {
+      const data = await loginRequest(email, password)
+      setAccessToken(data.access_token)
+      navigate('/home', { replace: true })
+    } catch (err) {
+      setFormError(getRequestErrorMessage(err))
+    } finally {
+      setLoginLoading(false)
+    }
   }
 
   async function handleRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    setFormError(null)
+    clearError()
     const fd = new FormData(e.currentTarget)
+    const email = String(fd.get('email') ?? '')
+    const senha = String(fd.get('senha') ?? '')
     await createUser({
       nome: String(fd.get('nome') ?? ''),
       sobrenome: String(fd.get('sobrenome') ?? ''),
-      email: String(fd.get('email') ?? ''),
-      senha: String(fd.get('senha') ?? ''),
+      email,
+      senha,
       data_nascimento: String(fd.get('data_nascimento') ?? ''),
       documento: String(fd.get('documento') ?? ''),
-      latitude: String(fd.get('latitude') ?? ''),
-      longitude: String(fd.get('longitude') ?? ''),
     })
     const err = useUserStore.getState().error
-    if (!err) e.currentTarget.reset()
+    if (err) {
+      setFormError(err)
+      return
+    }
+
+    setFinishingSignUp(true)
+    try {
+      const data = await loginRequest(email, senha)
+      setAccessToken(data.access_token)
+      navigate('/home', { replace: true })
+    } catch (loginErr) {
+      setFormError(getRequestErrorMessage(loginErr))
+      setMode('login')
+    } finally {
+      setFinishingSignUp(false)
+    }
   }
 
+  const storeError = useUserStore((s) => s.error)
+  const displayError = formError ?? (mode === 'register' ? storeError : null)
+
+  const spinIcon = 'mr-1.5 inline-block h-[1.125rem] w-[1.125rem] animate-spin align-[-0.2em]'
+
   return (
-    <main className={styles.page}>
-      <div className={styles.inner}>
-        <header className={styles.header}>
-          <p className={styles.kicker}>SPRB-BD</p>
-          <h1 className={styles.title}>Acesso</h1>
-          <p className={styles.subtitle}>
-            {mode === 'login'
-              ? 'Informe e-mail e senha. O envio via POST na API é apenas para cadastro de novos usuários.'
-              : 'Preencha todos os campos para criar um novo usuário (POST /users).'}{' '}
-            A lista de usuários ao lado é carregada automaticamente.
-          </p>
-        </header>
+    <div className="h-dvh overflow-hidden [--btn-primary-bg:#2563eb] [--btn-primary-hover:#1d4ed8] [--ring:#2563eb]">
+      <LoginMapShell>
+        <div className="flex min-h-0 w-full flex-1 flex-col">
+          <div className="my-auto flex w-full flex-col items-stretch">
+              <div className="flex w-full shrink-0 justify-center pb-5">
+                <Link
+                  to="/"
+                  className="inline-flex items-center gap-2 text-[1.0625rem] font-extrabold tracking-tight text-slate-900 no-underline hover:text-slate-900"
+                >
+                  <span
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/90"
+                    aria-hidden
+                  >
+                    <Map className="h-4.5 w-4.5 text-white" strokeWidth={2.25} />
+                  </span>
+                  SPRB-BD
+                </Link>
+              </div>
 
-        <div className={styles.layout}>
-          <div className={styles.card}>
-            <div className={styles.switchWrap}>
-              <AuthModeSwitch
-                mode={mode}
-                onChange={(next) => {
-                  setMode(next)
-                  setLoginHint(false)
-                }}
-              />
-            </div>
+              <div
+                key={mode}
+                id="auth-panel"
+                className="animate-[modeFade_0.32s_ease-out]"
+              >
+                <header className="mb-5 text-center">
+                  <h1 className="font-display m-0 text-center text-[clamp(1.5rem,3.8vw,1.95rem)] font-semibold leading-snug tracking-[-0.03em] text-slate-900">
+                    {mode === 'login' ? 'Olá, bem-vindo de volta' : 'Crie sua conta'}
+                  </h1>
+                </header>
 
-            <div
-              id="auth-panel"
-              role="tabpanel"
-              aria-labelledby={mode === 'login' ? 'tab-login' : 'tab-register'}
-            >
-              {mode === 'login' ? (
-                <form className={styles.form} onSubmit={handleLogin}>
-                  <InputField
-                    label="E-mail"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="username"
-                    placeholder="voce@exemplo.com"
-                    inputIcon={Mail}
-                  />
-                  <InputField
-                    label="Senha"
-                    name="senha"
-                    type="password"
-                    minLength={8}
-                    required
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    inputIcon={Lock}
-                    hint="Mínimo de 8 caracteres."
-                  />
-                  {loginHint ? (
-                    <p className={styles.feedback}>
-                      Nenhuma requisição POST é feita no login: o POST /users é usado
-                      somente no cadastro. Quando a API tiver autenticação, o entrar será
-                      integrado aqui.
-                    </p>
-                  ) : null}
-                  <div className={styles.actions}>
-                    <Button type="submit" fullWidth>
+                {mode === 'login' ? (
+                  <form
+                    className="mx-auto flex w-full max-w-104 flex-col gap-3.5"
+                    onSubmit={handleLogin}
+                    noValidate
+                  >
+                    <InputField
+                      label="E-mail"
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="username"
+                      placeholder="voce@exemplo.com"
+                      inputIcon={Mail}
+                    />
+                    <InputField
+                      label="Senha"
+                      name="password"
+                      type="password"
+                      minLength={8}
+                      required
+                      autoComplete="current-password"
+                      placeholder="••••••••"
+                      inputIcon={Lock}
+                      hint="Mínimo de 8 caracteres."
+                    />
+                    <div className="-mt-0.5 flex flex-wrap items-center justify-start gap-3">
+                      <label className="inline-flex cursor-pointer select-none items-center gap-2 text-sm text-slate-500">
+                        <input
+                          type="checkbox"
+                          name="remember"
+                          className="h-4 w-4 cursor-pointer accent-blue-600"
+                        />
+                        Lembrar-me
+                      </label>
+                    </div>
+                    {displayError ? (
+                      <p
+                        className="m-0 rounded-[0.625rem] border border-red-200 bg-red-50 px-4 py-3 text-sm leading-snug text-red-800"
+                        role="alert"
+                      >
+                        {displayError}
+                      </p>
+                    ) : null}
+                    <div className="pt-1">
+                      <Button
+                        type="submit"
+                        fullWidth
+                        disabled={loginLoading}
+                        className="shadow-none!"
+                      >
+                        {loginLoading ? (
+                          <>
+                            <Loader2 className={spinIcon} aria-hidden />
+                            Entrando…
+                          </>
+                        ) : (
+                          'Entrar'
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <form
+                    className="mx-auto flex w-full max-w-104 flex-col gap-3.5"
+                    onSubmit={handleRegister}
+                  >
+                    <InputField
+                      label="Nome"
+                      name="nome"
+                      required
+                      autoComplete="given-name"
+                      placeholder="Nome"
+                      inputIcon={User}
+                    />
+                    <InputField
+                      label="Sobrenome"
+                      name="sobrenome"
+                      required
+                      autoComplete="family-name"
+                      placeholder="Sobrenome"
+                      inputIcon={CircleUser}
+                    />
+                    <InputField
+                      label="E-mail"
+                      name="email"
+                      type="email"
+                      required
+                      autoComplete="email"
+                      placeholder="voce@exemplo.com"
+                      inputIcon={Mail}
+                    />
+                    <InputField
+                      label="Senha"
+                      name="senha"
+                      type="password"
+                      minLength={8}
+                      required
+                      autoComplete="new-password"
+                      placeholder="••••••••"
+                      inputIcon={Lock}
+                      hint="Mínimo de 8 caracteres."
+                    />
+                    <InputField
+                      label="Data de nascimento"
+                      name="data_nascimento"
+                      type="date"
+                      required
+                      inputIcon={Calendar}
+                    />
+                    <InputField
+                      label="Documento"
+                      name="documento"
+                      required
+                      placeholder="CPF ou documento único"
+                      inputIcon={IdCard}
+                    />
+                    {displayError ? (
+                      <p
+                        className="m-0 rounded-[0.625rem] border border-red-200 bg-red-50 px-4 py-3 text-sm leading-snug text-red-800"
+                        role="alert"
+                      >
+                        {displayError}
+                      </p>
+                    ) : null}
+                    <div className="pt-1">
+                      <Button
+                        type="submit"
+                        fullWidth
+                        disabled={loading || finishingSignUp}
+                        className="shadow-none!"
+                      >
+                        {loading ? (
+                          <>
+                            <Loader2 className={spinIcon} aria-hidden />
+                            Enviando…
+                          </>
+                        ) : finishingSignUp ? (
+                          <>
+                            <Loader2 className={spinIcon} aria-hidden />
+                            Entrando…
+                          </>
+                        ) : (
+                          'Cadastrar'
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                )}
+              </div>
+
+              <p className="mt-[1.35rem] shrink-0 text-center text-[0.9375rem] text-slate-500">
+                {mode === 'login' ? (
+                  <>
+                    Não tem uma conta?{' '}
+                    <button
+                      type="button"
+                      className="cursor-pointer border-0 bg-transparent p-0 font-bold text-blue-600 underline decoration-blue-600 underline-offset-2 hover:text-blue-700"
+                      onClick={() => {
+                        setMode('register')
+                        setFormError(null)
+                        clearError()
+                      }}
+                    >
+                      Cadastre-se
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    Já tem conta?{' '}
+                    <button
+                      type="button"
+                      className="cursor-pointer border-0 bg-transparent p-0 font-bold text-blue-600 underline decoration-blue-600 underline-offset-2 hover:text-blue-700"
+                      onClick={() => {
+                        setMode('login')
+                        setFormError(null)
+                        clearError()
+                      }}
+                    >
                       Entrar
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <form className={styles.form} onSubmit={handleRegister}>
-                  <InputField
-                    label="Nome"
-                    name="nome"
-                    required
-                    autoComplete="given-name"
-                    placeholder="Nome"
-                    inputIcon={User}
-                  />
-                  <InputField
-                    label="Sobrenome"
-                    name="sobrenome"
-                    required
-                    autoComplete="family-name"
-                    placeholder="Sobrenome"
-                    inputIcon={CircleUser}
-                  />
-                  <InputField
-                    label="E-mail"
-                    name="email"
-                    type="email"
-                    required
-                    autoComplete="email"
-                    placeholder="voce@exemplo.com"
-                    inputIcon={Mail}
-                  />
-                  <InputField
-                    label="Senha"
-                    name="senha"
-                    type="password"
-                    minLength={8}
-                    required
-                    autoComplete="new-password"
-                    placeholder="••••••••"
-                    inputIcon={Lock}
-                    hint="Mínimo de 8 caracteres."
-                  />
-                  <InputField
-                    label="Data de nascimento"
-                    name="data_nascimento"
-                    type="date"
-                    required
-                    inputIcon={Calendar}
-                  />
-                  <InputField
-                    label="Documento"
-                    name="documento"
-                    required
-                    placeholder="CPF ou documento"
-                    inputIcon={IdCard}
-                  />
-                  <InputField
-                    label="Latitude"
-                    name="latitude"
-                    required
-                    inputMode="decimal"
-                    placeholder="-23.5505"
-                    inputIcon={MapPin}
-                  />
-                  <InputField
-                    label="Longitude"
-                    name="longitude"
-                    required
-                    inputMode="decimal"
-                    placeholder="-46.6333"
-                    inputIcon={Navigation}
-                  />
-                  <div className={styles.actions}>
-                    <Button type="submit" fullWidth disabled={loading}>
-                      {loading ? (
-                        <>
-                          <Loader2 className={styles.inlineIcon} aria-hidden />
-                          Enviando…
-                        </>
-                      ) : (
-                        'Enviar cadastro'
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </div>
+                    </button>
+                  </>
+                )}
+              </p>
           </div>
-
-          <UsersTable
-            users={users}
-            loading={loading}
-            error={error}
-            onRefresh={() => void fetchUsers()}
-            onClearError={clearError}
-          />
         </div>
-      </div>
-    </main>
+      </LoginMapShell>
+    </div>
   )
 }
