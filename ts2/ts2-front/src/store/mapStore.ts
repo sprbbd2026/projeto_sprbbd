@@ -13,6 +13,13 @@ export interface LocationPoint {
   rating: number; // 1 to 5
 }
 
+export interface SatellitePoint {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
 interface MapState {
   activeLayer: MapLayer;
   searchQuery: string;

@@ -3,9 +3,12 @@ import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 import Login from '../pages/Login'
 import { MapPage } from '../pages/Map.Page'
 import { PointsDashboard } from '../pages/PointsDashboard'
+import { PointsSatellite } from '../pages/PointsSatellite'
 import { UsersDashboard } from '../pages/UsersDashboard'
 import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import { DashboardPage } from '../pages/Dashboard.Page'
+
 
 const router = createBrowserRouter([
   {
@@ -16,6 +19,14 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
+      </ProtectedRoute>
+    ),
+  },
   { path: '/login', element: <Login /> },
   { path: '/error', element: <UnauthorizedPage /> },
   {
@@ -23,6 +34,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <PointsDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/satellites',
+    element: (
+      <ProtectedRoute>
+        <PointsSatellite />
       </ProtectedRoute>
     ),
   },
