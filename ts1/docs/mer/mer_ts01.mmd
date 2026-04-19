@@ -66,30 +66,16 @@ erDiagram
     int cmp_ordem
   }
 
-  BUFFER_MENSAGEM {
-    int bfm_id PK
-    int cnc_id FK
-    string bfm_nome
-    int bfm_capacidade_maxima
-    string bfm_politica_ordenacao
-    string bfm_status
-  }
-
   MENSAGEM {
     int msg_id PK
     int cnc_id FK
-    int bfm_id FK
     int cmd_id FK
     string msg_tipo
-    string msg_conteudo
     string msg_prioridade
-    string msg_metodo_criptografia
     string msg_status
     datetime msg_data_hora_geracao
     datetime msg_data_hora_envio
     datetime msg_data_hora_confirmacao
-    string msg_codigo_retorno
-    bool msg_otimizada_ia
   }
 
   TELEMETRIA {
@@ -101,29 +87,16 @@ erDiagram
     datetime tlm_data_hora_coleta
     datetime tlm_data_hora_recebimento
     string tlm_status_integridade
-    bool tlm_otimizada_ia
   }
 
-  LOCALIZACAO_SATELITE {
-    int lcs_id PK
-    int sat_id FK
-    float lcs_latitude
-    float lcs_longitude
-    float lcs_altitude
-    datetime lcs_data_hora_registro
-  }
-
-  PERFIL                ||--o{ USUARIO              : "classifica"
-  USUARIO               ||--o{ COMANDO              : "gera"
-  ESTACAO_CONTROLE      ||--o{ COMANDO              : "emite"
-  SATELITE              ||--o{ COMANDO              : "e destino de"
-  COMANDO               ||--o{ COMANDO_PARAMETRO    : "possui"
-  ESTACAO_CONTROLE      ||--o{ CANAL_COMUNICACAO    : "opera"
-  SATELITE              ||--o{ CANAL_COMUNICACAO    : "usa"
-  CANAL_COMUNICACAO     ||--o{ BUFFER_MENSAGEM      : "aloca"
-  BUFFER_MENSAGEM       o|--o{ MENSAGEM             : "armazena"
-  CANAL_COMUNICACAO     ||--o{ MENSAGEM             : "transmite"
-  COMANDO               o|--o{ MENSAGEM             : "gera"
-  SATELITE              ||--o{ TELEMETRIA           : "produz"
-  MENSAGEM              ||--o{ TELEMETRIA           : "transporta"
-  SATELITE              ||--o{ LOCALIZACAO_SATELITE : "possui"
+  PERFIL           ||--o{ USUARIO           : "classifica"
+  USUARIO          ||--o{ COMANDO           : "gera"
+  ESTACAO_CONTROLE ||--o{ COMANDO           : "emite"
+  SATELITE         ||--o{ COMANDO           : "e destino de"
+  COMANDO          ||--o{ COMANDO_PARAMETRO : "possui"
+  ESTACAO_CONTROLE ||--o{ CANAL_COMUNICACAO : "opera"
+  SATELITE         ||--o{ CANAL_COMUNICACAO : "usa"
+  CANAL_COMUNICACAO||--o{ MENSAGEM          : "transmite"
+  COMANDO          o|--o{ MENSAGEM          : "gera"
+  SATELITE         ||--o{ TELEMETRIA        : "produz"
+  MENSAGEM         ||--o{ TELEMETRIA        : "transporta"

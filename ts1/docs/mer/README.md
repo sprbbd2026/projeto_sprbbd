@@ -1,25 +1,22 @@
-# README — US120 Elaborar MER
+# US120 — MER do Time TS#01
 
-## TS#01 — Componentes de Software e Hardware de Dispositivos Satelitais
+## Segmentos Space e Control de um Sistema de Posicionamento por Satélite
 
-Este documento consolida o **Modelo Entidade-Relacionamento (MER)** refinado para a **US120 — Elaborar MER**, com foco no **Segmento Espacial** e no **Segmento de Controle** do sistema de posicionamento, considerando a visão de negócio da sprint e mantendo legibilidade, coerência e aderência à normalização adequada.
+Este documento apresenta o **Modelo Entidade-Relacionamento (MER)** refinado do **Time TS#01 — Componentes de Software e Hardware de Dispositivos Satelitais**, com foco nos segmentos:
 
----
+- **Space Segment**
+- **Control Segment**
 
-## Objetivo deste README
-
-Este README tem como finalidade:
-
-- documentar as **entidades** do modelo e sua necessidade para o negócio;
-- apresentar o **dicionário de dados** em formato legível;
-- registrar os **relacionamentos e cardinalidades**, incluindo obrigatoriedades e opcionalidades;
-- descrever os **fluxos esperados de operação**;
-- explicitar a **adequação do modelo à forma normal**;
-- registrar **observações importantes antes da passagem para o modelo lógico**.
+O objetivo é apoiar a **US120 — Elaborar MER**, garantindo:
+- identificação das entidades necessárias;
+- definição dos atributos principais;
+- representação correta dos relacionamentos e cardinalidades;
+- aderência à **3FN no núcleo estruturado do modelo**;
+- base para evolução futura ao modelo lógico.
 
 ---
 
-## 1. Escopo do modelo
+## Escopo do modelo
 
 O modelo cobre, em nível conceitual refinado:
 
@@ -28,31 +25,31 @@ O modelo cobre, em nível conceitual refinado:
 - satélites;
 - canais de comunicação;
 - comandos e seus parâmetros;
-- mensagens e buffers;
-- telemetria de retorno;
-- histórico de localização do satélite.
+- mensagens;
+- telemetria de retorno.
 
-O modelo foi mantido **legível e orientado à visão de negócio**, evitando superdimensionamento precoce do MER.
+A proposta foi simplificada para **9 entidades**, removendo:
+- `BUFFER_MENSAGEM`
+- `LOCALIZACAO_SATELITE`
+
+Nessa versão:
+- o conceito de fila/buffer passa a ser representado pelo **estado da mensagem**;
+- a localização do satélite passa a ser tratada como um **tipo de telemetria**, por exemplo `tlm_tipo = POSICIONAMENTO`.
 
 ---
 
-## 2. Convenções adotadas
+## Convenções adotadas
 
 - **Entidades** em maiúsculas e no singular.
 - **Atributos** com **trigramação**.
 - **PK** = chave primária.
 - **FK** = chave estrangeira.
 - Cardinalidades em notação `1:N`.
-- Campos genéricos como `msg_conteudo` e `tlm_conteudo` foram mantidos no nível conceitual para preservar simplicidade.
+- Campos conceituais como `tlm_conteudo` foram mantidos por simplicidade e legibilidade.
 
 ---
 
 ## Diagrama MER
-
-![MER do Time TS01](mer_ts01.png)
-
-<details>
-<summary>Ver código Mermaid do diagrama</summary>
 
 ```mermaid
 erDiagram
@@ -123,30 +120,16 @@ erDiagram
     int cmp_ordem
   }
 
-  BUFFER_MENSAGEM {
-    int bfm_id PK
-    int cnc_id FK
-    string bfm_nome
-    int bfm_capacidade_maxima
-    string bfm_politica_ordenacao
-    string bfm_status
-  }
-
   MENSAGEM {
     int msg_id PK
     int cnc_id FK
-    int bfm_id FK
     int cmd_id FK
     string msg_tipo
-    string msg_conteudo
     string msg_prioridade
-    string msg_metodo_criptografia
     string msg_status
     datetime msg_data_hora_geracao
     datetime msg_data_hora_envio
     datetime msg_data_hora_confirmacao
-    string msg_codigo_retorno
-    bool msg_otimizada_ia
   }
 
   TELEMETRIA {
@@ -158,38 +141,24 @@ erDiagram
     datetime tlm_data_hora_coleta
     datetime tlm_data_hora_recebimento
     string tlm_status_integridade
-    bool tlm_otimizada_ia
   }
 
-  LOCALIZACAO_SATELITE {
-    int lcs_id PK
-    int sat_id FK
-    float lcs_latitude
-    float lcs_longitude
-    float lcs_altitude
-    datetime lcs_data_hora_registro
-  }
-
-  PERFIL                ||--o{ USUARIO              : "classifica"
-  USUARIO               ||--o{ COMANDO              : "gera"
-  ESTACAO_CONTROLE      ||--o{ COMANDO              : "emite"
-  SATELITE              ||--o{ COMANDO              : "e destino de"
-  COMANDO               ||--o{ COMANDO_PARAMETRO    : "possui"
-  ESTACAO_CONTROLE      ||--o{ CANAL_COMUNICACAO    : "opera"
-  SATELITE              ||--o{ CANAL_COMUNICACAO    : "usa"
-  CANAL_COMUNICACAO     ||--o{ BUFFER_MENSAGEM      : "aloca"
-  BUFFER_MENSAGEM       o|--o{ MENSAGEM             : "armazena"
-  CANAL_COMUNICACAO     ||--o{ MENSAGEM             : "transmite"
-  COMANDO               o|--o{ MENSAGEM             : "gera"
-  SATELITE              ||--o{ TELEMETRIA           : "produz"
-  MENSAGEM              ||--o{ TELEMETRIA           : "transporta"
-  SATELITE              ||--o{ LOCALIZACAO_SATELITE : "possui"
+  PERFIL           ||--o{ USUARIO           : "classifica"
+  USUARIO          ||--o{ COMANDO           : "gera"
+  ESTACAO_CONTROLE ||--o{ COMANDO           : "emite"
+  SATELITE         ||--o{ COMANDO           : "e destino de"
+  COMANDO          ||--o{ COMANDO_PARAMETRO : "possui"
+  ESTACAO_CONTROLE ||--o{ CANAL_COMUNICACAO : "opera"
+  SATELITE         ||--o{ CANAL_COMUNICACAO : "usa"
+  CANAL_COMUNICACAO||--o{ MENSAGEM          : "transmite"
+  COMANDO          o|--o{ MENSAGEM          : "gera"
+  SATELITE         ||--o{ TELEMETRIA        : "produz"
+  MENSAGEM         ||--o{ TELEMETRIA        : "transporta"
 ```
-</details>
 
 ---
 
-## 3. Entidades do modelo e sua necessidade no negócio
+## Entidades do modelo e sua necessidade no negócio
 
 | Entidade | Necessidade no negócio | Observação sobre normalização |
 |---|---|---|
@@ -197,17 +166,15 @@ erDiagram
 | `USUARIO` | Representa quem opera a central de comandos | Mantém dados de autenticação e vínculo com perfil |
 | `ESTACAO_CONTROLE` | Representa o ponto de operação do segmento terrestre | Centraliza emissão e recebimento de dados |
 | `SATELITE` | Representa o ativo espacial controlado/monitorado | Mantém atributos estáveis do satélite |
-| `CANAL_COMUNICACAO` | Representa o vínculo operacional de comunicação entre estação e satélite | Evita relacionamento N:N direto entre estação e satélite |
+| `CANAL_COMUNICACAO` | Representa o vínculo operacional entre estação e satélite | Evita relacionamento N:N direto entre estação e satélite |
 | `COMANDO` | Representa a instrução emitida por um usuário para um satélite | Mantém origem terrestre e destino espacial |
 | `COMANDO_PARAMETRO` | Representa os parâmetros específicos de cada comando | Evita listas em atributos e melhora a 3FN |
-| `BUFFER_MENSAGEM` | Representa fila temporária de mensagens | Mantém ordenação e retenção separadas das mensagens |
-| `MENSAGEM` | Representa o envelope de transporte de comandos, retornos e telemetria | Centraliza o fluxo de transmissão |
-| `TELEMETRIA` | Representa os dados retornados do satélite | Separa dado de negócio do envelope de transporte |
-| `LOCALIZACAO_SATELITE` | Representa o histórico posicional do satélite | Evita armazenar localização mutável em `SATELITE` |
+| `MENSAGEM` | Representa o envelope de transporte de comandos e retornos | Centraliza o fluxo de transmissão |
+| `TELEMETRIA` | Representa os dados retornados do satélite | Separa dado retornado do evento de transporte |
 
 ---
 
-## 4. Relacionamentos e cardinalidades
+## Relacionamentos e cardinalidades
 
 | Relacionamento | Cardinalidade | Obrigatório ou opcional | Explicação objetiva |
 |---|---|---|---|
@@ -218,69 +185,62 @@ erDiagram
 | `COMANDO` — `COMANDO_PARAMETRO` | `1:N` | opcional para `COMANDO` | Um comando pode ter zero ou vários parâmetros |
 | `ESTACAO_CONTROLE` — `CANAL_COMUNICACAO` | `1:N` | obrigatório para `CANAL_COMUNICACAO` | Cada canal pertence a uma estação; uma estação pode operar vários canais |
 | `SATELITE` — `CANAL_COMUNICACAO` | `1:N` | obrigatório para `CANAL_COMUNICACAO` | Cada canal está associado a um satélite; um satélite pode usar vários canais |
-| `CANAL_COMUNICACAO` — `BUFFER_MENSAGEM` | `1:N` | obrigatório para `BUFFER_MENSAGEM` | Cada buffer pertence a um canal; um canal pode ter vários buffers |
-| `BUFFER_MENSAGEM` — `MENSAGEM` | `0:1` para `MENSAGEM`, `1:N` para `BUFFER_MENSAGEM` | opcional para `MENSAGEM` | Nem toda mensagem precisa passar por buffer |
 | `CANAL_COMUNICACAO` — `MENSAGEM` | `1:N` | obrigatório para `MENSAGEM` | Cada mensagem usa um canal; um canal pode transmitir várias mensagens |
-| `COMANDO` — `MENSAGEM` | `0:1` para `MENSAGEM`, `1:N` para `COMANDO` | opcional para `MENSAGEM` | Nem toda mensagem deriva de comando; uma mensagem pode ser telemetria ou retorno |
+| `COMANDO` — `MENSAGEM` | `0:1` para `MENSAGEM`, `1:N` para `COMANDO` | opcional para `MENSAGEM` | Nem toda mensagem deriva de comando |
 | `SATELITE` — `TELEMETRIA` | `1:N` | obrigatório para `TELEMETRIA` | Cada telemetria vem de um satélite; um satélite pode gerar várias telemetrias |
 | `MENSAGEM` — `TELEMETRIA` | `1:N` | obrigatório para `TELEMETRIA` | Cada telemetria é transportada por uma mensagem |
-| `SATELITE` — `LOCALIZACAO_SATELITE` | `1:N` | obrigatório para `LOCALIZACAO_SATELITE` | Cada registro de localização pertence a um satélite; um satélite pode ter vários registros históricos |
 
 ---
 
-## 5. Fluxos esperados de operação
+## Fluxos esperados de operação
 
-### 5.1 Fluxo de envio de comando
-`USUARIO → COMANDO → COMANDO_PARAMETRO → MENSAGEM → BUFFER_MENSAGEM (opcional) → CANAL_COMUNICACAO → SATELITE`
+### 1. Fluxo de envio de comando
+`USUARIO → COMANDO → COMANDO_PARAMETRO → MENSAGEM → CANAL_COMUNICACAO → SATELITE`
 
-**Descrição objetiva:**
+**Resumo:**
 1. Um usuário autenticado gera um comando.
 2. O comando é emitido por uma estação de controle.
 3. Os parâmetros do comando são registrados separadamente.
 4. O comando é encapsulado em uma mensagem.
-5. A mensagem pode ou não passar por um buffer.
-6. A mensagem é transmitida por um canal de comunicação.
-7. O satélite recebe e processa o comando.
+5. A mensagem é transmitida por um canal.
+6. O satélite recebe e processa o comando.
 
 ---
 
-### 5.2 Fluxo de retorno da telemetria
+### 2. Fluxo de retorno da telemetria
 `SATELITE → TELEMETRIA → MENSAGEM → CANAL_COMUNICACAO → ESTACAO_CONTROLE → USUARIO`
 
-**Descrição objetiva:**
+**Resumo:**
 1. O satélite gera dados de telemetria.
 2. A telemetria é encapsulada em uma mensagem de retorno.
 3. A mensagem é transmitida pelo canal.
-4. A estação de controle recebe, valida e persiste o dado.
+4. A estação de controle recebe e persiste o dado.
 5. O usuário consulta as informações retornadas pela central.
 
 ---
 
-### 5.3 Fluxo de atualização de localização
-`SATELITE → TELEMETRIA/MENSAGEM → ESTACAO_CONTROLE → LOCALIZACAO_SATELITE`
+### 3. Fluxo de posição do satélite
+A posição do satélite é tratada como **telemetria de posicionamento**:
 
-**Descrição objetiva:**
-1. O satélite informa sua posição por telemetria.
-2. A estação recebe o dado.
-3. O sistema registra o histórico em `LOCALIZACAO_SATELITE`.
+`SATELITE → TELEMETRIA (tlm_tipo = POSICIONAMENTO) → MENSAGEM → ESTACAO_CONTROLE`
 
 ---
 
-## 6. Dicionário de dados
+## Dicionário de dados
 
-### 6.1 PERFIL
+### 1. PERFIL
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
 | `prf_id` | PK | Identificador único do perfil | Inteiro | Sim | `1` | Chave primária |
 | `prf_nome` |  | Nome do perfil | Texto | Sim | `OPERADOR` | Deve ser semanticamente único |
-| `prf_nivel_acesso` |  | Nível hierárquico do perfil | Texto | Sim | `MEDIO` | Classifica criticidade/amplitude |
+| `prf_nivel_acesso` |  | Nível hierárquico do perfil | Texto | Sim | `MEDIO` | Classifica amplitude de acesso |
 | `prf_descricao` |  | Descrição do papel do perfil | Texto | Não | `Perfil responsável por envio de comandos` | Útil para governança |
 | `prf_status` |  | Estado do perfil | Texto | Sim | `ATIVO` | Ex.: ativo, inativo |
 
 ---
 
-### 6.2 USUARIO
+### 2. USUARIO
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -294,7 +254,7 @@ erDiagram
 
 ---
 
-### 6.3 ESTACAO_CONTROLE
+### 3. ESTACAO_CONTROLE
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -306,7 +266,7 @@ erDiagram
 
 ---
 
-### 6.4 SATELITE
+### 4. SATELITE
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -319,7 +279,7 @@ erDiagram
 
 ---
 
-### 6.5 CANAL_COMUNICACAO
+### 5. CANAL_COMUNICACAO
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -334,7 +294,7 @@ erDiagram
 
 ---
 
-### 6.6 COMANDO
+### 6. COMANDO
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -349,7 +309,7 @@ erDiagram
 
 ---
 
-### 6.7 COMANDO_PARAMETRO
+### 7. COMANDO_PARAMETRO
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -362,41 +322,23 @@ erDiagram
 
 ---
 
-### 6.8 BUFFER_MENSAGEM
-
-| Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
-|---|---|---|---|---|---|---|
-| `bfm_id` | PK | Identificador único do buffer | Inteiro | Sim | `40` | Chave primária |
-| `cnc_id` | FK | Canal associado ao buffer | Inteiro | Sim | `30` | FK para `CANAL_COMUNICACAO(cnc_id)` |
-| `bfm_nome` |  | Nome do buffer | Texto | Não | `FILA_COMANDOS_CRITICOS` | Facilita leitura operacional |
-| `bfm_capacidade_maxima` |  | Capacidade máxima do buffer | Inteiro | Sim | `1000` | Número máximo de mensagens |
-| `bfm_politica_ordenacao` |  | Política de ordenação | Texto | Sim | `FIFO` | Ex.: FIFO, PRIORIDADE |
-| `bfm_status` |  | Estado do buffer | Texto | Sim | `ATIVO` | Ex.: ativo, inativo |
-
----
-
-### 6.9 MENSAGEM
+### 8. MENSAGEM
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
 | `msg_id` | PK | Identificador único da mensagem | Inteiro | Sim | `200` | Chave primária |
 | `cnc_id` | FK | Canal usado para transportar a mensagem | Inteiro | Sim | `30` | FK para `CANAL_COMUNICACAO(cnc_id)` |
-| `bfm_id` | FK | Buffer em que a mensagem pode ter sido armazenada | Inteiro | Não | `40` | FK opcional para `BUFFER_MENSAGEM(bfm_id)` |
 | `cmd_id` | FK | Comando que originou a mensagem | Inteiro | Não | `100` | FK opcional para `COMANDO(cmd_id)` |
 | `msg_tipo` |  | Tipo funcional da mensagem | Texto | Sim | `COMANDO` | Ex.: comando, telemetria, confirmação |
-| `msg_conteudo` |  | Conteúdo transportado pela mensagem | Texto | Sim | `AJUSTE_ATITUDE` | Campo genérico no nível conceitual |
-| `msg_prioridade` |  | Prioridade atribuída à mensagem | Texto | Sim | `ALTA` | Influencia fila e despacho |
-| `msg_metodo_criptografia` |  | Método de criptografia aplicado | Texto | Sim | `AES_256` | Mantido como atributo conceitual |
-| `msg_status` |  | Estado atual da mensagem | Texto | Sim | `ENVIADA` | Ex.: gerada, em fila, confirmada |
+| `msg_prioridade` |  | Prioridade atribuída à mensagem | Texto | Sim | `ALTA` | Influencia despacho |
+| `msg_status` |  | Estado atual da mensagem | Texto | Sim | `ENVIADA` | Ex.: gerada, em fila, sucesso, falha |
 | `msg_data_hora_geracao` |  | Data/hora de geração | Data/hora | Sim | `2026-04-18 14:36:00` | Instante de criação |
 | `msg_data_hora_envio` |  | Data/hora de envio | Data/hora | Não | `2026-04-18 14:36:10` | Só existe após transmissão |
 | `msg_data_hora_confirmacao` |  | Data/hora de confirmação/retorno | Data/hora | Não | `2026-04-18 14:36:20` | Só existe após resposta |
-| `msg_codigo_retorno` |  | Código ou resumo do resultado | Texto | Não | `SUCESSO` | Ex.: timeout, erro, sucesso |
-| `msg_otimizada_ia` |  | Indicador de otimização por IA | Booleano | Sim | `true` | Marca uso de IA no fluxo |
 
 ---
 
-### 6.10 TELEMETRIA
+### 9. TELEMETRIA
 
 | Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
 |---|---|---|---|---|---|---|
@@ -408,41 +350,27 @@ erDiagram
 | `tlm_data_hora_coleta` |  | Data/hora de coleta no satélite | Data/hora | Sim | `2026-04-18 14:36:15` | Momento em que o dado foi gerado |
 | `tlm_data_hora_recebimento` |  | Data/hora de recebimento na estação | Data/hora | Sim | `2026-04-18 14:36:20` | Permite medir latência |
 | `tlm_status_integridade` |  | Situação de integridade do dado | Texto | Sim | `INTEGRA` | Ex.: íntegra, corrompida |
-| `tlm_otimizada_ia` |  | Indicador de otimização por IA | Booleano | Sim | `false` | Marca uso de IA no retorno |
 
 ---
 
-### 6.11 LOCALIZACAO_SATELITE
+## Observações importantes antes do modelo lógico
 
-| Atributo | Chave | Descrição | Tipo conceitual | Obrigatório | Exemplo | Observação |
-|---|---|---|---|---|---|---|
-| `lcs_id` | PK | Identificador único do registro de localização | Inteiro | Sim | `500` | Chave primária |
-| `sat_id` | FK | Satélite ao qual a localização pertence | Inteiro | Sim | `20` | FK para `SATELITE(sat_id)` |
-| `lcs_latitude` |  | Latitude registrada do satélite | Número real | Sim | `-12.345` | Componente geográfica |
-| `lcs_longitude` |  | Longitude registrada do satélite | Número real | Sim | `-45.678` | Componente geográfica |
-| `lcs_altitude` |  | Altitude registrada do satélite | Número real | Sim | `20000.0` | Unidade deve ser padronizada no lógico |
-| `lcs_data_hora_registro` |  | Data/hora do registro | Data/hora | Sim | `2026-04-18 14:36:20` | Mantém histórico temporal |
+### 1. Forma normal
+O modelo permanece adequado à **3FN no núcleo estruturado** das entidades e relacionamentos principais.
 
----
+### 2. Campos genéricos
+O atributo `tlm_conteudo` foi mantido como campo genérico no nível conceitual. Em uma etapa futura, ele pode ser decomposto para maior rigor de normalização ou consulta estruturada.
 
-## 7. Observações importantes antes do modelo lógico
+### 3. Perfis e permissões
+A entidade `PERFIL` foi separada de `USUARIO` para explicitar nível de acesso e evitar redundância. Caso o sistema evolua para controle fino de permissões, uma entidade futura como `PERFIL_PERMISSAO` poderá ser adicionada.
 
-### 7.1 Sobre a forma normal
-O modelo está adequado à **3FN no núcleo estruturado** das entidades e relacionamentos principais.
+### 4. Opcionalidade relevante
+Nem toda `MENSAGEM` precisa estar associada a um `COMANDO`; mensagens de retorno e telemetria podem existir independentemente.
 
-### 7.2 Campos genéricos
-Os atributos abaixo permanecem genéricos no nível conceitual:
-- `msg_conteudo`
-- `tlm_conteudo`
+### 5. Localização do satélite
+A localização do satélite passou a ser tratada como um tipo de telemetria, por exemplo:
+- `tlm_tipo = POSICIONAMENTO`
 
-Em uma etapa futura de modelo lógico, esses campos podem ser decompostos se houver necessidade de maior rigor de normalização, consulta estruturada ou regras de validação específicas.
-
-### 7.3 Perfis e permissões
-A entidade `PERFIL` foi separada de `USUARIO` para explicitar níveis de acesso e evitar redundância. Caso o sistema evolua para um controle mais fino de permissões, uma entidade futura como `PERFIL_PERMISSAO` poderá ser adicionada.
-
-### 7.4 Opcionalidades relevantes
-As duas opcionalidades mais importantes do modelo são:
-- nem toda `MENSAGEM` precisa estar associada a um `COMANDO`;
-- nem toda `MENSAGEM` precisa estar associada a um `BUFFER_MENSAGEM`.
+Isso simplifica o modelo conceitual, embora reduza a especialização do histórico posicional.
 
 ---
