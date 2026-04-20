@@ -18,7 +18,7 @@ export default function HomePage() {
 
                     <Link
                         to="/login"
-                        className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] transition-all font-semibold shadow-md">
+                        className="w-full py-3 rounded-xl  bg-[var(--accent)] hover:bg-[var(--text-h)]  active:scale-[0.98] transition-all font-semibold shadow-md">
                         Login
                     </Link>
 
