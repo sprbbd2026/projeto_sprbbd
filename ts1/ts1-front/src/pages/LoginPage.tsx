@@ -2,8 +2,8 @@ import LoginForm from "../features/Auth/LoginForm";
 
 export default function LoginPage() {
     return (
-        <main>
-            <div className="items-right">
+        <main style={{ display: "grid", placeItems: "center", height: "100vh" }}>
+            <div>
                 <h1>Login</h1>
                 <LoginForm />
             </div>
