@@ -4,14 +4,14 @@ export default function HomePage() {
     return (
         <div>
 
-            <main className="flex items-center justify-center">
+            <main className="min-h-screen flex items-center justify-center px-4">
                 <div className="text-center">
 
-                    <h1 className="text-4xl font-bold">
+                    <h1 className="text-5xl">
                         PORTAL SPRB-BD
                     </h1>
 
-                    <p className="text-gray-400 mt-3 text-sm">
+                    <p className="text-gray-400 mt-3 text-2xl">
                         Controle Satelital
                     </p>
 

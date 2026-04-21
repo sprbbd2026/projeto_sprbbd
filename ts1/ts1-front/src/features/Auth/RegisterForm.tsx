@@ -38,17 +38,16 @@ export default function RegisterForm() {
 
     return (
         <div className="flex items-center justify-center">
-            <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
-
+            <form
+                onSubmit={handleSubmit}
+                className="w-full max-w-sm space-y-5 text-left">
                 {/* NOME */}
                 <div>
                     <label className="block text-sm mb-1">Nome</label>
                     <input
-                        type="text"
-                        placeholder="Seu nome"
-                        value={name}
+                        type="text" value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required
                     />
                 </div>
@@ -58,10 +57,9 @@ export default function RegisterForm() {
                     <label className="block text-sm mb-1">Documento</label>
                     <input
                         type="text"
-                        placeholder="CPF ou outro documento"
                         value={document}
                         onChange={(e) => setDocument(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required
                     />
                 </div>
@@ -71,10 +69,9 @@ export default function RegisterForm() {
                     <label className="block text-sm mb-1">Email</label>
                     <input
                         type="email"
-                        placeholder="seu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required
                     />
                 </div>
@@ -84,10 +81,9 @@ export default function RegisterForm() {
                     <label className="block text-sm mb-1">Senha</label>
                     <input
                         type="password"
-                        placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required
                     />
                 </div>
@@ -95,10 +91,9 @@ export default function RegisterForm() {
                 {/* NÍVEL DE ACESSO */}
                 <div>
                     <label className="block text-sm mb-1">Nível de acesso</label>
-                    <select
-                        value={accessLevel}
+                    <select value={accessLevel}
                         onChange={(e) => setAccessLevel(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-2 rounded-lg border bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required>
                         <option value="">Selecione</option>
                         <option value="admin">Admin</option>
@@ -110,8 +105,7 @@ export default function RegisterForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-50"
-                >
+                    className="w-full py-2 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition disabled:opacity-50">
                     {loading ? "Enviando..." : "Cadastrar"}
                 </button>
             </form>
