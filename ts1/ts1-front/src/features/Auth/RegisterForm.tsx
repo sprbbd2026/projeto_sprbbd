@@ -37,7 +37,7 @@ export default function RegisterForm() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center justify-center">
             <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
 
                 {/* NOME */}
@@ -99,8 +99,7 @@ export default function RegisterForm() {
                         value={accessLevel}
                         onChange={(e) => setAccessLevel(e.target.value)}
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required
-                    >
+                        required>
                         <option value="">Selecione</option>
                         <option value="admin">Admin</option>
                         <option value="user">Usuário</option>
