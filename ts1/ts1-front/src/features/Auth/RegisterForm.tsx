@@ -2,8 +2,11 @@ import { useState } from "react";
 import { api } from "../../services/api";
 
 export default function RegisterForm() {
+    const [name, setName] = useState("");
+    const [document, setDocument] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [accessLevel, setAccessLevel] = useState("");
     const [loading, setLoading] = useState(false);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -16,12 +19,18 @@ export default function RegisterForm() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({
+                    name,
+                    document,
+                    email,
+                    password,
+                    accessLevel,
+                }),
             });
 
-            console.log("Login OK:", data);
+            console.log("Registro OK:", data);
         } catch (err) {
-            console.error("Erro no login", err);
+            console.error("Erro no registro", err);
         } finally {
             setLoading(false);
         }
@@ -29,9 +38,35 @@ export default function RegisterForm() {
 
     return (
         <div className="min-h-screen flex items-center justify-center">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-sm space-y-5">
+            <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5">
+
+                {/* NOME */}
+                <div>
+                    <label className="block text-sm mb-1">Nome</label>
+                    <input
+                        type="text"
+                        placeholder="Seu nome"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                {/* DOCUMENTO */}
+                <div>
+                    <label className="block text-sm mb-1">Documento</label>
+                    <input
+                        type="text"
+                        placeholder="CPF ou outro documento"
+                        value={document}
+                        onChange={(e) => setDocument(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+
+                {/* EMAIL */}
                 <div>
                     <label className="block text-sm mb-1">Email</label>
                     <input
@@ -39,29 +74,46 @@ export default function RegisterForm() {
                         placeholder="seu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                     />
                 </div>
 
+                {/* SENHA */}
                 <div>
-                    <label className="block text-sm text-gray-600 mb-1">Senha</label>
+                    <label className="block text-sm mb-1">Senha</label>
                     <input
                         type="password"
                         placeholder="••••••••"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                     />
+                </div>
+
+                {/* NÍVEL DE ACESSO */}
+                <div>
+                    <label className="block text-sm mb-1">Nível de acesso</label>
+                    <select
+                        value={accessLevel}
+                        onChange={(e) => setAccessLevel(e.target.value)}
+                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    >
+                        <option value="">Selecione</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">Usuário</option>
+                        <option value="manager">Gerente</option>
+                    </select>
                 </div>
 
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition disabled:opacity-50"
                 >
-                    {loading ? "Entrando..." : "Entrar"}
+                    {loading ? "Enviando..." : "Cadastrar"}
                 </button>
             </form>
         </div>
