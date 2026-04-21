@@ -4,12 +4,12 @@
    VARIÁVEIS
 ========================= */
 :root {
-  --text: #021526;
-  --text-h: #5286AC;
-  --bg: #F3F4F4;
-  --accent: #7DAACB;
-  --border: #2e303a;
-
+    --text: #021526;
+    --text-h: #5286AC;
+    --bg: #F3F4F4;
+    --surface: #ffffff;
+    --accent: #7DAACB;
+    --border: #2e303a;
   --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -21,10 +21,11 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #F3F4F4;
-    --text-h: #424F85;
-    --bg: #021526;
-    --border: #2e303a;
-    --accent: #5665A0;
+      --text-h: #424F85;
+      --bg: #021526;
+      --surface: #0b1a2b;
+      --border: #2e303a;
+      --accent: #5665A0;
     --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px;
   }
 }
@@ -34,6 +35,7 @@
 ========================= */
 html,
 body {
+  min-height: 100vh;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -49,7 +51,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  overflow-x: hidden;
 }
 
 /* =========================
@@ -72,19 +73,17 @@ h2 {
   margin: 0;
 }
 
-h1 {
-  font-weight: 400;
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
+
+input,
+select,
+textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
 }
 
-h2 {
-  font-weight: 600;
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin-bottom: 8px;
+select {
+  appearance: none;
 }
 
 /* =========================
