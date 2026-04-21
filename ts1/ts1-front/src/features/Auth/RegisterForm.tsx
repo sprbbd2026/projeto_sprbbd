@@ -28,12 +28,12 @@ export default function RegisterForm() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="min-h-screen flex items-center justify-center">
             <form
                 onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm space-y-5">
+                className="w-full max-w-sm space-y-5">
                 <div>
-                    <label className="block text-sm text-gray-600 mb-1">Email</label>
+                    <label className="block text-sm mb-1">Email</label>
                     <input
                         type="email"
                         placeholder="seu@email.com"
