@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# 🛰️ SPRB-BD — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web do **SPRB-BD** em **React**, **TypeScript**, **Tailwind CSS**, **Vite** e **React Router**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Passo a passo
 
-## React Compiler
+### 1. Clonar o repositório e entrar na pasta do frontend
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone https://github.com/sprbbd2026/projeto_sprbbd
+cd ts1/ts1-front
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Instalar dependências
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
+
+Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
+
+### 3. Rodar o projeto 🔥
+
+```bash
+npm run dev
+```
+
+---
+
+## ⌨️ Comandos úteis
+
+| Comando       | Descrição                          |
+| ------------- | ---------------------------------- |
+| `npm install` | Instala as Dependências do projeto |
+| `npm run dev` | Inicia o projeto                   |
+
+---
+
+## 📁 Estrutura
+
+```bash
+src/
+├── assets/     #imagens
+├── components/   # componente reutilizáveis
+├── pages/        # telas (Login, Cadastro)
+├── services/     # comunicação com API
+├── features/   # funcionalidades
+│   └── auth/    # formulários de autenticação
+├── App.tsx
+├── main.tsx
+└── index.css
+```
+
+---
+
+## 📝 Documentações
+
+- [Vite](https://vite.dev/)
+- [React](https://react.dev/)
+- [React Router](https://reactrouter.com/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
