@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/* =========================
+   VARIÁVEIS
+========================= */
+:root {
+    --text: #021526;
+    --text-h: #5286AC;
+    --bg: #F3F4F4;
+    --surface: #ffffff;
+    --accent: #7DAACB;
+    --border: #2e303a;
+  --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px;
+
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* =========================
+   DARK MODE
+========================= */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #F3F4F4;
+      --text-h: #424F85;
+      --bg: #021526;
+      --surface: #0b1a2b;
+      --border: #2e303a;
+      --accent: #5665A0;
+    --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px;
+  }
+}
+
+/* =========================
+   BASE GLOBAL
+========================= */
+html,
+body {
+  min-height: 100vh;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+
+  color: var(--text);
+  background: var(--bg);
+
+  color-scheme: light dark;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+}
+
+/* =========================
+   ROOT DO REACT
+========================= */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   TIPOGRAFIA
+========================= */
+h1,
+h2 {
+  font-family: var(--sans);
+  color: var(--text);
+  margin: 0;
+}
+
+
+input,
+select,
+textarea {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+select {
+  appearance: none;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+@media (max-width: 1024px) {
+  h1 {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+}
