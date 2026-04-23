@@ -13,7 +13,7 @@ export function LoginHeroPanel() {
       </div>
       <div className="relative z-[1] mx-auto flex h-full max-w-[22rem] flex-col justify-center px-6 py-7 text-center [text-shadow:0_1px_12px_rgb(0_0_0/0.45)] md:px-6 md:py-7">
         <p className="font-display m-0 text-[clamp(1.35rem,3.2vw,1.75rem)] font-semibold leading-tight tracking-[-0.03em] text-white">
-          GPS brasileiro
+          RPS brasileiro
         </p>
       </div>
     </div>
