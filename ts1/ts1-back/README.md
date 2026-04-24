@@ -33,12 +33,14 @@ docker compose up -d
 Crie um arquivo `.env` na pasta `ts1-back` com base no `.env.example`:
 
 ```env
-POSTGRES_PASSWORD=sua_senha_aqui
-DATABASE_URL=postgresql+psycopg://admin:sua_senha_aqui@localhost:5432/sprbbd-db
+POSTGRES_HOST=seu_host
+POSTGRES_PORT=5432
+POSTGRES_USER=seu_usuario
+POSTGRES_PASSWORD=sua_senha
+POSTGRES_DB=nome_do_banco
 ```
 
-> `POSTGRES_PASSWORD` é a senha do PostgreSQL (usada pelo Docker).  
-> `DATABASE_URL` é a string de conexão completa usada pelo SQLAlchemy/Alembic — substitua `sua_senha_aqui` pelo mesmo valor de `POSTGRES_PASSWORD`.
+> `POSTGRES_PASSWORD` é também usada pelo Docker Compose para criar o banco local.
 
 ### 4. Rodando as Migrações
 
