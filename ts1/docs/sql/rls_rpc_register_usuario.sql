@@ -108,3 +108,6 @@ CREATE POLICY "perfil_select_ativo_anon_auth"
   FOR SELECT
   TO anon, authenticated
   USING (coalesce(prf_status, '') = 'ATIVO');
+
+-- Próximo passo (produção): com o BFF ativo, rode também
+-- docs/sql/revoke_anon_execute_register_usuario.sql para impedir EXECUTE da RPC pelo anon.

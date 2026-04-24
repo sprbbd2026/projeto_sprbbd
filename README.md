@@ -44,8 +44,11 @@ Este repositório e o material associado integram um **Estudo de Caso** no forma
 
 | Pasta | Descrição |
 |-------|-----------|
-| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend (React, Vite, TypeScript). Ver [README do front](ts2/ts2-front/README.md). |
-| [`ts2/ts2-back/`](ts2/ts2-back/) | Backend (FastAPI, PostgreSQL). Ver [README do back](ts2/ts2-back/README.md). |
+| [`ts1/ts1-front/`](ts1/ts1-front/) | **TS#01 —** portal (React, Vite, TypeScript). Ver [README do ts1-front](ts1/ts1-front/README.md). |
+| [`ts1/ts1-back/`](ts1/ts1-back/) | **TS#01 —** BFF FastAPI (cadastro no Supabase com service role). Ver [README do ts1-back](ts1/ts1-back/README.md). |
+| [`ts1/docs/`](ts1/docs/) | **TS#01 —** MER, US116, scripts SQL (`sql/`). |
+| [`ts2/ts2-front/`](ts2/ts2-front/) | **TS#02 —** frontend (React, Vite, TypeScript). Ver [README do front](ts2/ts2-front/README.md). |
+| [`ts2/ts2-back/`](ts2/ts2-back/) | **TS#02 —** backend (FastAPI, PostgreSQL). Ver [README do back](ts2/ts2-back/README.md). |
 
 ---
 

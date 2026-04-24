@@ -8,25 +8,19 @@ que o cadastro pela tela `/register` passe a gravar e ler usuários reais no ban
 
 ## Resumo
 
-O formulário de cadastro do portal (em `ts1/ts1-front/src/features/Auth/RegisterForm.tsx`)
-antes enviava os dados para um endpoint fictício `http://localhost:3000/register`.
-Na versão atual, o mesmo formulário:
+O cadastro (`ts1/ts1-front`) envia os dados ao **BFF** [`ts1/ts1-back`](../ts1-back/README.md)
+(`POST /api/v1/register`). O BFF valida, aplica rate limit e chama a RPC
+**`register_usuario`** no Postgres com a **service role** (chave só no servidor). A
+função aplica **bcrypt**, grava em `public.usuario` e devolve JSON com `perfil` (sem
+`usr_senha_hash`). O browser **não** chama a RPC no Supabase diretamente.
 
-1. Chama a RPC **`register_usuario`** no Postgres (função `SECURITY DEFINER`), que valida
-   entrada, resolve o perfil, aplica **bcrypt** (`pgcrypto`) na senha e insere em
-   `public.usuario`.
-2. A RPC devolve **JSON** com os dados públicos do usuário criado e o objeto `perfil`
-   aninhado (sem expor `usr_senha_hash`).
-3. A UI mostra feedback de sucesso ou erro na própria tela.
+**RLS:** `anon` não grava nem lê `usuario` pela API de tabela; só leitura controlada de
+`perfil` ativo.
 
-**Segurança:** com **RLS ligada** em `perfil` e `usuario`, o papel `anon` não faz mais
-`insert`/`select` diretos em `usuario`; apenas `select` em `perfil` ativo e `execute` na
-RPC. A `anon key` continua pública no bundle — o endurecimento vem de **RLS + função
-controlada**, não de esconder a chave.
-
-**Aplicar SQL no Supabase:** rode o script versionado em
-[`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no SQL Editor (ou
-via `apply_migration` no MCP quando não estiver em modo somente leitura).
+**SQL no Supabase:** [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql).
+**Produção (recomendado):** depois do BFF validado,
+[`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql)
+remove `EXECUTE` da RPC para `anon`/`authenticated` (só o BFF com service role invoca).
 
 ---
 
@@ -34,12 +28,14 @@ via `apply_migration` no MCP quando não estiver em modo somente leitura).
 
 | Caminho | Propósito |
 |---------|-----------|
-| `ts1/ts1-front/.env.example` | Template de variáveis de ambiente (commitado sem valores) |
-| `ts1/ts1-front/.env.local` | Valores reais de `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` — **não commitado**, coberto por `*.local` no `.gitignore` |
-| `ts1/ts1-front/package.json` / `package-lock.json` | Inclui a dependência `@supabase/supabase-js` |
-| `ts1/ts1-front/src/lib/supabaseClient.ts` | Singleton do client Supabase lendo `import.meta.env` |
-| `ts1/ts1-front/src/services/userPersistence.ts` | Serviço de persistência: `hashPassword`, `resolvePerfilId`, `registerUser`, `getUsuarioByEmail` |
-| `ts1/ts1-front/src/features/Auth/RegisterForm.tsx` | Passa a usar `registerUser` em vez do `api('/register')` fictício, com feedback de sucesso/erro na UI |
+| `ts1/ts1-back/` | BFF FastAPI: cadastro com service role, CORS, rate limit |
+| `ts1/ts1-front/.env.example` | `VITE_API_BASE_URL` + Supabase (uso futuro) |
+| `ts1/ts1-front/.env.local` | Segredos locais — **não commitado** |
+| `ts1/ts1-front/package.json` / `package-lock.json` | Inclui `@supabase/supabase-js` (reservado p.ex. login) |
+| `ts1/ts1-front/src/lib/supabaseClient.ts` | Cliente anon (cadastro não usa) |
+| `ts1/ts1-front/src/services/userPersistence.ts` | `registerUser` via `fetch` ao BFF |
+| `ts1/ts1-front/src/features/Auth/RegisterForm.tsx` | Feedback de sucesso/erro na UI |
+| `ts1/docs/sql/revoke_anon_execute_register_usuario.sql` | Revoga RPC pública ao `anon` |
 
 ### O que cada peça faz
 
@@ -47,15 +43,15 @@ via `apply_migration` no MCP quando não estiver em modo somente leitura).
 Cria uma única instância do cliente Supabase reaproveitada por toda a aplicação. Lança
 erro imediato e claro se as envs não estiverem preenchidas (evita falhas silenciosas).
 
+**`ts1/ts1-back`**  
+`POST /api/v1/register` → cliente Supabase com `SUPABASE_SERVICE_ROLE_KEY` → RPC
+`register_usuario`.
+
 **`src/services/userPersistence.ts`**  
-Chama `supabase.rpc('register_usuario', { ... })` e converte o JSON de retorno em
-`Usuario` (sem hash). Mapeia mensagens de erro da função (`DUPLICATE_EMAIL`, etc.) para
-textos amigáveis na UI.
+`fetch` para `${VITE_API_BASE_URL}/api/v1/register` e parse da resposta JSON.
 
 **`src/features/Auth/RegisterForm.tsx`**  
-Substitui o `console.log` antigo por estados (`idle` / `loading` / `success` / `error`)
-e mostra um parágrafo colorido abaixo do botão. Após o sucesso, usa `created.perfil`
-retornado pela RPC no feedback (não há mais `select` direto em `usuario` pelo anon).
+Estados de envio e mensagem com `created.perfil` retornado pelo BFF.
 
 ---
 
@@ -127,42 +123,43 @@ cliente com a `anon key`. A mitigação versionada está em
 sequenceDiagram
   participant UI as RegisterForm
   participant SVC as userPersistence
-  participant SB as SupabaseClient
+  participant BFF as ts1_back
+  participant SB as Supabase_service_role
   participant RPC as register_usuario
   participant DB as Postgres
 
   UI->>SVC: registerUser
-  SVC->>SB: rpc register_usuario
-  SB->>RPC: POST /rpc/register_usuario
-  RPC->>DB: insert usuario bypass RLS
+  SVC->>BFF: POST /api/v1/register
+  BFF->>SB: rpc register_usuario
+  SB->>RPC: PostgREST service_role
+  RPC->>DB: insert usuario
   RPC->>DB: select join perfil
-  DB-->>RPC: jsonb usuario perfil
-  RPC-->>UI: resposta JSON feedback verde
+  DB-->>BFF: jsonb
+  BFF-->>UI: 201 JSON feedback verde
 ```
 
 ---
 
 ## Como rodar localmente
 
-1. `cd ts1/ts1-front`
-2. `npm install`
-3. Copiar `.env.example` para `.env.local` e preencher:
-   ```env
-   VITE_SUPABASE_URL=https://judpxlrpzdnxejtgmlcn.supabase.co
-   VITE_SUPABASE_ANON_KEY=<anon_key_do_painel_Project_Settings_API>
-   ```
-4. **Aplicar** [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no
-   SQL Editor do Supabase (obrigatório após puxar esta versão do código).
-5. `npm run dev` e acessar `http://localhost:5173/register`.
-6. Preencher o formulário, submeter e conferir a linha em `public.usuario` pelo Table
-   Editor do Supabase.
+1. Aplicar [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no SQL
+   Editor do Supabase (se ainda não aplicou).
+2. `cd ts1/ts1-back` — copiar `.env.example` para `.env`, preencher `SUPABASE_URL` e
+   `SUPABASE_SERVICE_ROLE_KEY`; `uv sync` e `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`.
+3. `cd ts1/ts1-front` — `npm install`, copiar `.env.example` para `.env.local`, definir
+   `VITE_API_BASE_URL=http://127.0.0.1:8000` (e opcionalmente variáveis Supabase para uso
+   futuro).
+4. `npm run dev` e abrir `http://localhost:5173/register`.
+5. Cadastrar um usuário e conferir em `public.usuario` no Table Editor.
 
-### Verificação rápida (após aplicar o SQL)
+### Verificação rápida
 
-- Cadastro pela tela continua funcionando (RPC retorna sucesso).
-- Tentativa de `insert` direto em `usuario` com a **anon key** (REST ou SQL como `anon`)
-  deve **falhar** por RLS.
-- `select` em `perfil` com anon continua permitido apenas para perfis ativos.
+- **Network:** o cadastro deve mostrar `POST …/api/v1/register` (BFF), não
+  `/rest/v1/rpc/register_usuario` a partir do browser (exceto tráfego interno do BFF).
+- **RLS:** `insert` direto em `usuario` com **anon key** continua bloqueado.
+- **Opcional:** após validar o BFF, aplicar
+  [`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql);
+  então a RPC **não** pode mais ser chamada com anon key nem pelo front — só pelo BFF.
 
 ---
 
@@ -170,7 +167,7 @@ sequenceDiagram
 
 | Critério | Onde é atendido |
 |----------|-----------------|
-| Persistência dos dados de usuário implementada na aplicação | `registerUser` → RPC `register_usuario` em `userPersistence.ts` |
+| Persistência dos dados de usuário implementada na aplicação | `registerUser` → BFF `POST /api/v1/register` → RPC no Postgres |
 | Salvamento dos dados realizado com sucesso na base de dados | `insert` dentro da função SQL em `public.usuario` + Table Editor |
 | Leitura dos dados de usuário funcionando corretamente | JSON retornado pela RPC (usuário + `perfil`) exibido no feedback da UI |
 | Estrutura de persistência compatível com o modelo de dados definido | Mesmas colunas MER; `usr_senha_hash` com bcrypt server-side |

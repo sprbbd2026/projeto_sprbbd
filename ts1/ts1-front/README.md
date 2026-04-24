@@ -21,27 +21,34 @@ npm install
 
 Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
 
-### 3. Configurar variáveis do Supabase
+### 3. Configurar variáveis de ambiente
 
-Copiar `.env.example` para `.env.local` e preencher com os valores do painel do Supabase
-(Project Settings → API):
+Copiar `.env.example` para `.env.local`.
+
+**Cadastro (obrigatório):** URL do BFF — com o [ts1-back](../ts1-back/README.md) no ar:
 
 ```env
-VITE_SUPABASE_URL=https://judpxlrpzdnxejtgmlcn.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon key do projeto>
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-O arquivo `.env.local` é ignorado pelo git (`*.local`) e é lido pelo cliente em
-`src/lib/supabaseClient.ts`.
+**Supabase (opcional neste fluxo):** `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` para
+futuras telas que usem `src/lib/supabaseClient.ts` (ex.: login real).
 
-### 3.1. Aplicar SQL de segurança (RLS + RPC de cadastro)
+O arquivo `.env.local` é ignorado pelo git (`*.local`).
 
-O cadastro usa a função `register_usuario` e RLS nas tabelas `perfil` e `usuario`. Rode
-uma vez o script em
-[../docs/sql/rls_rpc_register_usuario.sql](../docs/sql/rls_rpc_register_usuario.sql)
-no **SQL Editor** do Supabase (veja também [US116 — persistência](../docs/us116-persistencia-usuario.md)).
+### 3.1. SQL no Supabase (RLS + função `register_usuario`)
+
+Rode uma vez no **SQL Editor** do Supabase o script
+[../docs/sql/rls_rpc_register_usuario.sql](../docs/sql/rls_rpc_register_usuario.sql).
+Detalhes em [US116 — persistência](../docs/us116-persistencia-usuario.md).
+
+**Produção (recomendado):** após o BFF validado, rode também
+[../docs/sql/revoke_anon_execute_register_usuario.sql](../docs/sql/revoke_anon_execute_register_usuario.sql)
+para impedir que qualquer cliente com anon key chame a RPC diretamente.
 
 ### 4. Rodar o projeto 🔥
+
+Em um terminal, suba o BFF (`ts1/ts1-back`). Em outro:
 
 ```bash
 npm run dev
@@ -77,6 +84,7 @@ src/
 
 ## 📝 Documentações
 
+- [BFF cadastro (ts1-back)](../ts1-back/README.md)
 - [US116 — Persistência de dados de usuário](../docs/us116-persistencia-usuario.md)
 - [MER TS1](../docs/mer/README.md)
 - [Vite](https://vite.dev/)

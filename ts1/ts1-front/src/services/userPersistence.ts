@@ -1,5 +1,3 @@
-import { supabase } from "../lib/supabaseClient";
-
 export type AccessLevel = "admin" | "user" | "manager";
 
 export interface RegisterUserInput {
@@ -18,7 +16,7 @@ export interface Perfil {
     prf_status: string | null;
 }
 
-/** Retorno do cadastro: sem `usr_senha_hash` (a RPC não expõe o hash). */
+/** Retorno do cadastro: sem `usr_senha_hash`. */
 export interface Usuario {
     usr_id: number;
     prf_id: number;
@@ -29,39 +27,30 @@ export interface Usuario {
     perfil?: Perfil | null;
 }
 
-function mapRpcError(message: string): string {
-    const m = message.toLowerCase();
-    if (
-        m.includes("register_usuario") &&
-        (m.includes("not found") || m.includes("does not exist"))
-    ) {
-        return (
-            "Função register_usuario não encontrada no banco. Aplique o script " +
-            "ts1/docs/sql/rls_rpc_register_usuario.sql no SQL Editor do Supabase."
+function apiBaseUrl(): string {
+    const base = import.meta.env.VITE_API_BASE_URL as string | undefined;
+    if (!base?.trim()) {
+        throw new Error(
+            "Defina VITE_API_BASE_URL no .env.local (URL do BFF ts1-back, ex.: http://127.0.0.1:8000)."
         );
     }
-    if (m.includes("duplicate_email") || m.includes("duplicate_key")) {
-        return "Já existe um usuário com esse e-mail ou documento.";
-    }
-    if (m.includes("duplicate_document")) {
-        return "Já existe um usuário com esse documento.";
-    }
-    if (m.includes("e-mail inválido") || m.includes("email inválido")) {
-        return "E-mail inválido.";
-    }
-    if (m.includes("senha deve ter")) {
-        return "A senha deve ter pelo menos 6 caracteres.";
-    }
-    if (m.includes("nível de acesso inválido")) {
-        return "Nível de acesso inválido.";
-    }
-    if (m.includes("não encontrado")) {
-        return message;
-    }
-    return message || "Falha ao cadastrar usuário.";
+    return base.replace(/\/$/, "");
 }
 
-function parseRpcPayload(data: unknown): Usuario {
+function mapHttpError(status: number, detail: string): string {
+    if (status === 409) {
+        return detail || "Já existe um usuário com esse e-mail ou documento.";
+    }
+    if (status === 422) {
+        return detail || "Dados inválidos.";
+    }
+    if (status === 429) {
+        return "Muitas tentativas. Aguarde um instante e tente novamente.";
+    }
+    return detail || "Falha ao cadastrar usuário.";
+}
+
+function parseRegisterPayload(data: unknown): Usuario {
     if (!data || typeof data !== "object") {
         throw new Error("Resposta inválida do servidor.");
     }
@@ -98,21 +87,46 @@ function parseRpcPayload(data: unknown): Usuario {
 }
 
 /**
- * Cadastro público via RPC `register_usuario` (SECURITY DEFINER no Postgres).
- * Exige que o script `ts1/docs/sql/rls_rpc_register_usuario.sql` tenha sido aplicado no Supabase.
+ * Cadastro via BFF (`ts1/ts1-back`): POST /api/v1/register.
+ * A service role fica só no servidor; o browser não chama mais a RPC no Supabase.
  */
 export async function registerUser(input: RegisterUserInput): Promise<Usuario> {
-    const { data, error } = await supabase.rpc("register_usuario", {
-        p_nome: input.name,
-        p_email: input.email,
-        p_documento: input.document,
-        p_senha: input.password,
-        p_access_level: input.accessLevel,
+    const url = `${apiBaseUrl()}/api/v1/register`;
+    const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: input.name,
+            email: input.email,
+            password: input.password,
+            document: input.document,
+            accessLevel: input.accessLevel,
+        }),
     });
 
-    if (error) {
-        throw new Error(mapRpcError(error.message));
+    const text = await res.text();
+    let body: unknown;
+    try {
+        body = text ? JSON.parse(text) : null;
+    } catch {
+        throw new Error(text || `Erro HTTP ${res.status}`);
     }
 
-    return parseRpcPayload(data);
+    if (!res.ok) {
+        const detail =
+            body &&
+            typeof body === "object" &&
+            "detail" in body &&
+            typeof (body as { detail: unknown }).detail === "string"
+                ? (body as { detail: string }).detail
+                : typeof body === "object" &&
+                    body &&
+                    "message" in body &&
+                    typeof (body as { message: unknown }).message === "string"
+                  ? (body as { message: string }).message
+                  : res.statusText;
+        throw new Error(mapHttpError(res.status, detail));
+    }
+
+    return parseRegisterPayload(body);
 }
