@@ -1,6 +1,9 @@
 -- US116 endurecimento: RLS em perfil/usuario + cadastro apenas via RPC.
--- Aplicar no Supabase: SQL Editor (Run) ou supabase db push quando a CLI estiver linkada.
--- O MCP user-supabase-projeto pode estar em read-only; neste caso rode este arquivo manualmente.
+--
+-- STATUS (TS#01): este script JÁ FOI APLICADO no projeto Supabase do time (SQL Editor).
+-- O ficheiro mantém-se no Git como histórico e para novos ambientes; não precisa de ser
+-- reexecutado no dia a dia. Para aplicar noutro projeto: SQL Editor (Run) ou supabase db push.
+--
 -- public.perfil.prf_nome deve alinhar com accessLevel do front: admin, user, manager (comparação em lower()).
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;

@@ -1,5 +1,8 @@
 -- Revoga execução pública da RPC register_usuario (cadastro só via BFF com service_role).
 --
+-- STATUS (TS#01): este script JÁ FOI APLICADO no projeto Supabase do time após validar o BFF.
+-- Mantém-se no Git como histórico e para novos ambientes.
+--
 -- ORDEM RECOMENDADA EM PRODUÇÃO:
 --   1) Subir o BFF (ts1/ts1-back) com SUPABASE_SERVICE_ROLE_KEY e testar POST /api/v1/register.
 --   2) Atualizar o front com VITE_API_BASE_URL apontando para o BFF.

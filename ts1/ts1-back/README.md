@@ -73,10 +73,14 @@ Erros comuns:
 
 ## Ordem com o Supabase
 
+No **projeto Supabase TS#01** os dois scripts **já foram aplicados** (ver
+[US116 — secção *Estado do Supabase*](../docs/us116-persistencia-usuario.md)).
+Para **outro** projeto ou base vazia, siga:
+
 1. Aplicar [../docs/sql/rls_rpc_register_usuario.sql](../docs/sql/rls_rpc_register_usuario.sql) (RLS + função + grants iniciais).
 2. Subir este BFF e testar `POST /api/v1/register` (ex.: via Swagger).
 3. Configurar `VITE_API_BASE_URL` no `ts1-front/.env.local` apontando para `http://127.0.0.1:8000`.
-4. Opcional, **recomendado em produção:** aplicar
+4. Após validar o BFF, aplicar
    [../docs/sql/revoke_anon_execute_register_usuario.sql](../docs/sql/revoke_anon_execute_register_usuario.sql)
    para que o papel `anon` **não** possa mais chamar a RPC diretamente (só o BFF com service role).
 

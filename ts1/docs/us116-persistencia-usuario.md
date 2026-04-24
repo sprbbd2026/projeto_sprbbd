@@ -6,6 +6,14 @@ que o cadastro pela tela `/register` passe a gravar e ler usuários reais no ban
 
 ---
 
+## Estado do Supabase (projeto TS#01)
+
+**Os scripts em [`ts1/docs/sql/`](sql/) já foram aplicados** no projeto Supabase usado pelo time (SQL Editor do painel): `rls_rpc_register_usuario.sql` e, após validação do BFF, `revoke_anon_execute_register_usuario.sql`.
+
+Os ficheiros `.sql` **permanecem no repositório** como **referência versionada** e para **novos ambientes** (outro projeto Supabase, fork, recuperação). No desenvolvimento normal do front/BFF **não é necessário executá-los de novo** — só se alguém criar uma base vazia nova.
+
+---
+
 ## Resumo
 
 O cadastro (`ts1/ts1-front`) envia os dados ao **BFF** [`ts1/ts1-back`](../ts1-back/README.md)
@@ -17,10 +25,8 @@ função aplica **bcrypt**, grava em `public.usuario` e devolve JSON com `perfil
 **RLS:** `anon` não grava nem lê `usuario` pela API de tabela; só leitura controlada de
 `perfil` ativo.
 
-**SQL no Supabase:** [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql).
-**Produção (recomendado):** depois do BFF validado,
-[`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql)
-remove `EXECUTE` da RPC para `anon`/`authenticated` (só o BFF com service role invoca).
+**SQL (referência + novos ambientes):** [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) e
+[`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql) — **já executados no projeto atual** do time; ver secção *Estado do Supabase* acima.
 
 ---
 
@@ -148,8 +154,7 @@ sequenceDiagram
 
 ## Como rodar localmente
 
-1. Aplicar [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no SQL
-   Editor do Supabase (se ainda não aplicou).
+1. **Supabase:** no projeto TS#01 os scripts SQL **já estão aplicados** (ver *Estado do Supabase*). Só precisa de executar [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) / [`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql) se estiver a apontar para **outro** projeto Supabase vazio.
 2. `cd ts1/ts1-back` — copiar `.env.example` para `.env`, preencher `SUPABASE_URL` e
    `SUPABASE_SERVICE_ROLE_KEY`; `uv sync` e
    `uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` (use `0.0.0.0` em
@@ -178,10 +183,10 @@ Ajuste os valores de `prf_nome` ou rode o `INSERT` da seção **Seed mínimo em 
 - **Network:** o cadastro deve mostrar `POST …/api/v1/register` (BFF), não
   `/rest/v1/rpc/register_usuario` a partir do browser (exceto tráfego interno do BFF).
 - **RLS:** `insert` direto em `usuario` com **anon key** continua bloqueado.
-- **Opcional (recomendado):** após validar o BFF, aplicar
-  [`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql);
-  então a RPC **não** pode mais ser chamada com anon key pelo browser — só pelo BFF
-  (service role).
+- **Revoke da RPC:** no projeto Supabase TS#01 **já foi aplicado** após validar o BFF; o
+  `anon` **não** deve conseguir chamar a RPC diretamente (só o BFF com service role). O
+  script [`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql)
+  permanece no repo para novos ambientes.
 
 ### Confirmar que a RPC não aceita mais a chave `anon` (após o revoke)
 

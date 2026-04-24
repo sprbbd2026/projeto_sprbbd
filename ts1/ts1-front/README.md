@@ -42,15 +42,12 @@ futuras telas que usem `src/lib/supabaseClient.ts` (ex.: login real).
 
 O arquivo `.env.local` é ignorado pelo git (`*.local`).
 
-### 3.1. SQL no Supabase (RLS + função `register_usuario`)
+### 3.1. SQL no Supabase (referência)
 
-Rode uma vez no **SQL Editor** do Supabase o script
-[../docs/sql/rls_rpc_register_usuario.sql](../docs/sql/rls_rpc_register_usuario.sql).
-Detalhes em [US116 — persistência](../docs/us116-persistencia-usuario.md).
-
-**Produção (recomendado):** após o BFF validado, rode também
-[../docs/sql/revoke_anon_execute_register_usuario.sql](../docs/sql/revoke_anon_execute_register_usuario.sql)
-para impedir que qualquer cliente com anon key chame a RPC diretamente.
+No **projeto Supabase TS#01** os scripts **já foram aplicados** (RLS, RPC `register_usuario`
+e revoke ao `anon`). Os ficheiros em [../docs/sql/](../docs/sql/) são a cópia versionada
+no Git — **não precisas de os voltar a correr** para desenvolver o front; só para um
+projeto novo ou base vazia. Detalhes em [US116 — persistência](../docs/us116-persistencia-usuario.md).
 
 ### 4. Rodar o projeto 🔥
 
