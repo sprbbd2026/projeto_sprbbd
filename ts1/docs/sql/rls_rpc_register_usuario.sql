@@ -1,6 +1,7 @@
 -- US116 endurecimento: RLS em perfil/usuario + cadastro apenas via RPC.
 -- Aplicar no Supabase: SQL Editor (Run) ou supabase db push quando a CLI estiver linkada.
 -- O MCP user-supabase-projeto pode estar em read-only; neste caso rode este arquivo manualmente.
+-- public.perfil.prf_nome deve alinhar com accessLevel do front: admin, user, manager (comparação em lower()).
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
 
@@ -20,7 +21,8 @@ DECLARE
   v_nome text := trim(p_nome);
   v_email text := lower(trim(p_email));
   v_doc text := trim(p_documento);
-  v_prf_nome text;
+  -- Mesmos literais que o front (RegisterUserInput.accessLevel) e o seed em public.perfil.
+  v_level text := lower(trim(p_access_level));
   v_prf_id int;
   v_hash text;
   v_usr_id int;
@@ -39,20 +41,16 @@ BEGIN
     RAISE EXCEPTION 'Senha deve ter pelo menos 6 caracteres';
   END IF;
 
-  v_prf_nome := CASE lower(trim(p_access_level))
-    WHEN 'admin' THEN 'Admin'
-    WHEN 'user' THEN 'Usuário'
-    WHEN 'manager' THEN 'Gerente'
-    ELSE NULL
-  END;
-
-  IF v_prf_nome IS NULL THEN
+  IF v_level NOT IN ('admin', 'user', 'manager') THEN
     RAISE EXCEPTION 'Nível de acesso inválido';
   END IF;
 
-  SELECT prf_id INTO v_prf_id FROM public.perfil WHERE prf_nome = v_prf_nome LIMIT 1;
+  SELECT prf_id INTO v_prf_id
+  FROM public.perfil
+  WHERE lower(trim(prf_nome)) = v_level
+  LIMIT 1;
   IF v_prf_id IS NULL THEN
-    RAISE EXCEPTION 'Perfil % não encontrado', v_prf_nome;
+    RAISE EXCEPTION 'Perfil % não encontrado', v_level;
   END IF;
 
   IF EXISTS (SELECT 1 FROM public.usuario WHERE lower(usr_email) = v_email) THEN

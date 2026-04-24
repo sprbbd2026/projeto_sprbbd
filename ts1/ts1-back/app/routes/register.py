@@ -23,11 +23,11 @@ def _map_supabase_error(message: str) -> tuple[int, str]:
         return 422, "A senha deve ter pelo menos 6 caracteres."
     if "nível de acesso inválido" in m:
         return 422, "Nível de acesso inválido."
-    # RPC register_usuario: SELECT perfil WHERE prf_nome = 'Admin'|'Usuário'|'Gerente'
+    # RPC: lower(prf_nome) = admin|user|manager (igual ao accessLevel do front)
     if "perfil" in m and "não encontrado" in m:
         return (
             502,
-            "No banco não existe a linha em public.perfil para este nível (Admin, Usuário ou Gerente). "
+            "No banco não existe public.perfil com prf_nome alinhado ao accessLevel (admin, user, manager). "
             "Rode o seed da US116 (INSERT em public.perfil) no SQL Editor do Supabase.",
         )
     if "não encontrado" in m or "not found" in m:

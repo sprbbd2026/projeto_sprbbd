@@ -89,15 +89,15 @@ oficial do PostgreSQL 10+.
 
 ### 2. Seed mínimo em `public.perfil`
 
-A tabela estava vazia. Os 3 perfis usados pelo dropdown do formulário foram inseridos com
-os exatos rótulos apresentados na UI:
+A tabela estava vazia. Os três perfis **devem usar o mesmo `prf_nome` que o front envia em
+`accessLevel`**: `admin`, `user`, `manager` (rótulos em português na UI são só do `<select>`).
 
 ```sql
 insert into public.perfil (prf_nome, prf_nivel_acesso, prf_descricao, prf_status)
 values
-  ('Admin',   'ALTO',  'Administrador do sistema',              'ATIVO'),
-  ('Usuário', 'BAIXO', 'Usuário operacional',                   'ATIVO'),
-  ('Gerente', 'MEDIO', 'Gerente com permissões intermediárias', 'ATIVO');
+  ('admin',  'ALTO',  'Administrador do sistema',              'ATIVO'),
+  ('user',   'BAIXO', 'Usuário operacional',                   'ATIVO'),
+  ('manager','MEDIO', 'Gerente com permissões intermediárias', 'ATIVO');
 ```
 
 ### 3. Endurecimento: RLS + RPC `register_usuario` (substitui RLS desligada no MVP)
@@ -157,17 +157,16 @@ sequenceDiagram
 
 ### Cadastro com 502 e mensagem sobre perfil
 
-A RPC `register_usuario` exige linhas em `public.perfil` com **`prf_nome` exatamente**
-`Admin`, `Usuário` e `Gerente` (ver seção *Seed mínimo* acima). O nível **Gerente** no
-formulário envia `accessLevel: "manager"` e a função busca `prf_nome = 'Gerente'`. Se a
-tabela estiver vazia, com nomes diferentes ou com `prf_status` diferente de `ATIVO` na
-policy de leitura, o cadastro falha. Confira no SQL Editor:
+A RPC `register_usuario` resolve o perfil com **`lower(trim(prf_nome)) = accessLevel`**
+(`admin`, `user`, `manager`). Se a tabela estiver vazia ou ainda tiver nomes antigos em
+português (`Admin`, `Gerente`, …) sem correspondência após `lower`, o cadastro falha.
+Confira no SQL Editor:
 
 ```sql
 select prf_id, prf_nome, prf_status from public.perfil order by prf_id;
 ```
 
-Se faltar algum dos três nomes, rode o `INSERT` da seção **Seed mínimo em `public.perfil`**.
+Ajuste os valores de `prf_nome` ou rode o `INSERT` da seção **Seed mínimo em `public.perfil`**.
 
 ### Verificação rápida
 
