@@ -27,7 +27,15 @@ app.add_middleware(
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     first_error = exc.errors()[0]
-    message = first_error.get("msg", "Dados inválidos.").replace("Value error, ", "")
+    field = first_error.get("loc", [""])[-1]
+    msg = first_error.get("msg", "Dados inválidos.")
+
+    # Traduz mensagens técnicas do Pydantic/email-validator
+    if "email" in msg.lower() or "email" in str(field).lower():
+        message = "E-mail inválido ou excede o tamanho máximo permitido."
+    else:
+        message = msg.replace("Value error, ", "")
+
     return JSONResponse(status_code=400, content={"detail": message})
 
 app.include_router(health_router)
