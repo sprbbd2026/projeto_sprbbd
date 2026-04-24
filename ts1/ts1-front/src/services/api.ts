@@ -23,7 +23,7 @@ export async function api(path: string, options: ApiOptions = {}) {
 
         try {
             const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
+            errorMessage = errorData.detail || errorData.message || errorMessage;
         } catch { }
 
         throw new Error(errorMessage);
