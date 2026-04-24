@@ -1,3 +1,4 @@
+import logging
 import os
 
 from fastapi import FastAPI
@@ -9,7 +10,12 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.limiter import limiter
 from app.routes.register import router as register_router
 
-# CORS no import: não exige .env (útil para CI / import de testes). Rotas usam Settings ao serem chamadas.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+
+# CORS só lê os.getenv aqui: não exige `.env` completo no import (útil para CI e GET /health).
 _cors_raw = os.getenv(
     "CORS_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
