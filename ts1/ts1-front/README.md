@@ -21,7 +21,20 @@ npm install
 
 Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
 
-### 3. Rodar o projeto 🔥
+### 3. Configurar variáveis do Supabase
+
+Copiar `.env.example` para `.env.local` e preencher com os valores do painel do Supabase
+(Project Settings → API):
+
+```env
+VITE_SUPABASE_URL=https://judpxlrpzdnxejtgmlcn.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon key do projeto>
+```
+
+O arquivo `.env.local` é ignorado pelo git (`*.local`) e é lido pelo cliente em
+`src/lib/supabaseClient.ts`.
+
+### 4. Rodar o projeto 🔥
 
 ```bash
 npm run dev
@@ -57,6 +70,8 @@ src/
 
 ## 📝 Documentações
 
+- [US116 — Persistência de dados de usuário](../docs/us116-persistencia-usuario.md)
+- [MER TS1](../docs/mer/README.md)
 - [Vite](https://vite.dev/)
 - [React](https://react.dev/)
 - [React Router](https://reactrouter.com/)
