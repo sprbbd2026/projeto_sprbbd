@@ -9,7 +9,7 @@
 
 import { api } from "./api";
 
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 // Endpoint do back-end (ajustar quando a US117 for publicada)
 const PathLogin = "/auth/login";

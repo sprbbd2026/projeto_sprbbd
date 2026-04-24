@@ -38,9 +38,18 @@ POSTGRES_PORT=5432
 POSTGRES_USER=seu_usuario
 POSTGRES_PASSWORD=sua_senha
 POSTGRES_DB=nome_do_banco
+
+JWT_SECRET_KEY=sua_chave_secreta
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_MINUTES=60
 ```
 
 > `POSTGRES_PASSWORD` é também usada pelo Docker Compose para criar o banco local.
+
+> Para gerar uma `JWT_SECRET_KEY` segura:
+> ```bash
+> openssl rand -hex 32
+> ```
 
 ### 4. Rodando as Migrações
 
