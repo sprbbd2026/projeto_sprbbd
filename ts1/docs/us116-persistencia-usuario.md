@@ -28,13 +28,16 @@ remove `EXECUTE` da RPC para `anon`/`authenticated` (só o BFF com service role 
 
 | Caminho | Propósito |
 |---------|-----------|
-| `ts1/ts1-back/` | BFF FastAPI: cadastro com service role, CORS, rate limit |
+| `ts1/ts1-back/` | BFF FastAPI: cadastro com service role, CORS, rate limit, logging |
 | `ts1/ts1-front/.env.example` | `VITE_API_BASE_URL` + Supabase (uso futuro) |
 | `ts1/ts1-front/.env.local` | Segredos locais — **não commitado** |
 | `ts1/ts1-front/package.json` / `package-lock.json` | Inclui `@supabase/supabase-js` (reservado p.ex. login) |
 | `ts1/ts1-front/src/lib/supabaseClient.ts` | Cliente anon (cadastro não usa) |
 | `ts1/ts1-front/src/services/userPersistence.ts` | `registerUser` via `fetch` ao BFF |
 | `ts1/ts1-front/src/features/Auth/RegisterForm.tsx` | Feedback de sucesso/erro na UI |
+| `ts1/ts1-back/app/main.py` | Logging estruturado com `logging.basicConfig` |
+| `ts1/ts1-back/app/routes/register.py` | Logging de info/warning/error em cada etapa do registro |
+| `ts1/ts1-back/.env.example` | Documentação melhorada, sem URL real exposta |
 | `ts1/docs/sql/revoke_anon_execute_register_usuario.sql` | Revoga RPC pública ao `anon` |
 
 ### O que cada peça faz
@@ -45,7 +48,7 @@ erro imediato e claro se as envs não estiverem preenchidas (evita falhas silenc
 
 **`ts1/ts1-back`**  
 `POST /api/v1/register` → cliente Supabase com `SUPABASE_SERVICE_ROLE_KEY` → RPC
-`register_usuario`.
+`register_usuario`. Logging estruturado em cada etapa (solicitação, falha, sucesso).
 
 **`src/services/userPersistence.ts`**  
 `fetch` para `${VITE_API_BASE_URL}/api/v1/register` e parse da resposta JSON.
@@ -151,6 +154,20 @@ sequenceDiagram
    futuro).
 4. `npm run dev` e abrir `http://localhost:5173/register`.
 5. Cadastrar um usuário e conferir em `public.usuario` no Table Editor.
+
+### Cadastro com 502 e mensagem sobre perfil
+
+A RPC `register_usuario` exige linhas em `public.perfil` com **`prf_nome` exatamente**
+`Admin`, `Usuário` e `Gerente` (ver seção *Seed mínimo* acima). O nível **Gerente** no
+formulário envia `accessLevel: "manager"` e a função busca `prf_nome = 'Gerente'`. Se a
+tabela estiver vazia, com nomes diferentes ou com `prf_status` diferente de `ATIVO` na
+policy de leitura, o cadastro falha. Confira no SQL Editor:
+
+```sql
+select prf_id, prf_nome, prf_status from public.perfil order by prf_id;
+```
+
+Se faltar algum dos três nomes, rode o `INSERT` da seção **Seed mínimo em `public.perfil`**.
 
 ### Verificação rápida
 
