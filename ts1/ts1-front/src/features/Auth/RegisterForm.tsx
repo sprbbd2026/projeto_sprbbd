@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 
 export default function RegisterForm() {
@@ -8,13 +9,16 @@ export default function RegisterForm() {
     const [password, setPassword] = useState("");
     const [accessLevel, setAccessLevel] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
+        setError(null);
 
         try {
-            const data = await api("/register", {
+            await api("/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -28,9 +32,9 @@ export default function RegisterForm() {
                 },
             });
 
-            console.log("Registro OK:", data);
-        } catch (err) {
-            console.error("Erro no registro", err);
+            navigate("/dashboard");
+        } catch (err: any) {
+            setError(err.message || "Erro ao cadastrar usuário.");
         } finally {
             setLoading(false);
         }
@@ -109,6 +113,21 @@ export default function RegisterForm() {
                     {loading ? "Enviando..." : "Cadastrar"}
                 </button>
             </form>
+
+            {/* MODAL DE ERRO */}
+            {error && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+                    <div className="bg-[var(--surface)] rounded-xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
+                        <p className="text-lg font-medium text-red-500">❌</p>
+                        <p className="text-[var(--text)]">{error}</p>
+                        <button
+                            onClick={() => setError(null)}
+                            className="px-6 py-2 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
