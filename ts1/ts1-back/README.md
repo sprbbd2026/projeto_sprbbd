@@ -80,6 +80,12 @@ Erros comuns:
    [../docs/sql/revoke_anon_execute_register_usuario.sql](../docs/sql/revoke_anon_execute_register_usuario.sql)
    para que o papel `anon` **não** possa mais chamar a RPC diretamente (só o BFF com service role).
 
+### Depois do revoke: testar com a chave `anon`
+
+Exemplo com `curl` (substitua URL e **anon key**): ver secção homónima em
+[US116 — persistência](../docs/us116-persistencia-usuario.md). O esperado é falha na RPC
+via PostgREST com `anon`, enquanto `POST /api/v1/register` no BFF continua a retornar **201**.
+
 ## Segurança
 
 - A **service_role** bypassa RLS e tem poder total no projeto: trate `.env` como segredo

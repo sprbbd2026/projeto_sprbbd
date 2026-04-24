@@ -29,7 +29,7 @@ remove `EXECUTE` da RPC para `anon`/`authenticated` (só o BFF com service role 
 | Caminho | Propósito |
 |---------|-----------|
 | `ts1/ts1-back/` | BFF FastAPI: cadastro com service role, CORS, rate limit, logging |
-| `ts1/ts1-front/.env.example` | `VITE_API_BASE_URL` + Supabase (uso futuro) |
+| `ts1/ts1-front/.env.example` | `VITE_API_BASE_URL` (obrigatório para cadastro); Supabase opcional no README |
 | `ts1/ts1-front/.env.local` | Segredos locais — **não commitado** |
 | `ts1/ts1-front/package.json` / `package-lock.json` | Inclui `@supabase/supabase-js` (reservado p.ex. login) |
 | `ts1/ts1-front/src/lib/supabaseClient.ts` | Cliente anon (cadastro não usa) |
@@ -60,7 +60,7 @@ Estados de envio e mensagem com `created.perfil` retornado pelo BFF.
 
 ## O que foi feito no Supabase (fora do repositório)
 
-O projeto Supabase (`https://judpxlrpzdnxejtgmlcn.supabase.co`) já tinha o schema do MER
+O projeto Supabase do time já tinha o schema do MER
 criado via painel. Três ajustes pontuais foram necessários para a US funcionar:
 
 ### 1. PKs sem auto-incremento → adicionar `IDENTITY`
@@ -113,7 +113,10 @@ cliente com a `anon key`. A mitigação versionada está em
   diretos via PostgREST; o cadastro passa pela função **`register_usuario`**
   (`SECURITY DEFINER`, `search_path` fixo `public, extensions`), com validação e
   **bcrypt** em `usr_senha_hash`.
-- **`GRANT EXECUTE`** na função para `anon` e `authenticated`.
+- **`GRANT EXECUTE`** na função para `anon` e `authenticated` (estado inicial do script;
+  após validar o BFF em produção, aplicar
+  [`revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql)
+  para retirar esse acesso público à RPC).
 
 > **MCP `user-supabase-projeto`:** se `apply_migration` responder *read-only*, aplique o
 > SQL manualmente no painel do Supabase e versionamos o arquivo no Git mesmo assim.
@@ -148,7 +151,9 @@ sequenceDiagram
 1. Aplicar [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no SQL
    Editor do Supabase (se ainda não aplicou).
 2. `cd ts1/ts1-back` — copiar `.env.example` para `.env`, preencher `SUPABASE_URL` e
-   `SUPABASE_SERVICE_ROLE_KEY`; `uv sync` e `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`.
+   `SUPABASE_SERVICE_ROLE_KEY`; `uv sync` e
+   `uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000` (use `0.0.0.0` em
+   WSL2 com navegador no Windows; ver [README do BFF](../ts1-back/README.md)).
 3. `cd ts1/ts1-front` — `npm install`, copiar `.env.example` para `.env.local`, definir
    `VITE_API_BASE_URL=http://127.0.0.1:8000` (e opcionalmente variáveis Supabase para uso
    futuro).
@@ -173,9 +178,26 @@ Ajuste os valores de `prf_nome` ou rode o `INSERT` da seção **Seed mínimo em 
 - **Network:** o cadastro deve mostrar `POST …/api/v1/register` (BFF), não
   `/rest/v1/rpc/register_usuario` a partir do browser (exceto tráfego interno do BFF).
 - **RLS:** `insert` direto em `usuario` com **anon key** continua bloqueado.
-- **Opcional:** após validar o BFF, aplicar
+- **Opcional (recomendado):** após validar o BFF, aplicar
   [`sql/revoke_anon_execute_register_usuario.sql`](sql/revoke_anon_execute_register_usuario.sql);
-  então a RPC **não** pode mais ser chamada com anon key nem pelo front — só pelo BFF.
+  então a RPC **não** pode mais ser chamada com anon key pelo browser — só pelo BFF
+  (service role).
+
+### Confirmar que a RPC não aceita mais a chave `anon` (após o revoke)
+
+No terminal (substitua URL e chave **anon** do painel **Project Settings → API**):
+
+```bash
+curl -sS -w "\nhttp_code:%{http_code}\n" \
+  -X POST "https://<project-ref>.supabase.co/rest/v1/rpc/register_usuario" \
+  -H "apikey: <SUPABASE_ANON_KEY>" \
+  -H "Authorization: Bearer <SUPABASE_ANON_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{"p_nome":"X","p_email":"x@y.com","p_documento":"1","p_senha":"senha12","p_access_level":"user"}'
+```
+
+Esperado: **não** criar usuário; HTTP **403** ou **404** (ou corpo de erro de permissão do
+PostgREST). O cadastro pela **tela** (`POST` no BFF) deve **continuar** retornando **201**.
 
 ---
 

@@ -13,3 +13,5 @@ REVOKE EXECUTE ON FUNCTION public.register_usuario(text, text, text, text, text)
 
 -- Garante que a service role do projeto continue podendo invocar a função via PostgREST.
 GRANT EXECUTE ON FUNCTION public.register_usuario(text, text, text, text, text) TO service_role;
+
+-- Validação com curl (chave anon): ver US116 — secção «Confirmar que a RPC não aceita mais a chave anon».
