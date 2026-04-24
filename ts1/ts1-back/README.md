@@ -28,11 +28,20 @@ Edite `.env`:
 
 ```bash
 uv sync
-uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-- Documentação interativa: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+Use **`0.0.0.0`** em dev (especialmente **WSL2 + navegador no Windows**): com `--host 127.0.0.1`
+o processo só aceita conexões de dentro do Linux; o Chrome/Edge no Windows costuma falhar com **Failed to fetch**.
+
+- Documentação interativa: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (ou `http://localhost:8000/docs` no Windows)
 - Health check: `GET /health`
+
+### Se o front mostrar **Failed to fetch**
+
+1. Confirme que o BFF está rodando (`curl -s http://127.0.0.1:8000/health` deve retornar `{"status":"ok"}`).
+2. Use `--host 0.0.0.0` como acima.
+3. No `ts1-front/.env.local`, `VITE_API_BASE_URL` deve ser a mesma “família” de host que o navegador usa (`http://localhost:8000` ou `http://127.0.0.1:8000`); depois de mudar, **reinicie** o `npm run dev` (o Vite só lê `.env*` na subida).
 
 ## Contrato da API
 

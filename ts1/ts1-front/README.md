@@ -25,11 +25,17 @@ Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas 
 
 Copiar `.env.example` para `.env.local`.
 
-**Cadastro (obrigatório):** URL do BFF — com o [ts1-back](../ts1-back/README.md) no ar:
+**Cadastro (obrigatório):** URL do BFF — com o [ts1-back](../ts1-back/README.md) **rodando**
+antes do `npm run dev` do front:
 
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
+
+Em **WSL2 + navegador no Windows**, se aparecer **Failed to fetch**, suba o BFF com
+`--host 0.0.0.0` (ver README do `ts1-back`) e, se precisar, use `http://localhost:8000`
+aqui para combinar com o encaminhamento de porta do Windows. Sempre **reinicie o Vite**
+depois de alterar `.env.local`.
 
 **Supabase (opcional neste fluxo):** `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` para
 futuras telas que usem `src/lib/supabaseClient.ts` (ex.: login real).
