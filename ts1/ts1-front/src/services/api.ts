@@ -1,6 +1,6 @@
 // services/api.ts
 
-const BASE_URL = "http://localhost:3000"; // trocar depois pelo backend real
+const BASE_URL = "http://localhost:8000"; // backend FastAPI
 
 type ApiOptions = RequestInit & {
     body?: any;

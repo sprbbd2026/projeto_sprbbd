@@ -19,13 +19,13 @@ export default function RegisterForm() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
+                body: {
                     name,
                     document,
                     email,
                     password,
                     accessLevel,
-                }),
+                },
             });
 
             console.log("Registro OK:", data);
