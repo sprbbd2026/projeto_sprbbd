@@ -6,8 +6,9 @@ class UserBase(BaseModel):
     email: EmailStr
     data_nascimento: str
     documento: str
-    latitude: str
-    longitude: str
+
+    # Dados do Dispositivo
+    metadados: str
 
 
 class UserCreate(UserBase):

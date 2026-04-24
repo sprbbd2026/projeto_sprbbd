@@ -28,7 +28,7 @@ def create_user(db: Session, user: UserCreate):
         db.flush() 
 
         db_dispositivo = Dispositivo(
-            metadados="Metadados",
+            metadados=user.metadados,
             uuid="UUID",
             usuario_id=db_user.id 
         )
