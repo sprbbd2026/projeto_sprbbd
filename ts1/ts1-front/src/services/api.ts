@@ -1,6 +1,6 @@
 // services/api.ts
 
-const BASE_URL = "http://localhost:8000"; // backend FastAPI
+const BASE_URL = import.meta.env.VITE_API_URL as string;
 
 type ApiOptions = RequestInit & {
     body?: any;
