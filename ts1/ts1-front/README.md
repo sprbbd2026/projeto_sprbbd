@@ -21,7 +21,17 @@ npm install
 
 Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
 
-### 3. Rodar o projeto 🔥
+### 3. Configurar variáveis de ambiente
+
+Crie um arquivo `.env` na pasta `ts1-front` com base no `.env.example`:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+> O `.env` não vai para o git. Ajuste a URL caso o backend rode em outro endereço.
+
+### 4. Rodar o projeto 🔥
 
 ```bash
 npm run dev

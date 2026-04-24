@@ -1,9 +1,7 @@
 // features/Auth/LoginForm.tsx
-// Formulário de login da US103.
-// Campos validados no front-end, submissão chama services/auth.login().
-
 import { useState } from "react";
 import type { FormEvent, ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { login } from "../../services/auth";
 
 interface FieldErrors {
@@ -11,14 +9,13 @@ interface FieldErrors {
     password?: string;
 }
 
-type SubmitStatus = "idle" | "loading" | "success" | "error";
-
 export default function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState<FieldErrors>({});
-    const [status, setStatus] = useState<SubmitStatus>("idle");
-    const [feedback, setFeedback] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     function validate(): boolean {
         const next: FieldErrors = {};
@@ -41,54 +38,23 @@ export default function LoginForm() {
 
     async function handleSubmit(e: FormEvent<HTMLFormElement>) {
         e.preventDefault();
-        setStatus("idle");
-        setFeedback("");
+        setError(null);
 
         if (!validate()) return;
 
-        setStatus("loading");
+        setLoading(true);
         try {
-            const response = await login({ email, password });
-            setStatus("success");
-            setFeedback(`Login realizado com sucesso! Bem-vindo(a), ${response.user.nome}.`);
+            await login({ email, password });
+            navigate("/dashboard");
         } catch (err) {
-            setStatus("error");
-            setFeedback(err instanceof Error ? err.message : "Ocorreu um erro inesperado.");
+            setError(err instanceof Error ? err.message : "Ocorreu um erro inesperado.");
+        } finally {
+            setLoading(false);
         }
     }
 
-    const isLoading = status === "loading";
-
     return (
         <form onSubmit={handleSubmit} noValidate className="w-full flex flex-col gap-5">
-            {status === "success" && (
-                <div
-                    role="status"
-                    className="px-4 py-3 rounded-lg text-sm font-medium border"
-                    style={{
-                        background: "rgba(125, 170, 203, 0.12)",
-                        borderColor: "var(--accent)",
-                        color: "var(--text)",
-                    }}
-                >
-                    {feedback}
-                </div>
-            )}
-
-            {status === "error" && (
-                <div
-                    role="alert"
-                    className="px-4 py-3 rounded-lg text-sm font-medium border"
-                    style={{
-                        background: "rgba(220, 38, 38, 0.10)",
-                        borderColor: "#dc2626",
-                        color: "#f87171",
-                    }}
-                >
-                    {feedback}
-                </div>
-            )}
-
             <Field
                 id="email"
                 label="E-mail"
@@ -98,7 +64,7 @@ export default function LoginForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={errors.email}
-                disabled={isLoading}
+                disabled={loading}
             />
 
             <Field
@@ -110,26 +76,37 @@ export default function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 error={errors.password}
-                disabled={isLoading}
+                disabled={loading}
             />
 
             <button
                 type="submit"
-                disabled={isLoading}
+                disabled={loading}
                 className="mt-2 py-3 rounded-lg font-semibold text-base transition disabled:opacity-60 disabled:cursor-not-allowed"
-                style={{
-                    background: "var(--accent)",
-                    color: "var(--bg)",
-                }}
+                style={{ background: "var(--accent)", color: "var(--bg)" }}
             >
-                {isLoading ? "Entrando..." : "Entrar"}
+                {loading ? "Entrando..." : "Entrar"}
             </button>
+
+            {/* MODAL DE ERRO */}
+            {error && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+                    <div className="bg-[var(--surface)] rounded-xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
+                        <p className="text-lg font-medium text-red-500">❌</p>
+                        <p className="text-[var(--text)]">{error}</p>
+                        <button
+                            type="button"
+                            onClick={() => setError(null)}
+                            className="px-6 py-2 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </form>
     );
 }
 
-// ------------------------------------------------------------
-// Campo de formulário reutilizável (rótulo + input + erro)
 // ------------------------------------------------------------
 interface FieldProps {
     id: string;

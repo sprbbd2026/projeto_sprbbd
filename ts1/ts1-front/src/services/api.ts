@@ -1,6 +1,6 @@
 // services/api.ts
 
-const BASE_URL = "http://localhost:3000"; // trocar depois pelo backend real
+const BASE_URL = import.meta.env.VITE_API_URL as string;
 
 type ApiOptions = RequestInit & {
     body?: any;
@@ -23,7 +23,7 @@ export async function api(path: string, options: ApiOptions = {}) {
 
         try {
             const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
+            errorMessage = errorData.detail || errorData.message || errorMessage;
         } catch { }
 
         throw new Error(errorMessage);
