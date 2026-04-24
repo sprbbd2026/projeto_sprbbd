@@ -10,17 +10,23 @@ que o cadastro pela tela `/register` passe a gravar e ler usuários reais no ban
 
 O formulário de cadastro do portal (em `ts1/ts1-front/src/features/Auth/RegisterForm.tsx`)
 antes enviava os dados para um endpoint fictício `http://localhost:3000/register`.
-Agora, o mesmo formulário:
+Na versão atual, o mesmo formulário:
 
-1. Resolve o `prf_id` consultando a tabela `public.perfil`.
-2. Calcula o hash da senha no browser (SHA-256).
-3. Faz `insert` em `public.usuario`.
-4. Faz um `select` imediato por `usr_email` para comprovar a leitura do dado recém gravado.
-5. Mostra feedback de sucesso ou erro na própria tela.
+1. Chama a RPC **`register_usuario`** no Postgres (função `SECURITY DEFINER`), que valida
+   entrada, resolve o perfil, aplica **bcrypt** (`pgcrypto`) na senha e insere em
+   `public.usuario`.
+2. A RPC devolve **JSON** com os dados públicos do usuário criado e o objeto `perfil`
+   aninhado (sem expor `usr_senha_hash`).
+3. A UI mostra feedback de sucesso ou erro na própria tela.
 
-Nenhum backend intermediário foi criado — a escrita e a leitura vão direto no Supabase
-usando a `anon key`, o que atende os critérios de aceite da US116 sem abrir o escopo de
-US futuras (autenticação/Supabase Auth, RLS, migrations versionadas).
+**Segurança:** com **RLS ligada** em `perfil` e `usuario`, o papel `anon` não faz mais
+`insert`/`select` diretos em `usuario`; apenas `select` em `perfil` ativo e `execute` na
+RPC. A `anon key` continua pública no bundle — o endurecimento vem de **RLS + função
+controlada**, não de esconder a chave.
+
+**Aplicar SQL no Supabase:** rode o script versionado em
+[`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no SQL Editor (ou
+via `apply_migration` no MCP quando não estiver em modo somente leitura).
 
 ---
 
@@ -42,25 +48,14 @@ Cria uma única instância do cliente Supabase reaproveitada por toda a aplicaç
 erro imediato e claro se as envs não estiverem preenchidas (evita falhas silenciosas).
 
 **`src/services/userPersistence.ts`**  
-Centraliza a regra da US116. O mapeamento `PERFIL_NOME_POR_ACCESS_LEVEL` traduz o `value`
-do `<select>` do formulário (`admin` / `user` / `manager`) para o `prf_nome` exato que
-existe na tabela (`Admin` / `Usuário` / `Gerente`), assim o acoplamento entre UI e banco
-fica explícito em um só lugar.
-
-- `hashPassword` — usa `crypto.subtle.digest('SHA-256', ...)`, API nativa do navegador.
-  Casa com a coluna `usr_senha_hash` do MER e evita armazenar senha em texto puro.
-- `resolvePerfilId` — faz `select prf_id from perfil where prf_nome = ?`; se o perfil
-  não existir no banco, lança um erro amigável.
-- `registerUser` — monta o `insert` em `usuario` com `usr_nome`, `usr_email`, `usr_login`
-  (recebe o `document`), `usr_senha_hash`, `prf_id` e `usr_status = 'ATIVO'`.
-  Trata `23505` (unique_violation) com mensagem legível.
-- `getUsuarioByEmail` — `select('*, perfil(*)').eq('usr_email', ...)` para provar o
-  critério de leitura da US.
+Chama `supabase.rpc('register_usuario', { ... })` e converte o JSON de retorno em
+`Usuario` (sem hash). Mapeia mensagens de erro da função (`DUPLICATE_EMAIL`, etc.) para
+textos amigáveis na UI.
 
 **`src/features/Auth/RegisterForm.tsx`**  
 Substitui o `console.log` antigo por estados (`idle` / `loading` / `success` / `error`)
-e mostra um parágrafo colorido abaixo do botão. Após o sucesso, chama
-`getUsuarioByEmail` como evidência imediata de que a leitura funciona.
+e mostra um parágrafo colorido abaixo do botão. Após o sucesso, usa `created.perfil`
+retornado pela RPC no feedback (não há mais `select` direto em `usuario` pelo anon).
 
 ---
 
@@ -106,26 +101,23 @@ values
   ('Gerente', 'MEDIO', 'Gerente com permissões intermediárias', 'ATIVO');
 ```
 
-### 3. Desligar RLS em `perfil` e `usuario` (escopo **apenas** desta US)
+### 3. Endurecimento: RLS + RPC `register_usuario` (substitui RLS desligada no MVP)
 
-Tabelas criadas pelo painel do Supabase vêm com **Row Level Security habilitada por
-padrão**. Sem nenhuma policy, a `anon key` (chave pública usada pelo front) **não recebe
-erro**, mas enxerga a tabela vazia — o que produzia o sintoma “Perfil 'Admin' não
-encontrado em public.perfil” mesmo com os dados presentes no banco.
+O MVP inicial desligava RLS em `perfil` e `usuario`, o que expunha as tabelas a qualquer
+cliente com a `anon key`. A mitigação versionada está em
+[`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql):
 
-A US116 pede apenas o fluxo básico de persistência e explicitamente deixa policies para
-uma US futura. Portanto, para desbloquear a entrega, a RLS foi desligada nas duas tabelas
-envolvidas:
+- **RLS ligada** em `perfil` e `usuario`.
+- **Policy** em `perfil`: `SELECT` para `anon` e `authenticated` apenas em linhas com
+  `prf_status = 'ATIVO'`.
+- **Sem policies** em `usuario` para `anon`/`authenticated` ⇒ nega `INSERT`/`SELECT`
+  diretos via PostgREST; o cadastro passa pela função **`register_usuario`**
+  (`SECURITY DEFINER`, `search_path` fixo `public, extensions`), com validação e
+  **bcrypt** em `usr_senha_hash`.
+- **`GRANT EXECUTE`** na função para `anon` e `authenticated`.
 
-```sql
-alter table public.perfil  disable row level security;
-alter table public.usuario disable row level security;
-```
-
-**Implicação de segurança consciente:** com a `anon key` vazando (por estar no bundle do
-front), qualquer pessoa consegue ler e escrever nessas tabelas diretamente no Supabase.
-Aceitável para o MVP da US116, **inaceitável em produção**. Próximo passo obrigatório é
-reativar a RLS e escrever policies (ver seção “Próximos passos”).
+> **MCP `user-supabase-projeto`:** se `apply_migration` responder *read-only*, aplique o
+> SQL manualmente no painel do Supabase e versionamos o arquivo no Git mesmo assim.
 
 ---
 
@@ -136,21 +128,16 @@ sequenceDiagram
   participant UI as RegisterForm
   participant SVC as userPersistence
   participant SB as SupabaseClient
-  participant DB as public_usuario_perfil
+  participant RPC as register_usuario
+  participant DB as Postgres
 
-  UI->>SVC: registerUser(name,document,email,password,accessLevel)
-  SVC->>SB: select prf_id from perfil where prf_nome = mapped
-  SB->>DB: query
-  DB-->>SVC: prf_id
-  SVC->>SVC: hashPassword SHA-256
-  SVC->>SB: insert usuario
-  SB->>DB: grava linha
-  DB-->>SVC: usr_id
-  SVC-->>UI: Usuario
-  UI->>SVC: getUsuarioByEmail
-  SVC->>SB: select usuario join perfil
-  SB->>DB: query
-  DB-->>UI: linha com perfil, feedback verde na tela
+  UI->>SVC: registerUser
+  SVC->>SB: rpc register_usuario
+  SB->>RPC: POST /rpc/register_usuario
+  RPC->>DB: insert usuario bypass RLS
+  RPC->>DB: select join perfil
+  DB-->>RPC: jsonb usuario perfil
+  RPC-->>UI: resposta JSON feedback verde
 ```
 
 ---
@@ -164,9 +151,18 @@ sequenceDiagram
    VITE_SUPABASE_URL=https://judpxlrpzdnxejtgmlcn.supabase.co
    VITE_SUPABASE_ANON_KEY=<anon_key_do_painel_Project_Settings_API>
    ```
-4. `npm run dev` e acessar `http://localhost:5173/register`.
-5. Preencher o formulário, submeter e conferir a linha em `public.usuario` pelo Table
+4. **Aplicar** [`sql/rls_rpc_register_usuario.sql`](sql/rls_rpc_register_usuario.sql) no
+   SQL Editor do Supabase (obrigatório após puxar esta versão do código).
+5. `npm run dev` e acessar `http://localhost:5173/register`.
+6. Preencher o formulário, submeter e conferir a linha em `public.usuario` pelo Table
    Editor do Supabase.
+
+### Verificação rápida (após aplicar o SQL)
+
+- Cadastro pela tela continua funcionando (RPC retorna sucesso).
+- Tentativa de `insert` direto em `usuario` com a **anon key** (REST ou SQL como `anon`)
+  deve **falhar** por RLS.
+- `select` em `perfil` com anon continua permitido apenas para perfis ativos.
 
 ---
 
@@ -174,20 +170,28 @@ sequenceDiagram
 
 | Critério | Onde é atendido |
 |----------|-----------------|
-| Persistência dos dados de usuário implementada na aplicação | `registerUser` em `userPersistence.ts` |
-| Salvamento dos dados realizado com sucesso na base de dados | `insert` em `public.usuario` + verificação no Table Editor |
-| Leitura dos dados de usuário funcionando corretamente | `getUsuarioByEmail` chamado após o insert e refletido na UI |
-| Estrutura de persistência compatível com o modelo de dados definido | Colunas `usr_nome`, `usr_email`, `usr_login`, `usr_senha_hash`, `prf_id`, `usr_status` alinhadas ao dicionário em [docs/mer/README.md](mer/README.md) |
+| Persistência dos dados de usuário implementada na aplicação | `registerUser` → RPC `register_usuario` em `userPersistence.ts` |
+| Salvamento dos dados realizado com sucesso na base de dados | `insert` dentro da função SQL em `public.usuario` + Table Editor |
+| Leitura dos dados de usuário funcionando corretamente | JSON retornado pela RPC (usuário + `perfil`) exibido no feedback da UI |
+| Estrutura de persistência compatível com o modelo de dados definido | Mesmas colunas MER; `usr_senha_hash` com bcrypt server-side |
 | Integração da persistência com a funcionalidade de cadastro validada | `RegisterForm.tsx` consumindo o serviço e exibindo sucesso/erro |
 
 ---
 
-## Próximos passos (fora desta US)
+## Próximos passos
 
-- Reativar RLS em `perfil` e `usuario` e escrever policies mínimas (leitura de `perfil`
-  para o formulário, insert/select em `usuario` restritos ao próprio usuário autenticado).
-- Migrar autenticação para **Supabase Auth** (`signUp` / `signInWithPassword`) e trocar
-  o mock atual em `src/services/auth.ts`.
-- Versionar o schema com pasta `supabase/` + migrations da CLI do Supabase, para que os
-  `ALTER TABLE ... IDENTITY` e os seeds fiquem rastreados no repositório.
-- Rotacionar a senha do Postgres do projeto (circulou em chat durante o desenvolvimento).
+### Fase B — Supabase Auth + RLS por `auth.uid()` (recomendado)
+
+1. Adicionar coluna `usuario.auth_user_id uuid` referenciando `auth.users(id)`.
+2. Fluxo de cadastro: `supabase.auth.signUp` + trigger (ou RPC) que cria linha em
+   `public.usuario` já vinculada.
+3. Policies em `usuario`: `SELECT`/`UPDATE` apenas onde `auth.uid() = auth_user_id`;
+   remover `EXECUTE` público de `register_usuario` se o cadastro deixar de ser aberto.
+4. Atualizar [auth.ts](../ts1-front/src/services/auth.ts) e o login para sessão real.
+
+### Governança e ops
+
+- Versionar migrations com **Supabase CLI** no monorepo (além do SQL em `docs/sql/`).
+- Rotacionar a senha do Postgres do projeto se ainda não foi feito.
+- Revisar **RLS nas demais tabelas** do MER (`comando`, `mensagem`, etc.) para o mesmo
+  padrão (default deny + policies explícitas).

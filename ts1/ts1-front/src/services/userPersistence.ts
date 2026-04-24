@@ -18,97 +18,101 @@ export interface Perfil {
     prf_status: string | null;
 }
 
+/** Retorno do cadastro: sem `usr_senha_hash` (a RPC não expõe o hash). */
 export interface Usuario {
     usr_id: number;
     prf_id: number;
     usr_nome: string;
     usr_email: string;
     usr_login: string;
-    usr_senha_hash: string;
     usr_status: string;
     perfil?: Perfil | null;
 }
 
-// Mapeia o valor do <select> do formulário para o prf_nome usado em public.perfil.
-// Ajustar aqui se os perfis do banco usarem outros rótulos (ex.: OPERADOR, ADMIN).
-const PERFIL_NOME_POR_ACCESS_LEVEL: Record<AccessLevel, string> = {
-    admin: "Admin",
-    user: "Usuário",
-    manager: "Gerente",
-};
-
-async function hashPassword(plain: string): Promise<string> {
-    const bytes = new TextEncoder().encode(plain);
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    return Array.from(new Uint8Array(digest))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
-}
-
-async function resolvePerfilId(accessLevel: AccessLevel): Promise<number> {
-    const prfNome = PERFIL_NOME_POR_ACCESS_LEVEL[accessLevel];
-
-    const { data, error } = await supabase
-        .from("perfil")
-        .select("prf_id")
-        .eq("prf_nome", prfNome)
-        .maybeSingle();
-
-    if (error) {
-        throw new Error(`Falha ao consultar perfil: ${error.message}`);
-    }
-
-    if (!data) {
-        throw new Error(
-            `Perfil "${prfNome}" não encontrado em public.perfil. ` +
-            "Confirme os valores de prf_nome no banco ou ajuste o mapeamento em userPersistence.ts."
+function mapRpcError(message: string): string {
+    const m = message.toLowerCase();
+    if (
+        m.includes("register_usuario") &&
+        (m.includes("not found") || m.includes("does not exist"))
+    ) {
+        return (
+            "Função register_usuario não encontrada no banco. Aplique o script " +
+            "ts1/docs/sql/rls_rpc_register_usuario.sql no SQL Editor do Supabase."
         );
     }
-
-    return data.prf_id;
+    if (m.includes("duplicate_email") || m.includes("duplicate_key")) {
+        return "Já existe um usuário com esse e-mail ou documento.";
+    }
+    if (m.includes("duplicate_document")) {
+        return "Já existe um usuário com esse documento.";
+    }
+    if (m.includes("e-mail inválido") || m.includes("email inválido")) {
+        return "E-mail inválido.";
+    }
+    if (m.includes("senha deve ter")) {
+        return "A senha deve ter pelo menos 6 caracteres.";
+    }
+    if (m.includes("nível de acesso inválido")) {
+        return "Nível de acesso inválido.";
+    }
+    if (m.includes("não encontrado")) {
+        return message;
+    }
+    return message || "Falha ao cadastrar usuário.";
 }
 
-export async function registerUser(input: RegisterUserInput): Promise<Usuario> {
-    const prf_id = await resolvePerfilId(input.accessLevel);
-    const usr_senha_hash = await hashPassword(input.password);
-
-    const { data, error } = await supabase
-        .from("usuario")
-        .insert({
-            prf_id,
-            usr_nome: input.name,
-            usr_email: input.email,
-            usr_login: input.document,
-            usr_senha_hash,
-            usr_status: "ATIVO",
-        })
-        .select("*")
-        .single();
-
-    if (error) {
-        if (error.code === "23505") {
-            throw new Error(
-                "Já existe um usuário com esse e-mail ou documento."
-            );
+function parseRpcPayload(data: unknown): Usuario {
+    if (!data || typeof data !== "object") {
+        throw new Error("Resposta inválida do servidor.");
+    }
+    const row = data as Record<string, unknown>;
+    const perfilRaw = row.perfil as Record<string, unknown> | null | undefined;
+    const perfil: Perfil | null = perfilRaw
+        ? {
+            prf_id: Number(perfilRaw.prf_id),
+            prf_nome: String(perfilRaw.prf_nome),
+            prf_nivel_acesso:
+                perfilRaw.prf_nivel_acesso == null
+                    ? null
+                    : String(perfilRaw.prf_nivel_acesso),
+            prf_descricao:
+                perfilRaw.prf_descricao == null
+                    ? null
+                    : String(perfilRaw.prf_descricao),
+            prf_status:
+                perfilRaw.prf_status == null
+                    ? null
+                    : String(perfilRaw.prf_status),
         }
-        throw new Error(`Falha ao cadastrar usuário: ${error.message}`);
-    }
+        : null;
 
-    return data as Usuario;
+    return {
+        usr_id: Number(row.usr_id),
+        prf_id: Number(row.prf_id),
+        usr_nome: String(row.usr_nome),
+        usr_email: String(row.usr_email),
+        usr_login: String(row.usr_login),
+        usr_status: String(row.usr_status),
+        perfil,
+    };
 }
 
-export async function getUsuarioByEmail(
-    email: string
-): Promise<Usuario | null> {
-    const { data, error } = await supabase
-        .from("usuario")
-        .select("*, perfil(*)")
-        .eq("usr_email", email)
-        .maybeSingle();
+/**
+ * Cadastro público via RPC `register_usuario` (SECURITY DEFINER no Postgres).
+ * Exige que o script `ts1/docs/sql/rls_rpc_register_usuario.sql` tenha sido aplicado no Supabase.
+ */
+export async function registerUser(input: RegisterUserInput): Promise<Usuario> {
+    const { data, error } = await supabase.rpc("register_usuario", {
+        p_nome: input.name,
+        p_email: input.email,
+        p_documento: input.document,
+        p_senha: input.password,
+        p_access_level: input.accessLevel,
+    });
 
     if (error) {
-        throw new Error(`Falha ao consultar usuário: ${error.message}`);
+        throw new Error(mapRpcError(error.message));
     }
 
-    return (data as Usuario | null) ?? null;
+    return parseRpcPayload(data);
 }

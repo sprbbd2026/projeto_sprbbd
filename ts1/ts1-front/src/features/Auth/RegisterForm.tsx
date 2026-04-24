@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-    getUsuarioByEmail,
-    registerUser,
-    type AccessLevel,
-} from "../../services/userPersistence";
+import { registerUser, type AccessLevel } from "../../services/userPersistence";
 
 type SubmitStatus = "idle" | "loading" | "success" | "error";
 
@@ -37,13 +33,10 @@ export default function RegisterForm() {
                 accessLevel,
             });
 
-            // Valida leitura (critério da US116) logo após o cadastro.
-            const read = await getUsuarioByEmail(email);
-
             setStatus("success");
             setFeedback(
                 `Usuário ${created.usr_nome} cadastrado com sucesso ` +
-                `(usr_id=${created.usr_id}, perfil=${read?.perfil?.prf_nome ?? "-"}).`
+                `(usr_id=${created.usr_id}, perfil=${created.perfil?.prf_nome ?? "-"}).`
             );
 
             setName("");

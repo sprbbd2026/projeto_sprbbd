@@ -34,6 +34,13 @@ VITE_SUPABASE_ANON_KEY=<anon key do projeto>
 O arquivo `.env.local` é ignorado pelo git (`*.local`) e é lido pelo cliente em
 `src/lib/supabaseClient.ts`.
 
+### 3.1. Aplicar SQL de segurança (RLS + RPC de cadastro)
+
+O cadastro usa a função `register_usuario` e RLS nas tabelas `perfil` e `usuario`. Rode
+uma vez o script em
+[../docs/sql/rls_rpc_register_usuario.sql](../docs/sql/rls_rpc_register_usuario.sql)
+no **SQL Editor** do Supabase (veja também [US116 — persistência](../docs/us116-persistencia-usuario.md)).
+
 ### 4. Rodar o projeto 🔥
 
 ```bash
