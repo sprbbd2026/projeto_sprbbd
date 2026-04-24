@@ -2,8 +2,8 @@
 
 const BASE_URL = "http://localhost:3000"; // trocar depois pelo backend real
 
-type ApiOptions = RequestInit & {
-    body?: any;
+type ApiOptions = Omit<RequestInit, "body"> & {
+    body?: unknown;
 };
 
 export async function api(path: string, options: ApiOptions = {}) {
