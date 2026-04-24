@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ts1-back
+    runtime: python
+    rootDir: ts1/ts1-back
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    paths:
+      - ts1/ts1-back/**
+
+  - type: web
+    name: ts1-front
+    runtime: static
+    rootDir: ts1/ts1-front
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    paths:
+      - ts1/ts1-front/**
+    envVars:
+      - key: VITE_API_URL
+        sync: false
