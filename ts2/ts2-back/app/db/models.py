@@ -92,6 +92,20 @@ class Usuario(Base):
 
     dispositivos = relationship("Dispositivo", back_populates="usuario")
     logins = relationship("Login", back_populates="usuario")
+    refresh_token_rows = relationship("RefreshToken", back_populates="usuario")
+
+
+class RefreshToken(Base):
+    __tablename__ = "refresh_tokens"
+
+    id = Column("id_refresh_token", Integer, primary_key=True, index=True)
+    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
+    jti = Column(String(36), unique=True, nullable=False, index=True)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    usuario = relationship("Usuario", back_populates="refresh_token_rows")
 
 
 class Dispositivo(Base):
