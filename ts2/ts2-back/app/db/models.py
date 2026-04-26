@@ -29,35 +29,35 @@ class TipoLocal(str, enum.Enum):
 
 
 class Cidade(Base):
-    __tablename__ = "cidades"
+    __tablename__ = "CIDADE"
 
-    id = Column("id_cidade", Integer, primary_key=True, index=True)
-    nome = Column(String, nullable=False)
-    estado = Column(String, nullable=False)
+    id = Column("cid_id", Integer, primary_key=True, index=True)
+    nome = Column("cid_nome",String, nullable=False)
+    estado = Column("cid_estado",String, nullable=False)
 
     ruas = relationship("Rua", back_populates="cidade")
 
 
 class Rua(Base):
-    __tablename__ = "ruas"
+    __tablename__ = "RUA"
 
-    id = Column("id_rua", Integer, primary_key=True, index=True)
-    id_cidade = Column(Integer, ForeignKey("cidades.id_cidade"), nullable=False, index=True)
-    nome = Column(String, nullable=False)
-    cep = Column(String, nullable=False)
+    id = Column("rua_id", Integer, primary_key=True, index=True)
+    id_cidade = Column("cid_id", Integer, ForeignKey("cidades.id_cidade"), nullable=False, index=True)
+    nome = Column("rua_nome", String, nullable=False)
+    cep = Column("rua_cep", String, nullable=False)
 
     cidade = relationship("Cidade", back_populates="ruas")
     pontos = relationship("Ponto", back_populates="rua")
 
 
 class Ponto(Base):
-    __tablename__ = "pontos"
+    __tablename__ = "PONTO"
 
-    id = Column("id_ponto", Integer, primary_key=True, index=True)
-    id_rua = Column(Integer, ForeignKey("ruas.id_rua"), nullable=False, index=True)
-    altitude = Column(Float, nullable=True)
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
+    id = Column("pon_id", Integer, primary_key=True, index=True)
+    id_rua = Column("rua_id", Integer, ForeignKey("ruas.id_rua"), nullable=True, index=True)
+    altitude = Column("pon_altitude", Float, nullable=True)
+    latitude = Column("pon_latitude", Float, nullable=False)
+    longitude = Column("pon_longitude", Float, nullable=False)
 
     rua = relationship("Rua", back_populates="pontos")
     locais = relationship("Local", back_populates="ponto")
@@ -65,12 +65,13 @@ class Ponto(Base):
 
 
 class Local(Base):
-    __tablename__ = "locais"
+    __tablename__ = "LOCAL"
 
-    id = Column("id_local", Integer, primary_key=True, index=True)
-    id_ponto = Column(Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
-    nome = Column(String, nullable=False)
+    id = Column("loc_id", Integer, primary_key=True, index=True)
+    id_ponto = Column("pon_id", Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
+    nome = Column("loc_nome", String, nullable=False)
     tipo = Column(
+        "loc_tipo", 
         Enum(TipoLocal, name="tipo_local", native_enum=True),
         nullable=False,
     )
@@ -79,16 +80,16 @@ class Local(Base):
 
 
 class Usuario(Base):
-    __tablename__ = "usuarios"
+    __tablename__ = "USUARIO"
 
-    id = Column("id_usuario", Integer, primary_key=True, index=True)
-    uuid = Column("uuid", String(36), nullable=False, unique=True, index=True)
-    nome = Column(String, nullable=False)
-    sobrenome = Column(String, nullable=False)
-    data_nascimento = Column(Date, nullable=False)
-    email = Column(String, unique=True, nullable=False, index=True)
-    senha = Column(String, nullable=False)
-    documento = Column(String, unique=True, nullable=False, index=True)
+    id = Column("usu_id", Integer, primary_key=True, index=True)
+    uuid = Column("usu_uuid", String(36), nullable=False, unique=True, index=True) #Usuário não tem uuid no MER, deve ser incluído?
+    nome = Column("usu_nome", String, nullable=False)
+    sobrenome = Column("usu_sobrenome", String, nullable=False)
+    data_nascimento = Column("usu_dt_nascimento", Date, nullable=False)
+    email = Column("usu_email", String, unique=True, nullable=False, index=True)
+    senha = Column("usu_senha", String, nullable=False)
+    documento = Column("usu_documento", String, unique=True, nullable=False, index=True)
 
     dispositivos = relationship("Dispositivo", back_populates="usuario")
     logins = relationship("Login", back_populates="usuario")
@@ -109,13 +110,13 @@ class RefreshToken(Base):
 
 
 class Dispositivo(Base):
-    __tablename__ = "dispositivos"
+    __tablename__ = "DISPOSITIVO"
 
-    id = Column("id_dispositivo", Integer, primary_key=True, index=True)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
-    id_ponto = Column(Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
-    metadados = Column(JSON, nullable=True)
-    uuid = Column(String(36), nullable=False, unique=True, index=True)
+    id = Column("dis_id", Integer, primary_key=True, index=True)
+    id_usuario = Column("usu_id", Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
+    id_ponto = Column("pon_id", Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
+    metadados = Column("dis_metadados", JSON, nullable=True)
+    uuid = Column("dis_uuid", String(36), nullable=False, unique=True, index=True)
 
     usuario = relationship("Usuario", back_populates="dispositivos")
     ponto = relationship("Ponto", back_populates="dispositivos")
@@ -123,16 +124,16 @@ class Dispositivo(Base):
 
 
 class Login(Base):
-    __tablename__ = "logins"
+    __tablename__ = "LOGIN"
 
-    id = Column("id_login", Integer, primary_key=True, index=True)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
+    id = Column("log_id", Integer, primary_key=True, index=True)
+    id_usuario = Column("usu_id", Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
     id_dispositivo = Column(
-        Integer, ForeignKey("dispositivos.id_dispositivo"), nullable=False, index=True
+        "dis_id", Integer, ForeignKey("dispositivos.id_dispositivo"), nullable=False, index=True
     )
-    ip = Column(String(45), nullable=False)
-    data_hora = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    ativo = Column(Boolean, nullable=False, default=True)
+    ip = Column("log_ip", String(45), nullable=False)
+    data_hora = Column("log_id", DateTime(timezone=True), nullable=False, server_default=func.now())
+    ativo = Column("log_ativo", Boolean, nullable=False, default=True)
 
     usuario = relationship("Usuario", back_populates="logins")
     dispositivo = relationship("Dispositivo", back_populates="logins")
