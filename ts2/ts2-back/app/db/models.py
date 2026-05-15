@@ -42,7 +42,7 @@ class Rua(Base):
     __tablename__ = "RUA"
 
     id = Column("rua_id", Integer, primary_key=True, index=True)
-    id_cidade = Column("cid_id", Integer, ForeignKey("cidades.id_cidade"), nullable=False, index=True)
+    id_cidade = Column("cid_id", Integer, ForeignKey("CIDADE.cid_id"), nullable=False, index=True)
     nome = Column("rua_nome", String, nullable=False)
     cep = Column("rua_cep", String, nullable=False)
 
@@ -54,7 +54,7 @@ class Ponto(Base):
     __tablename__ = "PONTO"
 
     id = Column("pon_id", Integer, primary_key=True, index=True)
-    id_rua = Column("rua_id", Integer, ForeignKey("ruas.id_rua"), nullable=True, index=True)
+    id_rua = Column("rua_id", Integer, ForeignKey("RUA.rua_id"), nullable=True, index=True)
     altitude = Column("pon_altitude", Float, nullable=True)
     latitude = Column("pon_latitude", Float, nullable=False)
     longitude = Column("pon_longitude", Float, nullable=False)
@@ -68,7 +68,7 @@ class Local(Base):
     __tablename__ = "LOCAL"
 
     id = Column("loc_id", Integer, primary_key=True, index=True)
-    id_ponto = Column("pon_id", Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
+    id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=False, index=True)
     nome = Column("loc_nome", String, nullable=False)
     tipo = Column(
         "loc_tipo", 
@@ -91,7 +91,7 @@ class Usuario(Base):
     senha = Column("usu_senha", String, nullable=False)
     documento = Column("usu_documento", String, unique=True, nullable=False, index=True)
 
-    dispositivos = relationship("Dispositivo", back_populates="usuario")
+    usuario_dispositivos = relationship("Usuario_Dispositivo", back_populates="usuario")
     logins = relationship("Login", back_populates="usuario")
     refresh_token_rows = relationship("RefreshToken", back_populates="usuario")
 
@@ -100,7 +100,7 @@ class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
     id = Column("id_refresh_token", Integer, primary_key=True, index=True)
-    id_usuario = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
+    id_usuario = Column(Integer, ForeignKey("USUARIO.usu_id"), nullable=False, index=True)
     jti = Column(String(36), unique=True, nullable=False, index=True)
     expires_at = Column(DateTime(timezone=True), nullable=False)
     revoked_at = Column(DateTime(timezone=True), nullable=True)
@@ -113,26 +113,36 @@ class Dispositivo(Base):
     __tablename__ = "DISPOSITIVO"
 
     id = Column("dis_id", Integer, primary_key=True, index=True)
-    id_usuario = Column("usu_id", Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
-    id_ponto = Column("pon_id", Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
+    id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=False, index=True)
     metadados = Column("dis_metadados", JSON, nullable=True)
     uuid = Column("dis_uuid", String(36), nullable=False, unique=True, index=True)
 
-    usuario = relationship("Usuario", back_populates="dispositivos")
+    usuario_dispositivos = relationship("Usuario_Dispositivo", back_populates="dispositivos")
     ponto = relationship("Ponto", back_populates="dispositivos")
     logins = relationship("Login", back_populates="dispositivo")
 
+class Usuario_Dispositivo(Base):
+    __tablename__ = "USUARIO_DISPOSITIVO"
+
+    id = Column("usd_id", Integer, primary_key=True, index=True)
+    id_usuario = Column("usu_id", Integer, ForeignKey("USUARIO.usu_id"), nullable=False, index=True)
+    id_dispositivo = Column("dis_id", Integer, ForeignKey("DISPOSITIVO.dis_id"), nullable=False, index=True)
+    data_hora = Column("usd_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now())
+    ativo = Column("usd_ativo", Boolean, nullable=False, default=True)
+
+    usuario = relationship("Usuario", back_populates="usuario_dispositivos")
+    dispositivo = relationship("Dispositivo", back_populates="usuario_dispositivos")
 
 class Login(Base):
     __tablename__ = "LOGIN"
 
     id = Column("log_id", Integer, primary_key=True, index=True)
-    id_usuario = Column("usu_id", Integer, ForeignKey("usuarios.id_usuario"), nullable=False, index=True)
+    id_usuario = Column("usu_id", Integer, ForeignKey("USUARIO.usu_id"), nullable=False, index=True)
     id_dispositivo = Column(
-        "dis_id", Integer, ForeignKey("dispositivos.id_dispositivo"), nullable=False, index=True
+        "dis_id", Integer, ForeignKey("DISPOSITIVO.dis_id"), nullable=False, index=True
     )
     ip = Column("log_ip", String(45), nullable=False)
-    data_hora = Column("log_id", DateTime(timezone=True), nullable=False, server_default=func.now())
+    data_hora = Column("log_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now())
     ativo = Column("log_ativo", Boolean, nullable=False, default=True)
 
     usuario = relationship("Usuario", back_populates="logins")
