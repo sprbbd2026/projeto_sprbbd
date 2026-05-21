@@ -1,4 +1,5 @@
 import type { TokenResponse } from '../types/auth'
+import { getStoredDeviceMetadata } from '../utils/deviceMetadata'
 import { api } from './api'
 
 export async function loginRequest(
@@ -8,6 +9,7 @@ export async function loginRequest(
   const { data } = await api.post<TokenResponse>('/auth/login', {
     email,
     password,
+    device_metadata: getStoredDeviceMetadata(),
   })
   return data
 }

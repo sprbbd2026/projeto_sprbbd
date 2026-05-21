@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -5,11 +7,15 @@ from app.db.database import get_db
 from app.schemas.auth_schema import LoginRequest, RefreshRequest, TokenResponse
 from app.services.auth_service import login_user, refresh_with_token
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
+    if body.device_metadata:
+        logger.info("[device_metadata] login: %s", body.device_metadata)
     result = login_user(db, body)
     if result is None:
         raise HTTPException(

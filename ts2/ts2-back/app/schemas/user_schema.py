@@ -19,6 +19,10 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     senha: str = Field(..., min_length=8)
+    device_metadata: Optional[dict] = Field(
+        default=None,
+        description="Metadados do dispositivo do cliente (coletados no front-end)",
+    )
 
 
 class UserUpdate(BaseModel):
