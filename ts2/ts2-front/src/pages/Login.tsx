@@ -10,6 +10,7 @@ import {
   User,
 } from 'lucide-react'
 import { type FormEvent, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import type { AuthMode } from '../components/ui/AuthModeSwitch'
 import { AuthModeSwitch } from '../components/ui/AuthModeSwitch'
 import { Button } from '../components/ui/Button'
@@ -62,6 +63,11 @@ export default function Login() {
               : 'Preencha todos os campos para criar um novo usuário (POST /users).'}{' '}
             A lista de usuários ao lado é carregada automaticamente.
           </p>
+          <div style={{ marginTop: '1rem' }}>
+            <Link to="/dashboard" style={{ display: 'inline-block', fontWeight: 600, color: 'var(--btn-primary-bg)', textDecoration: 'none' }}>
+              Acessar Dashboard de Telemetria &rarr;
+            </Link>
+          </div>
         </header>
 
         <div className={styles.layout}>
