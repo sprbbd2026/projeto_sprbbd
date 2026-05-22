@@ -6,6 +6,7 @@ export type UserResponse = {
   email: string
   data_nascimento: string
   documento: string
+  device_uid: string | null
 }
 
 export type UserCreate = {

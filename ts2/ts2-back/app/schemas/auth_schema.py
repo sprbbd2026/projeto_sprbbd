@@ -1,14 +1,18 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1)
+    device_uid: Optional[str] = None
+    metadata: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    device_uid: Optional[str] = None
 
 
 class RefreshRequest(BaseModel):
