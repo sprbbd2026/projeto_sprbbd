@@ -10,6 +10,7 @@ interface Telemetry {
   satelite_id: string
   cpu_percentual: number
   temperatura_celsius: number
+  status: string
   data_hora: string
 }
 
@@ -100,6 +101,15 @@ export default function Dashboard() {
               {latest ? latest.satelite_id : '--'}
             </div>
           </div>
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <Activity className={styles.cardIcon} />
+              <h2>Status do Sistema</h2>
+            </div>
+            <div className={styles.cardValue} style={{ textTransform: 'capitalize' }}>
+              {latest ? latest.status : '--'}
+            </div>
+          </div>
         </div>
 
         <div className={styles.tableCard}>
@@ -110,6 +120,7 @@ export default function Dashboard() {
                 <tr>
                   <th>Data/Hora</th>
                   <th>ID Satélite</th>
+                  <th>Status</th>
                   <th>CPU (%)</th>
                   <th>Temp (°C)</th>
                 </tr>
@@ -126,6 +137,7 @@ export default function Dashboard() {
                     <tr key={t.id}>
                       <td>{new Date(t.data_hora).toLocaleString()}</td>
                       <td>{t.satelite_id}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{t.status || 'Operacional'}</td>
                       <td>{t.cpu_percentual.toFixed(1)}%</td>
                       <td>{t.temperatura_celsius.toFixed(1)} °C</td>
                     </tr>
