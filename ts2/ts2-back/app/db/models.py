@@ -1,5 +1,7 @@
-from sqlalchemy import Column, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date, Float, DateTime
 from app.db.database import Base
+import datetime
+
 class Usuario(Base):
     __tablename__ = "usuarios"
 
@@ -12,3 +14,13 @@ class Usuario(Base):
     documento = Column(String)
     latitude = Column(String)
     longitude = Column(String)
+
+class Telemetria(Base):
+    __tablename__ = "telemetria"
+
+    id = Column(Integer, primary_key=True, index=True)
+    satelite_id = Column(String, index=True)
+    cpu_percentual = Column(Float)
+    temperatura_celsius = Column(Float)
+    status = Column(String, default="operacional")
+    data_hora = Column(DateTime, default=datetime.datetime.utcnow)
