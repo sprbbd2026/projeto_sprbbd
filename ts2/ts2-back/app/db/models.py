@@ -113,11 +113,11 @@ class Dispositivo(Base):
     __tablename__ = "DISPOSITIVO"
 
     id = Column("dis_id", Integer, primary_key=True, index=True)
-    id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=False, index=True)
+    id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=True, index=True)
     metadados = Column("dis_metadados", JSON, nullable=True)
     uuid = Column("dis_uuid", String(36), nullable=False, unique=True, index=True)
 
-    usuario_dispositivos = relationship("Usuario_Dispositivo", back_populates="dispositivos")
+    usuario_dispositivos = relationship("Usuario_Dispositivo", back_populates="dispositivo")
     ponto = relationship("Ponto", back_populates="dispositivos")
     logins = relationship("Login", back_populates="dispositivo")
 

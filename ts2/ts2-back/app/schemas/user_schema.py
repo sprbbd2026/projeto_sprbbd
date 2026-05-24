@@ -15,7 +15,7 @@ class UserBase(BaseModel):
         examples=["2026-04-06"],
     )
     documento: str
-    metadados: str
+    metadados: Optional[str] = None
 
 
 class UserCreate(UserBase):
@@ -42,6 +42,7 @@ class UserUpdateBody(UserUpdate):
 class UserResponse(UserBase):
     id: int
     uuid: UUID
+    device_uid: Optional[str] = None
 
     class Config:
         from_attributes = True

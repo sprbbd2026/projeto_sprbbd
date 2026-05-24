@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
-from app.db.models import Usuario
+from app.db.models import Usuario, Dispositivo, Usuario_Dispositivo
 from app.schemas.user_schema import UserCreate, UserUpdate
 
 
@@ -44,19 +44,30 @@ def create_user(db: Session, user: UserCreate):
         db.commit()
         db.flush() 
 
+        device_uuid = str(uuid_lib.uuid4())
         db_dispositivo = Dispositivo(
-            metadados=user.metadados,
-            uuid=str(uuid_lib.uuid4()),
-            usuario_id=db_user.id 
+            metadados={"info": user.metadados} if user.metadados else None,
+            uuid=device_uuid
         )
         db.add(db_dispositivo)
-        
         db.commit()
+        db.flush()
+
+        db_association = Usuario_Dispositivo(
+            id_usuario=db_user.id,
+            id_dispositivo=db_dispositivo.id,
+            ativo=True
+        )
+        db.add(db_association)
+        db.commit()
+
+        db_user.device_uid = device_uuid
 
     except IntegrityError as e:
         db.rollback()
         raise CadastroConflitoError(_detail_integrity_error(e)) from None
     db.refresh(db_user)
+    db_user.device_uid = device_uuid
     return db_user
 
 def get_users(db: Session):
