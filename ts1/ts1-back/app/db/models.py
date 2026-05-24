@@ -22,3 +22,14 @@ class Usuario(Base):
     usr_login = Column(String, unique=True)
     usr_senha_hash = Column(String)
     usr_status = Column(String, default="ativo")
+
+
+class Satelite(Base):
+    __tablename__ = "satelite"
+
+    sat_id = Column(Integer, primary_key=True, index=True)
+    sat_nome = Column(String)
+    sat_modelo_hardware = Column(String)
+    sat_versao_firmware = Column(String)
+    sat_tipo_orbita = Column(String, default="MEO")
+    sat_status = Column(String, default="operacional")

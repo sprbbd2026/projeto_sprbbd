@@ -5,6 +5,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import MainPage from "./pages/MainPage";
 import Footer from "./components/Footer";
+import Satellite from "./pages/Satellite";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register-satellite" element={<Satellite />} />
             <Route path="/dashboard" element={<MainPage />} />
           </Routes>
         </div>
