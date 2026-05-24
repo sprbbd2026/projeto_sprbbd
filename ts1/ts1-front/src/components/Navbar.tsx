@@ -12,7 +12,7 @@ export default function Navbar() {
         },
         {
             label: "Satélites",
-            href: "/register-satellite",
+            href: "/satellite",
         },
 
     ];

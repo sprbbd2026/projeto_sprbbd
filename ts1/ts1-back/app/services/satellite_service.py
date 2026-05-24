@@ -4,6 +4,8 @@ from fastapi import HTTPException, status
 from app.db.models import Satelite
 from app.schemas.satellite_schema import SatelliteCreateRequest
 
+def get_all_satellites(db: Session):
+    return db.query(Satelite).all()
 
 def create_satellite(db: Session, data: SatelliteCreateRequest) -> Satelite:
 
@@ -19,3 +21,4 @@ def create_satellite(db: Session, data: SatelliteCreateRequest) -> Satelite:
     db.commit()
     db.refresh(satellite)
     return satellite
+

@@ -1,4 +1,3 @@
-// services/auth.ts
 // Serviço de autenticação da US103 (Tela de Login)
 // ------------------------------------------------------------
 // Enquanto o back-end (US117/US118) não estiver pronto, este
