@@ -32,9 +32,6 @@ export default function Satellite() {
                     </div>
                 </section>
 
-                <p className="text-xs" style={{ color: "var(--text-h)" }}>
-                    Acesso restrito a usuários autorizados
-                </p>
             </div>
         </main >
     );

@@ -31,10 +31,6 @@ export default function HomePage() {
                         </Link>
                     </div>
 
-                    <p className="text-xs text-gray-500 mt-6">
-                        Acesso restrito a usuários autorizados
-                    </p>
-
                 </div>
             </main>
         </div>
