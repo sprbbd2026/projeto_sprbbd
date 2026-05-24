@@ -14,6 +14,8 @@ def get_user_by_email(db: Session, email: str) -> Usuario | None:
     normalized = email.strip().lower()
     return db.query(Usuario).filter(Usuario.email == normalized).first()
 
+def get_device_by_uuid(db: Session, uuid: str, user_id: str) -> Dispositivo | None:
+    return db.query(Dispositivo).filter(Dispositivo.uuid == uuid, Dispositivo.id_usuario == user_id).first()
 
 def authenticate_user(db: Session, email: str, password: str) -> Usuario | None:
     user = get_user_by_email(db, email)
@@ -23,14 +25,27 @@ def authenticate_user(db: Session, email: str, password: str) -> Usuario | None:
         return None
     return user
 
+def authenticate_device(db: Session, uuid: str, metadata: str, user_id: str) -> Dispositivo | None:
+    device = get_device_by_uuid(db, uuid, user_id)
+    if device is None:
+        device = Dispositivo(
+            metadados=metadata,
+            uuid=str(uuid_lib.uuid4()),
+            usuario_id=user_id 
+        )
 
+        db.add(device)
+        db.commit()
+        db.refresh(device)
+    return device
+    
 def login_user(db: Session, body: LoginRequest) -> TokenResponse | None:
     user = authenticate_user(db, body.email, body.password)
+    device = authenticate_device(db, body.uuid, body.metadata, user.id)
     if user is None:
         return None
     token = create_access_token(subject_user_id=user.id, user_uuid=user.uuid)
     return TokenResponse(access_token=token)
-
 
 def refresh_with_token(db: Session, old_access_token: str) -> TokenResponse | None:
     try:

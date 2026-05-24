@@ -42,6 +42,17 @@ def create_user(db: Session, user: UserCreate):
     db.add(db_user)
     try:
         db.commit()
+        db.flush() 
+
+        db_dispositivo = Dispositivo(
+            metadados=user.metadados,
+            uuid=str(uuid_lib.uuid4()),
+            usuario_id=db_user.id 
+        )
+        db.add(db_dispositivo)
+        
+        db.commit()
+
     except IntegrityError as e:
         db.rollback()
         raise CadastroConflitoError(_detail_integrity_error(e)) from None

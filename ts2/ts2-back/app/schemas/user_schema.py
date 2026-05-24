@@ -15,6 +15,7 @@ class UserBase(BaseModel):
         examples=["2026-04-06"],
     )
     documento: str
+    metadados: str
 
 
 class UserCreate(UserBase):
