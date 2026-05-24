@@ -37,3 +37,19 @@ def list_satellites(
     db: Session = Depends(get_db)
 ):
     return get_all_satellites(db)
+
+
+@router.put("/update/{sat_id}")
+def update_satellite(
+    sat_id: int,
+    data: SatelliteCreateRequest,
+    db: Session = Depends(get_db)
+):
+    return update_satellite(db, sat_id, data)
+
+@router.delete("/delete/{sat_id}")
+def delete_satellite(
+    sat_id: int,
+    db: Session = Depends(get_db)
+):
+    return delete_satellite(db, sat_id)

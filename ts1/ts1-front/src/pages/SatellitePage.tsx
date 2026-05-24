@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { getSatellites, type Satellite } from "../services/satellite";
+import { updateSatellite, deleteSatellite, getSatellites, type Satellite } from "../services/satellite";
+import { useNavigate } from "react-router-dom";
+import { FaPen, FaTrashAlt } from "react-icons/fa";
+
 
 export default function SatellitePage() {
+    const navigate = useNavigate();
     const [satellites, setSatellites] = useState<Satellite[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -217,7 +221,36 @@ export default function SatellitePage() {
                                                     {satellite.sat_status.charAt(0).toUpperCase() + satellite.sat_status.slice(1)}
                                                 </span>
                                             </td>
+
+                                            <td className="py-4">
+                                                <div className="flex gap-3 items-center">
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(`/satellites/edit/${satellite.sat_id}`)
+                                                        }
+                                                        className="p-2 text-blue-400 hover:text-blue-300"
+                                                    >
+                                                        <FaPen />
+                                                    </button>
+
+                                                    <button
+                                                        onClick={async () => {
+                                                            await deleteSatellite(satellite.sat_id);
+                                                            setSatellites((prev) =>
+                                                                prev.filter(
+                                                                    (s) => s.sat_id !== satellite.sat_id
+                                                                )
+                                                            );
+                                                        }}
+                                                        className="p-2 text-red-400 hover:text-red-300"
+                                                    >
+                                                        <FaTrashAlt />
+                                                    </button>
+                                                </div>
+                                            </td>
+
                                         </tr>
+
                                     ))}
                                 </tbody>
 

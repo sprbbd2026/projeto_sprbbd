@@ -3,6 +3,7 @@ import { api } from "./api";
 const PathSatellites = "/satellites/";
 const PathCreateSatellite = "/satellites/register";
 
+
 export interface Satellite {
     sat_id: number;
     sat_nome: string;
@@ -28,5 +29,24 @@ export async function createSatellite(
     return api<Satellite>(PathCreateSatellite, {
         method: "POST",
         body: payload,
+    });
+}
+
+
+export async function updateSatellite(
+    sat_id: number,
+    payload: CreateSatellitePayload
+): Promise<Satellite> {
+    return api<Satellite>(`${PathSatellites}/${sat_id}`, {
+        method: "PUT",
+        body: payload,
+    });
+}
+
+export async function deleteSatellite(
+    sat_id: number
+): Promise<void> {
+    return api<void>(`${PathSatellites}/${sat_id}`, {
+        method: "DELETE",
     });
 }
