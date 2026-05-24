@@ -7,6 +7,7 @@ import { FaPen, FaTrashAlt } from "react-icons/fa";
 export default function SatellitePage() {
     const navigate = useNavigate();
     const [satellites, setSatellites] = useState<Satellite[]>([]);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
 
     const statusStyles: Record<string, string> = {
@@ -232,18 +233,9 @@ export default function SatellitePage() {
                                                     >
                                                         <FaPen />
                                                     </button>
-
                                                     <button
-                                                        onClick={async () => {
-                                                            await deleteSatellite(satellite.sat_id);
-                                                            setSatellites((prev) =>
-                                                                prev.filter(
-                                                                    (s) => s.sat_id !== satellite.sat_id
-                                                                )
-                                                            );
-                                                        }}
-                                                        className="p-2 text-red-400 hover:text-red-300"
-                                                    >
+                                                        onClick={() => setConfirmDeleteId(satellite.sat_id)}
+                                                        className="p-2 text-red-400 hover:text-red-300">
                                                         <FaTrashAlt />
                                                     </button>
                                                 </div>
@@ -259,6 +251,47 @@ export default function SatellitePage() {
                     )}
                 </section>
             </div>
+
+            {confirmDeleteId !== null && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                    <div className="bg-[var(--surface)] p-6 rounded-xl shadow-lg w-full max-w-sm text-center space-y-4">
+
+                        <h2 className="text-lg font-semibold text-white">
+                            Confirmar exclusão
+                        </h2>
+
+                        <p className="text-gray-300">
+                            Tem certeza que deseja excluir este satélite?
+                        </p>
+
+                        <div className="flex justify-center gap-4 mt-4">
+
+                            <button
+                                onClick={() => setConfirmDeleteId(null)}
+                                className="px-4 py-2 rounded-lg bg-gray-600 text-white">
+                                Cancelar
+                            </button>
+
+                            <button
+                                onClick={async () => {
+                                    await deleteSatellite(confirmDeleteId);
+
+                                    setSatellites((prev) =>
+                                        prev.filter((s) => s.sat_id !== confirmDeleteId)
+                                    );
+
+                                    setConfirmDeleteId(null);
+                                }}
+                                className="px-4 py-2 rounded-lg bg-red-500 text-white">
+                                Excluir
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
         </main>
-    );
+    )
 }

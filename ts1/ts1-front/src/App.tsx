@@ -8,6 +8,7 @@ import SatellitePage from "./pages/SatellitePage";
 import SatelliteRegisterPage from "./pages/SatelliteRegisterPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import SatelliteEditPage from "./pages/SatelliteEditPage";
 
 
 function Layout() {
@@ -29,6 +30,7 @@ function Layout() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/satellite" element={<SatellitePage />} />
           <Route path="/register-satellite" element={<SatelliteRegisterPage />} />
+          <Route path="/satellites/edit/:id" element={<SatelliteEditPage />} />
           <Route path="/dashboard" element={<MainPage />} />
         </Routes>
       </div>
