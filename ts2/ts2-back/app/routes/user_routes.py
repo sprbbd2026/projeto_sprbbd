@@ -28,7 +28,7 @@ router = APIRouter()
 @router.post("/users", response_model=UserResponse)
 def create(user: UserCreate, db: Session = Depends(get_db)):
     if user.device_metadata:
-        logger.info("[device_metadata] register: %s", user.device_metadata)
+        print(f"[device_metadata] register: {user.device_metadata}")
     try:
         return create_user(db, user)
     except CadastroConflitoError as e:

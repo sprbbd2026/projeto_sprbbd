@@ -15,7 +15,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login", response_model=TokenResponse)
 def login(body: LoginRequest, db: Session = Depends(get_db)):
     if body.device_metadata:
-        logger.info("[device_metadata] login: %s", body.device_metadata)
+        print(f"[device_metadata] login: {body.device_metadata}")
     result = login_user(db, body)
     if result is None:
         raise HTTPException(
