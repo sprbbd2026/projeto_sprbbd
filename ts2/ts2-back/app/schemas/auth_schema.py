@@ -1,10 +1,12 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1)
+    device_metadata: Optional[dict] = Field(default=None)
     device_uid: Optional[str] = None
     metadata: Optional[str] = None
 

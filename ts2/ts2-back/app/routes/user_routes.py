@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.core.deps import get_current_user
@@ -19,10 +21,14 @@ from app.services.user_service import (
     update_user,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 @router.post("/users", response_model=UserResponse)
 def create(user: UserCreate, db: Session = Depends(get_db)):
+    if user.device_metadata:
+        print(f"[device_metadata] register: {user.device_metadata}")
     try:
         return create_user(db, user)
     except CadastroConflitoError as e:

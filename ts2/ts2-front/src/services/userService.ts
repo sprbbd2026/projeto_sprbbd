@@ -1,4 +1,5 @@
 import type { UserCreate, UserResponse } from '../types/user'
+import { getStoredDeviceMetadata } from '../utils/deviceMetadata'
 import { api } from './api'
 
 export async function fetchUsers(): Promise<UserResponse[]> {
@@ -7,6 +8,9 @@ export async function fetchUsers(): Promise<UserResponse[]> {
 }
 
 export async function createUser(payload: UserCreate): Promise<UserResponse> {
-  const { data } = await api.post<UserResponse>('/users', payload)
+  const { data } = await api.post<UserResponse>('/users', {
+    ...payload,
+    device_metadata: getStoredDeviceMetadata(),
+  })
   return data
 }
