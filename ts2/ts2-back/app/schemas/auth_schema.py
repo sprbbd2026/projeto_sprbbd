@@ -7,11 +7,14 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=1)
     device_metadata: Optional[dict] = Field(default=None)
+    device_uid: Optional[str] = None
+    metadata: Optional[str] = None
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    device_uid: Optional[str] = None
 
 
 class RefreshRequest(BaseModel):

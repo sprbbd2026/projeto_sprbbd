@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
@@ -13,10 +13,12 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(body: LoginRequest, db: Session = Depends(get_db)):
+def login(request: Request, body: LoginRequest, db: Session = Depends(get_db)):
     if body.device_metadata:
         print(f"[device_metadata] login: {body.device_metadata}")
-    result = login_user(db, body)
+    
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    result = login_user(db, body, client_ip)
     if result is None:
         raise HTTPException(
             status_code=401,

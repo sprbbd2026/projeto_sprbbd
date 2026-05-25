@@ -10,9 +10,15 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-  const token = useAuthStore.getState().accessToken
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+  const { accessToken, deviceUid } = useAuthStore.getState()
+
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`
   }
+
+  if (deviceUid) {
+    config.headers['X-Device-UID'] = deviceUid
+  }
+
   return config
 })
