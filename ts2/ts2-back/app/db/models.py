@@ -68,11 +68,15 @@ class Local(Base):
     __tablename__ = "locais"
 
     id = Column("id_local", Integer, primary_key=True, index=True)
-    id_ponto = Column(Integer, ForeignKey("pontos.id_ponto"), nullable=False, index=True)
+    id_ponto = Column(Integer, ForeignKey("pontos.id_ponto"), nullable=True, index=True)
     nome = Column(String, nullable=False)
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
+    categoria = Column(String, nullable=False)
+    rating = Column(Integer, nullable=False, default=5)
     tipo = Column(
         Enum(TipoLocal, name="tipo_local", native_enum=True),
-        nullable=False,
+        nullable=True,
     )
 
     ponto = relationship("Ponto", back_populates="locais")

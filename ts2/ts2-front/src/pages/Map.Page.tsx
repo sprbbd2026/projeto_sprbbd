@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -25,7 +26,11 @@ const droppedPinIcon = L.divIcon({
 
 export function MapPage() {
   const initialPosition: [number, number] = [-23.2081, -45.8828];
-  const { activeLayer, selectedCoord } = useMapStore();
+  const { activeLayer, selectedCoord, fetchLocations } = useMapStore();
+
+  useEffect(() => {
+    fetchLocations();
+  }, [fetchLocations]);
 
   const getTileUrl = () => {
     switch (activeLayer) {
