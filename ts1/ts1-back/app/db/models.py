@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String
+import datetime
+
+from sqlalchemy import Column, Integer, String, DateTime, LargeBinary
 from app.db.database import Base
 
 
@@ -22,3 +24,14 @@ class Usuario(Base):
     usr_login = Column(String, unique=True)
     usr_senha_hash = Column(String)
     usr_status = Column(String, default="ativo")
+
+
+class Comando(Base):
+    __tablename__ = "comando"
+
+    cmd_id = Column(Integer, primary_key=True, index=True)
+    est_id = Column(Integer)
+    sat_id = Column(Integer)
+    cmd_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    cmd_tipo = Column(String)
+    cmd_payload_binario = Column(LargeBinary)
