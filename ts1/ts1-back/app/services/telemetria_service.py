@@ -28,7 +28,7 @@ def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
             data.header.timestamp.replace("Z", "+00:00")),
         orientacao=str(data.subsystems.adcs.attitude),
         checksum=str(data.header.packet_id),
-        memoria=64.2,
+        memoria=data.subsystems.obc.memory_usage,
         energia=data.subsystems.power.solar_panel_v,
         bateria=data.subsystems.power.battery_level,
         relogio=data.gps_payload.signal_integrity,
