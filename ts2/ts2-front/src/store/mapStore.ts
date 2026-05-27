@@ -18,6 +18,7 @@ export interface SatellitePoint {
   name: string;
   lat: number;
   lng: number;
+  operational: boolean;
 }
 
 interface MapState {
