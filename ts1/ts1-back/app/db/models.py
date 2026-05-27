@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, LargeBinary
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
 from app.db.database import Base
@@ -12,7 +12,6 @@ class Perfil(Base):
     prf_descricao = Column(String)
     prf_status = Column(String)
 
-
 class Usuario(Base):
     __tablename__ = "usuario"
 
@@ -24,7 +23,16 @@ class Usuario(Base):
     usr_senha_hash = Column(String)
     usr_status = Column(String, default="ativo")
 
+class Comando(Base):
+    __tablename__ = "comando"
 
+    cmd_id = Column(Integer, primary_key=True, index=True)
+    est_id = Column(Integer)
+    sat_id = Column(Integer)
+    cmd_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    cmd_tipo = Column(String)
+    cmd_payload_binario = Column(LargeBinary)
+    
 class Satelite(Base):
     __tablename__ = "satelite"
 
