@@ -6,6 +6,11 @@ venv/
 env/
 .pytest_cache/
 
+# Mutation testing (mutmut)
+.mutmut-cache
+mutants/
+html/
+
 # Environment Variables
 .env
 .env.*

@@ -32,7 +32,7 @@ class TestCreateTelemetry:
             telemetry_service.create_telemetry(db, telemetry_create)
 
         assert exc.value.status_code == 500
-        assert "telemetria" in exc.value.detail.lower()
+        assert exc.value.detail == "Erro interno ao salvar dados de telemetria."
         db.rollback.assert_called_once()
 
     def test_erro_inesperado_vira_500(self, db, telemetry_create):
@@ -42,6 +42,7 @@ class TestCreateTelemetry:
             telemetry_service.create_telemetry(db, telemetry_create)
 
         assert exc.value.status_code == 500
+        assert exc.value.detail == "Falha na comunicação ou processamento da telemetria."
 
 
 class TestGetTelemetries:
@@ -60,6 +61,19 @@ class TestGetTelemetries:
         query.limit.assert_called_once_with(10)
         assert result == registros
 
+    def test_usa_paginacao_padrao_quando_nao_informada(self, db):
+        query = MagicMock()
+        query.offset.return_value = query
+        query.limit.return_value = query
+        query.all.return_value = []
+        db.query.return_value = query
+
+        telemetry_service.get_telemetries(db)
+
+        # Defaults do serviço: skip=0, limit=100.
+        query.offset.assert_called_once_with(0)
+        query.limit.assert_called_once_with(100)
+
     def test_erro_na_consulta_vira_500(self, db):
         db.query.side_effect = SQLAlchemyError("query failed")
 
@@ -67,3 +81,4 @@ class TestGetTelemetries:
             telemetry_service.get_telemetries(db)
 
         assert exc.value.status_code == 500
+        assert exc.value.detail == "Erro interno ao consultar telemetria."
