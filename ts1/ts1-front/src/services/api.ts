@@ -1,12 +1,13 @@
-// services/api.ts
-
 const BASE_URL = import.meta.env.VITE_API_URL as string;
 
 type ApiOptions = Omit<RequestInit, "body"> & {
     body?: any;
 };
 
-export async function api(path: string, options: ApiOptions = {}) {
+export async function api<T>(
+    path: string,
+    options: ApiOptions = {}
+): Promise<T> {
     const { body, headers, ...rest } = options;
 
     const response = await fetch(`${BASE_URL}${path}`, {
@@ -23,16 +24,18 @@ export async function api(path: string, options: ApiOptions = {}) {
 
         try {
             const errorData = await response.json();
-            errorMessage = errorData.detail || errorData.message || errorMessage;
+            errorMessage =
+                errorData.detail ||
+                errorData.message ||
+                errorMessage;
         } catch { }
 
         throw new Error(errorMessage);
     }
 
-    // evita erro em resposta vazia (204, etc)
     if (response.status === 204) {
-        return null;
+        return null as T;
     }
 
-    return response.json();
+    return response.json() as Promise<T>;
 }
