@@ -1,0 +1,82 @@
+import { useState } from "react";
+import itaLogo from "../assets/ita-logo.png";
+import { FaArrowRight } from "react-icons/fa";
+
+export default function Navbar() {
+    const [open, setOpen] = useState(false);
+
+    const links = [
+        {
+            label: "Início",
+            href: "/dashboard",
+        },
+        {
+            label: "Satélites",
+            href: "/satellite",
+        },
+
+    ];
+
+    return (
+        <header className="w-full bg-gray-900 text-white">
+            <nav className="mx-auto flex max-w-6xl items-center justify-between p-4 lg:px-8">
+
+                {/* LOGO */}
+                <a href="/dashboard" className="flex items-center gap-2">
+                    <img src={itaLogo} alt="Logo" className="h-8 w-auto" />
+                </a>
+
+                {/* DESKTOP MENU */}
+                <div className="hidden lg:flex gap-8">
+                    {links.map((item) => (
+                        <a
+                            key={item.label}
+                            href={item.href}
+                            className="flex items-center gap-2 text-sm font-medium text-gray-200 hover:text-white transition">
+                            {item.label}
+                        </a>
+                    ))}
+                </div>
+
+                {/* SAIR */}
+                <div className="hidden lg:block">
+                    <a href="/"
+                        className="text-sm font-medium text-red-400 transition">Encerrar sessão</a>
+                </div>
+
+                {/* HAMBURGUER */}
+                <button
+                    className="lg:hidden text-2xl"
+                    onClick={() => setOpen(!open)}
+                >
+                    {open ? "✕" : "☰"}
+                </button>
+            </nav>
+
+            {/* MOBILE MENU */}
+            {open && (
+                <div className="lg:hidden border-t border-gray-800 px-4 pb-4">
+                    <div className="flex flex-col gap-4 pt-4">
+                        {links.map((item) => (
+                            <a
+                                key={item.label}
+                                href={item.href}
+                                onClick={() => setOpen(false)}
+                                className="flex items-center gap-2 text-gray-200 hover:text-white transition">
+                                {item.label}
+                            </a>
+                        ))}
+
+                        <a
+                            href="/"
+                            onClick={() => setOpen(false)}
+                            className="font-medium text-white"
+                        >
+                            Sair
+                        </a>
+                    </div>
+                </div>
+            )}
+        </header>
+    );
+}

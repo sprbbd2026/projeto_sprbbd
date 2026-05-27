@@ -1,6 +1,7 @@
 export default function MainPage() {
     return (
         <main className="min-h-screen flex items-center justify-center px-4">
+
             <div className="w-full max-w-2xl text-center space-y-6">
 
                 <h1 className="text-4xl font-bold" style={{ color: "var(--text)" }}>
@@ -36,9 +37,7 @@ export default function MainPage() {
                     </div>
                 </section>
 
-                <p className="text-xs" style={{ color: "var(--text-h)" }}>
-                    Acesso restrito a usuários autorizados
-                </p>
+
             </div>
         </main>
     );
