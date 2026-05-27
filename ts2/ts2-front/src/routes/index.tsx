@@ -1,17 +1,44 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from '../components/auth/ProtectedRoute'
-import Home from '../pages/Home'
-import Landing from '../pages/Landing'
 import Login from '../pages/Login'
+import { MapPage } from '../pages/Map.Page'
+import { PointsDashboard } from '../pages/PointsDashboard'
+import { UsersDashboard } from '../pages/UsersDashboard'
+import { SettingsPage } from '../pages/SettingsPage'
+import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 
 const router = createBrowserRouter([
-  { path: '/', element: <Landing /> },
-  { path: '/login', element: <Login /> },
   {
-    path: '/home',
+    path: '/',
     element: (
       <ProtectedRoute>
-        <Home />
+        <MapPage />
+      </ProtectedRoute>
+    ),
+  },
+  { path: '/login', element: <Login /> },
+  { path: '/error', element: <UnauthorizedPage /> },
+  {
+    path: '/dashboards/pontos',
+    element: (
+      <ProtectedRoute>
+        <PointsDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboards/usuarios',
+    element: (
+      <ProtectedRoute>
+        <UsersDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/settings',
+    element: (
+      <ProtectedRoute>
+        <SettingsPage />
       </ProtectedRoute>
     ),
   },

@@ -36,7 +36,7 @@ export function ProtectedRoute({ children }: Props) {
   }
 
   if (!accessToken) {
-    return <Navigate to="/login" replace state={{ from: location }} />
+    return <Navigate to="/error" replace state={{ from: location }} />
   }
 
   return children

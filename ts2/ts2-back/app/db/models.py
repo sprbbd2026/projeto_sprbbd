@@ -52,7 +52,6 @@ class Rua(Base):
 
 class Ponto(Base):
     __tablename__ = "PONTO"
-
     id = Column("pon_id", Integer, primary_key=True, index=True)
     id_rua = Column("rua_id", Integer, ForeignKey("RUA.rua_id"), nullable=True, index=True)
     altitude = Column("pon_altitude", Float, nullable=True)
@@ -70,10 +69,16 @@ class Local(Base):
     id = Column("loc_id", Integer, primary_key=True, index=True)
     id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=False, index=True)
     nome = Column("loc_nome", String, nullable=False)
+
+    lat = Column("loc_lat", Float, nullable=False)
+    lng = Column("loc_lng", Float, nullable=False)
+    categoria = Column("loc_categoria", String, nullable=False)
+    rating = Column("loc_rating", Integer, nullable=False, default=5)
+
     tipo = Column(
         "loc_tipo", 
         Enum(TipoLocal, name="tipo_local", native_enum=True),
-        nullable=False,
+        nullable=True,
     )
 
     ponto = relationship("Ponto", back_populates="locais")
