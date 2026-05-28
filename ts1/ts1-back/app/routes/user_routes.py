@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(
     data: UserCreateRequest, 
-    background_tasks: BackgroundTasks, 
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     novo_operador = create_user(db, data)

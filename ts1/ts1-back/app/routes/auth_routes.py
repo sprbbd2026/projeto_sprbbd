@@ -11,19 +11,17 @@ router = APIRouter(prefix="/auth")
 @router.post("/login", response_model=LoginResponse)
 def login(
     data: LoginRequest, 
-    background_tasks: BackgroundTasks, 
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
-    # 1. Executa o login e gera o token
     resposta_login = login_user(db, data)
     
-    # 2. Adiciona o log na fila de tarefas
     background_tasks.add_task(
         registrar_evento_db,
         db=db,
         tipo_evento="LOGIN_REALIZADO",
         satelite_id="AUTH",
-        payload={"email": data.email}, 
+        payload={"email": data.email},
         status="SUCESSO"
     )
     
