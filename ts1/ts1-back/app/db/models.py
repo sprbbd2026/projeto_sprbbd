@@ -29,10 +29,10 @@ class Comando(Base):
     cmd_id = Column(Integer, primary_key=True, index=True)
     est_id = Column(Integer)
     sat_id = Column(Integer)
-    cmd_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    cmd_timestamp = Column(DateTime, default=datetime.utcnow)
     cmd_tipo = Column(String)
     cmd_payload_binario = Column(LargeBinary)
-    
+
 class Satelite(Base):
     __tablename__ = "satelite"
 
@@ -42,7 +42,7 @@ class Satelite(Base):
     sat_versao_firmware = Column(String)
     sat_tipo_orbita = Column(String, default="MEO")
     sat_status = Column(String, default="operacional")
-    
+
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"
 
