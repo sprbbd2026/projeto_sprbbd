@@ -6,15 +6,17 @@ import {
     type Satellite
 } from "../services/satellite";
 
+type SatelliteForm = Omit<Satellite, "sat_id">;
+
 export default function SatelliteEditPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [form, setForm] = useState<Omit<Satellite, "sat_id">>({
-        sat_nome: "",
-        sat_modelo_hardware: "",
-        sat_versao_firmware: "",
-        sat_tipo_orbita: "",
+    const [form, setForm] = useState<SatelliteForm>({
+        con_id: null,
+        sat_relogio_offset: null,
+        sat_codigo_prn: null,
+        sat_numero_svn: null,
         sat_status: "",
     });
 
@@ -27,12 +29,11 @@ export default function SatelliteEditPage() {
         async function load() {
             try {
                 const sat = await getSatelliteById(Number(id));
-
                 setForm({
-                    sat_nome: sat.sat_nome,
-                    sat_modelo_hardware: sat.sat_modelo_hardware,
-                    sat_versao_firmware: sat.sat_versao_firmware,
-                    sat_tipo_orbita: sat.sat_tipo_orbita,
+                    con_id: sat.con_id,
+                    sat_relogio_offset: sat.sat_relogio_offset,
+                    sat_codigo_prn: sat.sat_codigo_prn,
+                    sat_numero_svn: sat.sat_numero_svn,
                     sat_status: sat.sat_status,
                 });
             } finally {
@@ -46,9 +47,7 @@ export default function SatelliteEditPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
-
         await updateSatellite(Number(id), form);
-
         setLoading(false);
         navigate("/satellite");
     }
@@ -60,71 +59,54 @@ export default function SatelliteEditPage() {
         <div className="min-h-screen flex items-center justify-center px-4">
             <div
                 className="w-full max-w-2xl rounded-2xl p-8 space-y-6"
-                style={{
-                    background: "var(--surface)",
-                    boxShadow: "var(--shadow)",
-                }}
+                style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}
             >
-                {/* HEADER */}
                 <div>
-                    <h1 className="text-2xl font-bold text-[var(--text)]">
-                        Editar Satélite
-                    </h1>
-                    <p className="text-sm text-gray-400">
-                        Atualize as informações do satélite selecionado
-                    </p>
+                    <h1 className="text-2xl font-bold text-[var(--text)]">Editar Satélite</h1>
+                    <p className="text-sm text-gray-400">Atualize as informações do satélite selecionado</p>
                 </div>
 
-                {/* LOADING */}
                 {loadingData ? (
-                    <div className="text-center py-10 text-gray-400">
-                        Carregando dados do satélite...
-                    </div>
+                    <div className="text-center py-10 text-gray-400">Carregando dados do satélite...</div>
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
 
                         <input
-                            value={form.sat_nome}
-                            onChange={(e) =>
-                                setForm({ ...form, sat_nome: e.target.value })
-                            }
-                            placeholder="Nome do satélite"
+                            type="number"
+                            value={form.con_id ?? ""}
+                            onChange={(e) => setForm({ ...form, con_id: e.target.value ? Number(e.target.value) : null })}
+                            placeholder="ID da Constelação"
                             className={inputStyle}
                         />
 
                         <input
-                            value={form.sat_modelo_hardware}
-                            onChange={(e) =>
-                                setForm({ ...form, sat_modelo_hardware: e.target.value })
-                            }
-                            placeholder="Modelo de hardware"
+                            type="number"
+                            value={form.sat_codigo_prn ?? ""}
+                            onChange={(e) => setForm({ ...form, sat_codigo_prn: e.target.value ? Number(e.target.value) : null })}
+                            placeholder="Código PRN"
                             className={inputStyle}
                         />
 
                         <input
-                            value={form.sat_versao_firmware}
-                            onChange={(e) =>
-                                setForm({ ...form, sat_versao_firmware: e.target.value })
-                            }
-                            placeholder="Versão do firmware"
+                            type="number"
+                            value={form.sat_numero_svn ?? ""}
+                            onChange={(e) => setForm({ ...form, sat_numero_svn: e.target.value ? Number(e.target.value) : null })}
+                            placeholder="Número SVN"
                             className={inputStyle}
                         />
 
                         <input
-                            value={form.sat_tipo_orbita}
-                            onChange={(e) =>
-                                setForm({ ...form, sat_tipo_orbita: e.target.value })
-                            }
-                            placeholder="Tipo de órbita"
+                            type="number"
+                            step="any"
+                            value={form.sat_relogio_offset ?? ""}
+                            onChange={(e) => setForm({ ...form, sat_relogio_offset: e.target.value ? Number(e.target.value) : null })}
+                            placeholder="Offset do Relógio"
                             className={inputStyle}
                         />
 
-                        {/* STATUS */}
                         <select
                             value={form.sat_status}
-                            onChange={(e) =>
-                                setForm({ ...form, sat_status: e.target.value })
-                            }
+                            onChange={(e) => setForm({ ...form, sat_status: e.target.value })}
                             className={inputStyle}
                         >
                             <option value="operacional">Operacional</option>
@@ -133,7 +115,6 @@ export default function SatelliteEditPage() {
                             <option value="inativo">Inativo</option>
                         </select>
 
-                        {/* ACTIONS */}
                         <div className="flex gap-3 pt-2">
                             <button
                                 type="button"
@@ -142,7 +123,6 @@ export default function SatelliteEditPage() {
                             >
                                 Cancelar
                             </button>
-
                             <button
                                 type="submit"
                                 disabled={loading}

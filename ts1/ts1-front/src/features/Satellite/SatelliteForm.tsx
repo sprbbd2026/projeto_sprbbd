@@ -5,10 +5,10 @@ import { createSatellite } from "../../services/satellite";
 export default function SatelliteForm() {
     const navigate = useNavigate();
 
-    const [sat_nome, setSatNome] = useState("");
-    const [sat_modelo_hardware, setSatModeloHardware] = useState("");
-    const [sat_versao_firmware, setSatVersaoFirmware] = useState("");
-    const [sat_tipo_orbita, setSatTipoOrbita] = useState("");
+    const [con_id, setConId] = useState<string>("");
+    const [sat_relogio_offset, setSatRelogioOffset] = useState<string>("");
+    const [sat_codigo_prn, setSatCodigoPrn] = useState<string>("");
+    const [sat_numero_svn, setSatNumeroSvn] = useState<string>("");
     const [sat_status, setSatStatus] = useState("");
 
     const [loading, setLoading] = useState(false);
@@ -21,10 +21,10 @@ export default function SatelliteForm() {
 
         try {
             await createSatellite({
-                sat_nome,
-                sat_modelo_hardware,
-                sat_versao_firmware,
-                sat_tipo_orbita,
+                con_id: con_id ? Number(con_id) : null,
+                sat_relogio_offset: sat_relogio_offset ? Number(sat_relogio_offset) : null,
+                sat_codigo_prn: sat_codigo_prn ? Number(sat_codigo_prn) : null,
+                sat_numero_svn: sat_numero_svn ? Number(sat_numero_svn) : null,
                 sat_status,
             });
 
@@ -38,84 +38,60 @@ export default function SatelliteForm() {
 
     return (
         <div className="flex justify-center mt-10 px-4">
-
-            {/* CARD */}
             <form
                 onSubmit={handleSubmit}
                 className="w-full max-w-7xl bg-[var(--surface)] rounded-2xl shadow-lg p-8"
             >
-
-                {/* GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                    {/* NOME */}
+                    {/* CON_ID */}
                     <div>
-                        <label className="block text-sm mb-2">
-                            Nome do Satélite
-                        </label>
+                        <label className="block text-sm mb-2">ID da Constelação</label>
                         <input
-                            type="text"
-                            value={sat_nome}
-                            onChange={(e) => setSatNome(e.target.value)}
+                            type="number"
+                            value={con_id}
+                            onChange={(e) => setConId(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
-                            required
                         />
                     </div>
 
-                    {/* HARDWARE */}
+                    {/* CODIGO PRN */}
                     <div>
-                        <label className="block text-sm mb-2">
-                            Modelo do Hardware
-                        </label>
+                        <label className="block text-sm mb-2">Código PRN</label>
                         <input
-                            type="text"
-                            value={sat_modelo_hardware}
-                            onChange={(e) => setSatModeloHardware(e.target.value)}
+                            type="number"
+                            value={sat_codigo_prn}
+                            onChange={(e) => setSatCodigoPrn(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
-                            required
                         />
                     </div>
 
-                    {/* FIRMWARE */}
+                    {/* NUMERO SVN */}
                     <div>
-                        <label className="block text-sm mb-2">
-                            Versão do Firmware
-                        </label>
+                        <label className="block text-sm mb-2">Número SVN</label>
                         <input
-                            type="text"
-                            value={sat_versao_firmware}
-                            onChange={(e) => setSatVersaoFirmware(e.target.value)}
+                            type="number"
+                            value={sat_numero_svn}
+                            onChange={(e) => setSatNumeroSvn(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
-                            required
                         />
                     </div>
 
-                    {/* ÓRBITA */}
+                    {/* RELOGIO OFFSET */}
                     <div>
-                        <label className="block text-sm mb-2">
-                            Tipo de Órbita
-                        </label>
-
-                        <select
-                            value={sat_tipo_orbita}
-                            onChange={(e) => setSatTipoOrbita(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border bg-[var(--surface)] text-white focus:ring-2 focus:ring-[var(--accent)]"
-                            required>
-                            <option value="">Selecione a Órbita</option>
-                            <option value="IGSO">IGSO</option>
-                            <option value="MEO">MEO</option>
-                            <option value="GEO">GEO</option>
-                            <option value="LEO">LEO</option>
-
-                        </select>
+                        <label className="block text-sm mb-2">Offset do Relógio</label>
+                        <input
+                            type="number"
+                            step="any"
+                            value={sat_relogio_offset}
+                            onChange={(e) => setSatRelogioOffset(e.target.value)}
+                            className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
+                        />
                     </div>
 
                     {/* STATUS */}
                     <div className="md:col-span-2">
-                        <label className="block text-sm mb-2">
-                            Status
-                        </label>
-
+                        <label className="block text-sm mb-2">Status</label>
                         <select
                             value={sat_status}
                             onChange={(e) => setSatStatus(e.target.value)}
@@ -129,7 +105,6 @@ export default function SatelliteForm() {
                     </div>
                 </div>
 
-                {/* BOTÃO */}
                 <div className="mt-8">
                     <button
                         type="submit"
@@ -141,7 +116,6 @@ export default function SatelliteForm() {
                 </div>
             </form>
 
-            {/* ERRO */}
             {error && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
                     <div className="bg-[var(--surface)] rounded-xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
