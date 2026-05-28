@@ -14,18 +14,15 @@ def register(
     background_tasks: BackgroundTasks, 
     db: Session = Depends(get_db)
 ):
-    # 1. Executa a ação principal
-    novo_usuario = create_user(db, data)
+    novo_operador = create_user(db, data)
     
-    # 2. Adiciona o log na fila de tarefas em 2º plano
     background_tasks.add_task(
         registrar_evento_db,
         db=db,
-        tipo_evento="USUARIO_CADASTRADO",
-        satelite_id="SISTEMA",  # Indica que é um evento interno do sistema
-        payload={"email": data.email}, # Apenas dados seguros, sem a senha!
+        tipo_evento="OPERADOR_CADASTRADO",
+        satelite_id="SISTEMA",
+        payload={"email": data.email},
         status="SUCESSO"
     )
     
-    # 3. Retorna a resposta instantaneamente para o front-end
-    return novo_usuario
+    return novo_operador

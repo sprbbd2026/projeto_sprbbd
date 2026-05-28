@@ -4,8 +4,10 @@ import bcrypt
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.db.models import Usuario, Perfil
+from app.db.models import Operador
 from app.schemas.user_schema import UserCreateRequest
+
+FUNCOES_VALIDAS = ["analista", "supervisor", "admin"]
 
 
 def _hash_password(password: str) -> str:
@@ -15,36 +17,28 @@ def _hash_password(password: str) -> str:
     return bcrypt.hashpw(prepared, bcrypt.gensalt()).decode("utf-8")
 
 
-def create_user(db: Session, data: UserCreateRequest) -> Usuario:
-    perfil = db.query(Perfil).filter(Perfil.prf_nome == data.accessLevel).first()
-    if not perfil:
+def create_user(db: Session, data: UserCreateRequest) -> Operador:
+    if data.funcao not in FUNCOES_VALIDAS:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Perfil '{data.accessLevel}' não encontrado.",
+            detail=f"Função '{data.funcao}' inválida. Opções: {', '.join(FUNCOES_VALIDAS)}",
         )
 
-    if db.query(Usuario).filter(Usuario.usr_email == data.email).first():
+    if db.query(Operador).filter(Operador.opr_email == data.email).first():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="E-mail já cadastrado.",
         )
 
-    if db.query(Usuario).filter(Usuario.usr_login == data.document).first():
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Documento já cadastrado.",
-        )
-
-    usuario = Usuario(
-        prf_id=perfil.prf_id,
-        usr_nome=data.name,
-        usr_email=data.email,
-        usr_login=data.document,
-        usr_senha_hash=_hash_password(data.password),
-        usr_status="ativo",
+    operador = Operador(
+        opr_nome=data.name,
+        opr_email=data.email,
+        opr_senha_hash=_hash_password(data.password),
+        opr_funcao=data.funcao,
+        opr_status="ativo",
     )
 
-    db.add(usuario)
+    db.add(operador)
     db.commit()
-    db.refresh(usuario)
-    return usuario
+    db.refresh(operador)
+    return operador
