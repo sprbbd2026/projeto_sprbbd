@@ -9,6 +9,7 @@ export default function Navbar() {
     const links = [
         { label: "Início", href: "/dashboard" },
         { label: "Satélites", href: "/satellite" },
+        { label: "Constelações", href: "/constellation" },
     ];
 
     function handleLogout() {
