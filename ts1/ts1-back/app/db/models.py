@@ -19,7 +19,7 @@ class Comando(Base):
     cmd_id = Column(Integer, primary_key=True, index=True)
     est_id = Column(Integer)
     sat_id = Column(Integer)
-    cmd_timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+    cmd_timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     cmd_tipo = Column(String)
     cmd_payload_binario = Column(LargeBinary)
     
