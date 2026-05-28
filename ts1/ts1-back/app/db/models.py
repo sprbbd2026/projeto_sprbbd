@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, LargeBinary
+from sqlalchemy import Column, Integer, String, DateTime, LargeBinary, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
 from app.db.database import Base
@@ -33,6 +33,14 @@ class Comando(Base):
     cmd_tipo = Column(String)
     cmd_payload_binario = Column(LargeBinary)
 
+class Constelacao(Base):
+    __tablename__ = "constelacao"
+
+    cnt_id = Column(Integer, primary_key=True, index=True)
+    cnt_nome = Column(String, unique=True, nullable=False)
+    cnt_descricao = Column(String, nullable=True)
+    cnt_status = Column(String, default="ativa")
+
 class Satelite(Base):
     __tablename__ = "satelite"
 
@@ -42,6 +50,7 @@ class Satelite(Base):
     sat_versao_firmware = Column(String)
     sat_tipo_orbita = Column(String, default="MEO")
     sat_status = Column(String, default="operacional")
+    cnt_id = Column(Integer, ForeignKey("constelacao.cnt_id"), nullable=True)
 
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"

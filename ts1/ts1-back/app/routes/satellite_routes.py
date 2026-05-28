@@ -33,8 +33,8 @@ def register_satellite(data: SatelliteCreateRequest, db: Session = Depends(get_d
     "/",
     response_model=list[SatelliteResponse]
 )
-def list_satellites(db: Session = Depends(get_db)):
-    return get_all_satellites(db)
+def list_satellites(unassigned: bool = False, db: Session = Depends(get_db)):
+    return get_all_satellites(db, unassigned=unassigned)
 
 @router.get("/{sat_id}", response_model=SatelliteResponse)
 def get_satellite_route(sat_id: int, db: Session = Depends(get_db)):

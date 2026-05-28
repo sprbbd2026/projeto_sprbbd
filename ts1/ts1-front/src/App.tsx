@@ -9,6 +9,9 @@ import SatelliteRegisterPage from "./pages/SatelliteRegisterPage";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SatelliteEditPage from "./pages/SatelliteEditPage";
+import ConstellationPage from "./pages/ConstellationPage";
+import ConstellationRegisterPage from "./pages/ConstellationRegisterPage";
+import ConstellationEditPage from "./pages/ConstellationEditPage";
 
 
 function Layout() {
@@ -31,6 +34,9 @@ function Layout() {
           <Route path="/satellite" element={<SatellitePage />} />
           <Route path="/register-satellite" element={<SatelliteRegisterPage />} />
           <Route path="/satellites/edit/:id" element={<SatelliteEditPage />} />
+          <Route path="/constellation" element={<ConstellationPage />} />
+          <Route path="/register-constellation" element={<ConstellationRegisterPage />} />
+          <Route path="/constellations/edit/:id" element={<ConstellationEditPage />} />
           <Route path="/dashboard" element={<MainPage />} />
         </Routes>
       </div>

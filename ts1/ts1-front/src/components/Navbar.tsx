@@ -1,6 +1,5 @@
 import { useState } from "react";
 import itaLogo from "../assets/ita-logo.png";
-import { FaArrowRight } from "react-icons/fa";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
@@ -13,6 +12,10 @@ export default function Navbar() {
         {
             label: "Satélites",
             href: "/satellite",
+        },
+        {
+            label: "Constelações",
+            href: "/constellation",
         },
 
     ];
