@@ -1,24 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSatellite } from "../../services/satellite";
+import { getConstelacoes, type Constelacao } from "../../services/constelacao";
 
 export default function SatelliteForm() {
     const navigate = useNavigate();
 
+    const [constelacoes, setConstelacoes] = useState<Constelacao[]>([]);
     const [con_id, setConId] = useState<string>("");
     const [sat_relogio_offset, setSatRelogioOffset] = useState<string>("");
     const [sat_codigo_prn, setSatCodigoPrn] = useState<string>("");
     const [sat_numero_svn, setSatNumeroSvn] = useState<string>("");
     const [sat_status, setSatStatus] = useState("");
-
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        getConstelacoes().then(setConstelacoes).catch(console.error);
+    }, []);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
         setError(null);
-
         try {
             await createSatellite({
                 con_id: con_id ? Number(con_id) : null,
@@ -27,7 +31,6 @@ export default function SatelliteForm() {
                 sat_numero_svn: sat_numero_svn ? Number(sat_numero_svn) : null,
                 sat_status,
             });
-
             navigate("/satellite");
         } catch (err: any) {
             setError(err.message || "Erro ao criar satélite.");
@@ -38,21 +41,23 @@ export default function SatelliteForm() {
 
     return (
         <div className="flex justify-center mt-10 px-4">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-7xl bg-[var(--surface)] rounded-2xl shadow-lg p-8"
-            >
+            <form onSubmit={handleSubmit} className="w-full max-w-7xl bg-[var(--surface)] rounded-2xl shadow-lg p-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                    {/* CON_ID */}
+                    {/* CONSTELACAO */}
                     <div>
-                        <label className="block text-sm mb-2">ID da Constelação</label>
-                        <input
-                            type="number"
+                        <label className="block text-sm mb-2">Constelação</label>
+                        <select
                             value={con_id}
                             onChange={(e) => setConId(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
-                        />
+                            className="w-full px-4 py-3 rounded-lg border bg-[var(--surface)] text-white focus:ring-2 focus:ring-[var(--accent)]">
+                            <option value="">Selecione a constelação</option>
+                            {constelacoes.map((c) => (
+                                <option key={c.con_id} value={c.con_id}>
+                                    {c.con_nome ?? `Constelação ${c.con_id}`}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     {/* CODIGO PRN */}
@@ -109,8 +114,7 @@ export default function SatelliteForm() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition disabled:opacity-50"
-                    >
+                        className="w-full py-3 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition disabled:opacity-50">
                         {loading ? "Enviando..." : "Criar Satélite"}
                     </button>
                 </div>
@@ -121,8 +125,7 @@ export default function SatelliteForm() {
                     <div className="bg-[var(--surface)] rounded-xl shadow-lg p-6 w-full max-w-sm text-center space-y-4">
                         <p className="text-lg font-medium text-red-500">❌</p>
                         <p className="text-[var(--text)]">{error}</p>
-                        <button
-                            onClick={() => setError(null)}
+                        <button onClick={() => setError(null)}
                             className="px-6 py-2 rounded-lg bg-[var(--accent)] text-white font-medium hover:bg-[var(--text-h)] transition">
                             OK
                         </button>

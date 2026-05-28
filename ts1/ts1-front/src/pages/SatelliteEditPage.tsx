@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-    getSatelliteById,
-    updateSatellite,
-    type Satellite
-} from "../services/satellite";
+import { getSatelliteById, updateSatellite, type Satellite } from "../services/satellite";
+import { getConstelacoes, type Constelacao } from "../services/constelacao";
 
 type SatelliteForm = Omit<Satellite, "sat_id">;
 
@@ -12,6 +9,7 @@ export default function SatelliteEditPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
+    const [constelacoes, setConstelacoes] = useState<Constelacao[]>([]);
     const [form, setForm] = useState<SatelliteForm>({
         con_id: null,
         sat_relogio_offset: null,
@@ -19,13 +17,15 @@ export default function SatelliteEditPage() {
         sat_numero_svn: null,
         sat_status: "",
     });
-
     const [loading, setLoading] = useState(false);
     const [loadingData, setLoadingData] = useState(true);
 
     useEffect(() => {
-        if (!id) return;
+        getConstelacoes().then(setConstelacoes).catch(console.error);
+    }, []);
 
+    useEffect(() => {
+        if (!id) return;
         async function load() {
             try {
                 const sat = await getSatelliteById(Number(id));
@@ -40,7 +40,6 @@ export default function SatelliteEditPage() {
                 setLoadingData(false);
             }
         }
-
         load();
     }, [id]);
 
@@ -57,10 +56,8 @@ export default function SatelliteEditPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4">
-            <div
-                className="w-full max-w-2xl rounded-2xl p-8 space-y-6"
-                style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}
-            >
+            <div className="w-full max-w-2xl rounded-2xl p-8 space-y-6"
+                style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}>
                 <div>
                     <h1 className="text-2xl font-bold text-[var(--text)]">Editar Satélite</h1>
                     <p className="text-sm text-gray-400">Atualize as informações do satélite selecionado</p>
@@ -71,13 +68,18 @@ export default function SatelliteEditPage() {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
 
-                        <input
-                            type="number"
+                        {/* CONSTELACAO */}
+                        <select
                             value={form.con_id ?? ""}
                             onChange={(e) => setForm({ ...form, con_id: e.target.value ? Number(e.target.value) : null })}
-                            placeholder="ID da Constelação"
-                            className={inputStyle}
-                        />
+                            className={inputStyle}>
+                            <option value="">Selecione a constelação</option>
+                            {constelacoes.map((c) => (
+                                <option key={c.con_id} value={c.con_id}>
+                                    {c.con_nome ?? `Constelação ${c.con_id}`}
+                                </option>
+                            ))}
+                        </select>
 
                         <input
                             type="number"
@@ -107,8 +109,7 @@ export default function SatelliteEditPage() {
                         <select
                             value={form.sat_status}
                             onChange={(e) => setForm({ ...form, sat_status: e.target.value })}
-                            className={inputStyle}
-                        >
+                            className={inputStyle}>
                             <option value="operacional">Operacional</option>
                             <option value="manutencao">Manutenção</option>
                             <option value="falha">Falha</option>
@@ -116,18 +117,12 @@ export default function SatelliteEditPage() {
                         </select>
 
                         <div className="flex gap-3 pt-2">
-                            <button
-                                type="button"
-                                onClick={() => navigate("/satellite")}
-                                className="flex-1 rounded-xl py-3 bg-gray-600 text-white hover:opacity-80 transition"
-                            >
+                            <button type="button" onClick={() => navigate("/satellite")}
+                                className="flex-1 rounded-xl py-3 bg-gray-600 text-white hover:opacity-80 transition">
                                 Cancelar
                             </button>
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1 rounded-xl py-3 bg-[var(--accent)] text-white hover:opacity-90 transition disabled:opacity-50"
-                            >
+                            <button type="submit" disabled={loading}
+                                className="flex-1 rounded-xl py-3 bg-[var(--accent)] text-white hover:opacity-90 transition disabled:opacity-50">
                                 {loading ? "Salvando..." : "Salvar alterações"}
                             </button>
                         </div>

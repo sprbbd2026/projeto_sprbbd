@@ -33,6 +33,12 @@ class Satelite(Base):
     sat_numero_svn = Column(Integer, nullable=True)
     sat_status = Column(String, default="operacional")
 
+class Constelacao(Base):
+    __tablename__ = "constelacao"
+
+    con_id = Column(Integer, primary_key=True, index=True)
+    con_nome = Column(String, nullable=True)
+
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"
 
