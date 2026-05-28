@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { updateSatellite, deleteSatellite, getSatellites, type Satellite } from "../services/satellite";
+import { deleteSatellite, getSatellites, type Satellite } from "../services/satellite";
 import { useNavigate } from "react-router-dom";
 import { FaPen, FaTrashAlt } from "react-icons/fa";
 
