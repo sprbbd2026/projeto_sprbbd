@@ -5,6 +5,7 @@ from app.db.database import get_db
 from app.schemas.command_schema import CommandCreateRequest, CommandResponse
 from app.services.command_service import create_command
 from app.services.auditoria_service import registrar_evento_db
+from app.dependencies import get_current_user
 
 router = APIRouter()
 
@@ -13,7 +14,8 @@ router = APIRouter()
 def send_command(
     data: CommandCreateRequest,
     background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user)
 ):
     comando = create_command(db, data)
 
