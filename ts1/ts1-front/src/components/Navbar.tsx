@@ -1,21 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import itaLogo from "../assets/ita-logo.png";
-import { FaArrowRight } from "react-icons/fa";
 
 export default function Navbar() {
     const [open, setOpen] = useState(false);
+    const navigate = useNavigate();
 
     const links = [
-        {
-            label: "Início",
-            href: "/dashboard",
-        },
-        {
-            label: "Satélites",
-            href: "/satellite",
-        },
-
+        { label: "Início", href: "/dashboard" },
+        { label: "Satélites", href: "/satellite" },
     ];
+
+    function handleLogout() {
+        localStorage.removeItem("token");
+        navigate("/login");
+    }
 
     return (
         <header className="w-full bg-gray-900 text-white">
@@ -29,9 +28,7 @@ export default function Navbar() {
                 {/* DESKTOP MENU */}
                 <div className="hidden lg:flex gap-8">
                     {links.map((item) => (
-                        <a
-                            key={item.label}
-                            href={item.href}
+                        <a key={item.label} href={item.href}
                             className="flex items-center gap-2 text-sm font-medium text-gray-200 hover:text-white transition">
                             {item.label}
                         </a>
@@ -40,15 +37,14 @@ export default function Navbar() {
 
                 {/* SAIR */}
                 <div className="hidden lg:block">
-                    <a href="/"
-                        className="text-sm font-medium text-red-400 transition">Encerrar sessão</a>
+                    <button onClick={handleLogout}
+                        className="text-sm font-medium text-red-400 hover:text-red-300 transition">
+                        Encerrar sessão
+                    </button>
                 </div>
 
                 {/* HAMBURGUER */}
-                <button
-                    className="lg:hidden text-2xl"
-                    onClick={() => setOpen(!open)}
-                >
+                <button className="lg:hidden text-2xl" onClick={() => setOpen(!open)}>
                     {open ? "✕" : "☰"}
                 </button>
             </nav>
@@ -58,22 +54,16 @@ export default function Navbar() {
                 <div className="lg:hidden border-t border-gray-800 px-4 pb-4">
                     <div className="flex flex-col gap-4 pt-4">
                         {links.map((item) => (
-                            <a
-                                key={item.label}
-                                href={item.href}
+                            <a key={item.label} href={item.href}
                                 onClick={() => setOpen(false)}
                                 className="flex items-center gap-2 text-gray-200 hover:text-white transition">
                                 {item.label}
                             </a>
                         ))}
-
-                        <a
-                            href="/"
-                            onClick={() => setOpen(false)}
-                            className="font-medium text-white"
-                        >
-                            Sair
-                        </a>
+                        <button onClick={() => { setOpen(false); handleLogout(); }}
+                            className="text-left font-medium text-red-400 hover:text-red-300 transition">
+                            Encerrar sessão
+                        </button>
                     </div>
                 </div>
             )}
