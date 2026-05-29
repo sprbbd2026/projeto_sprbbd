@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
@@ -10,6 +10,10 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import SatelliteEditPage from "./pages/SatelliteEditPage";
 
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const token = localStorage.getItem("token");
+  return token ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
 function Layout() {
   const location = useLocation();
@@ -28,10 +32,10 @@ function Layout() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/satellite" element={<SatellitePage />} />
-          <Route path="/register-satellite" element={<SatelliteRegisterPage />} />
-          <Route path="/satellites/edit/:id" element={<SatelliteEditPage />} />
-          <Route path="/dashboard" element={<MainPage />} />
+          <Route path="/satellite" element={<PrivateRoute><SatellitePage /></PrivateRoute>} />
+          <Route path="/register-satellite" element={<PrivateRoute><SatelliteRegisterPage /></PrivateRoute>} />
+          <Route path="/satellites/edit/:id" element={<PrivateRoute><SatelliteEditPage /></PrivateRoute>} />
+          <Route path="/dashboard" element={<PrivateRoute><MainPage /></PrivateRoute>} />
         </Routes>
       </div>
 
