@@ -6,6 +6,10 @@ from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
 from app.routes.telemetria_routes import router as telemetria_router
+from app.routes.command_routes import router as command_router
+from app.routes.satellite_routes import router as satellite_router
+from app.routes.constelacao_routes import router as constelacao_router
+from app.routes.constellation_routes import router as constellation_router
 
 app = FastAPI(
     docs_url="/docs",
@@ -13,13 +17,15 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://projeto-sprbbd-ts1-front.onrender.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://projeto-sprbbd-ts1-front.onrender.com",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,9 +44,18 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     else:
         message = msg.replace("Value error, ", "")
 
-    return JSONResponse(status_code=400, content={"detail": message})
+    response = JSONResponse(status_code=400, content={"detail": message})
+    origin = request.headers.get("origin", "")
+    if origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 app.include_router(health_router)
 app.include_router(user_router)
 app.include_router(auth_router)
 app.include_router(telemetria_router)
+app.include_router(command_router)
+app.include_router(satellite_router)
+app.include_router(constelacao_router)
+app.include_router(constellation_router)

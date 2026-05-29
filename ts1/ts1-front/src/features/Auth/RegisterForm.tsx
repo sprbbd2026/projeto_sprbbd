@@ -4,10 +4,9 @@ import { api } from "../../services/api";
 
 export default function RegisterForm() {
     const [name, setName] = useState("");
-    const [document, setDocument] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [accessLevel, setAccessLevel] = useState("");
+    const [funcao, setFuncao] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
@@ -25,16 +24,15 @@ export default function RegisterForm() {
                 },
                 body: {
                     name,
-                    document,
                     email,
                     password,
-                    accessLevel,
+                    funcao,
                 },
             });
 
             navigate("/dashboard");
         } catch (err: any) {
-            setError(err.message || "Erro ao cadastrar usuário.");
+            setError(err.message || "Erro ao cadastrar operador.");
         } finally {
             setLoading(false);
         }
@@ -51,18 +49,6 @@ export default function RegisterForm() {
                     <input
                         type="text" value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
-                        required
-                    />
-                </div>
-
-                {/* DOCUMENTO */}
-                <div>
-                    <label className="block text-sm mb-1">Documento</label>
-                    <input
-                        type="text"
-                        value={document}
-                        onChange={(e) => setDocument(e.target.value)}
                         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required
                     />
@@ -92,17 +78,17 @@ export default function RegisterForm() {
                     />
                 </div>
 
-                {/* NÍVEL DE ACESSO */}
+                {/* FUNCAO */}
                 <div>
-                    <label className="block text-sm mb-1">Nível de acesso</label>
-                    <select value={accessLevel}
-                        onChange={(e) => setAccessLevel(e.target.value)}
+                    <label className="block text-sm mb-1">Função</label>
+                    <select value={funcao}
+                        onChange={(e) => setFuncao(e.target.value)}
                         className="w-full px-4 py-2 rounded-lg border bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
                         required>
                         <option value="">Selecione</option>
+                        <option value="analista">Analista</option>
+                        <option value="supervisor">Supervisor</option>
                         <option value="admin">Admin</option>
-                        <option value="user">Usuário</option>
-                        <option value="manager">Gerente</option>
                     </select>
                 </div>
 

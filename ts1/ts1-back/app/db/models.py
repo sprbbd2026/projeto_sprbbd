@@ -1,49 +1,50 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
+from datetime import datetime, timezone
 from app.db.database import Base
 
+class Operador(Base):
+    __tablename__ = "operador"
 
-class Perfil(Base):
-    __tablename__ = "perfil"
+    opr_id = Column(Integer, primary_key=True, index=True)
+    opr_nome = Column(String)
+    opr_email = Column(String, unique=True)
+    opr_senha_hash = Column(String)
+    opr_funcao = Column(String)
+    opr_status = Column(String, default="ativo")
 
-    prf_id = Column(Integer, primary_key=True, index=True)
-    prf_nome = Column(String)
-    prf_nivel_acesso = Column(String)
-    prf_descricao = Column(String)
-    prf_status = Column(String)
+class Comando(Base):
+    __tablename__ = "comando"
 
+    cmd_id = Column(Integer, primary_key=True, index=True)
+    est_id = Column(Integer)
+    sat_id = Column(Integer)
+    cmd_timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    cmd_tipo = Column(String)
+    cmd_payload_binario = Column(LargeBinary)
 
-class Usuario(Base):
-    __tablename__ = "usuario"
+class Constelacao(Base):
+    __tablename__ = "constelacao"
 
-    usr_id = Column(Integer, primary_key=True, index=True)
-    prf_id = Column(Integer)
-    usr_nome = Column(String)
-    usr_email = Column(String, unique=True)
-    usr_login = Column(String, unique=True)
-    usr_senha_hash = Column(String)
-    usr_status = Column(String, default="ativo")
-
+    con_id = Column(Integer, primary_key=True, index=True)
+    con_nome = Column(String, nullable=True)
 
 class Satelite(Base):
     __tablename__ = "satelite"
 
-    id_satelite = Column(Integer, primary_key=True, index=True)
-    id_constelacao = Column(Integer, nullable=True)
-    relogio_interno_offset = Column(Float, default=0.0)
-    codigo_prn = Column(String, unique=True, index=True)
-    numero_svn = Column(Integer, nullable=True)
-    status = Column(String, default="ativo")
-
-    telemetrias = relationship("Telemetria", back_populates="satelite")
-
+    sat_id = Column(Integer, primary_key=True, index=True)
+    con_id = Column(Integer, nullable=True)
+    sat_relogio_offset = Column(Float, nullable=True)
+    sat_codigo_prn = Column(Integer, nullable=True)
+    sat_numero_svn = Column(Integer, nullable=True)
+    sat_status = Column(String, default="operacional")
 
 class Telemetria(Base):
     __tablename__ = "telemetria"
 
     id_telemetria = Column("tlm_id", Integer, primary_key=True, index=True)
     id_satelite = Column("sat_id", Integer, ForeignKey("satelite.id_satelite"), nullable=False)
-
     temperatura = Column("tlm_temperatura", Float)
     timestamp_registro = Column("tlm_timestamp", DateTime)
     orientacao = Column("tlm_orientacao", String)
@@ -53,4 +54,13 @@ class Telemetria(Base):
     relogio = Column("tlm_relogio", DateTime)
     cpu = Column("tlm_cpu", Float)
 
-    satelite = relationship("Satelite", back_populates="telemetrias")
+class EventoComunicacao(Base):
+    __tablename__ = "comunicacao_eventos"
+
+    evt_id = Column(Integer, primary_key=True, index=True)
+    evt_data_hora = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    evt_tipo = Column(String, nullable=False)
+    evt_satelite_id = Column(String, nullable=False)
+    evt_payload = Column(JSONB, nullable=True)
+    evt_status = Column(String, nullable=False)
+    opr_id = Column(Integer, nullable=True)
