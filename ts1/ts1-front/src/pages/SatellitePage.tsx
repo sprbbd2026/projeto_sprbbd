@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { deleteSatellite, getSatellites, type Satellite } from "../services/satellite";
 import { getConstelacoes, type Constelacao } from "../services/constelacao";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaPen, FaTrashAlt } from "react-icons/fa";
 
 export default function SatellitePage() {
@@ -76,12 +76,12 @@ export default function SatellitePage() {
                         <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>
                             Satélites cadastrados
                         </h2>
-                        <a
-                            href="/register-satellite"
+                        <Link
+                            to="/register-satellite"
                             className="rounded-xl px-4 py-2 text-sm font-medium transition hover:opacity-90"
                             style={{ background: "var(--accent)", color: "#fff" }}>
                             Novo satélite
-                        </a>
+                        </Link>
                     </div>
 
                     {loading ? (

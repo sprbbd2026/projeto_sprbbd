@@ -4,7 +4,7 @@ import {
     getConstellations,
     type Constellation,
 } from "../services/constellation";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaPen, FaTrashAlt } from "react-icons/fa";
 
 export default function ConstellationPage() {
@@ -48,11 +48,11 @@ export default function ConstellationPage() {
                 <section className="rounded-2xl p-6" style={{ background: "var(--surface)", boxShadow: "var(--shadow)" }}>
                     <div className="mb-6 flex items-center justify-between">
                         <h2 className="text-xl font-semibold" style={{ color: "var(--text)" }}>Constelacoes cadastradas</h2>
-                        <a href="/register-constellation"
+                        <Link to="/register-constellation"
                             className="rounded-xl px-4 py-2 text-sm font-medium transition hover:opacity-90"
                             style={{ background: "var(--accent)", color: "#fff" }}>
                             Nova constelacao
-                        </a>
+                        </Link>
                     </div>
 
                     {loading ? (

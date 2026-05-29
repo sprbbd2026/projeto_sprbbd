@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import itaLogo from "../assets/ita-logo.png";
 
 export default function Navbar() {
@@ -22,17 +22,17 @@ export default function Navbar() {
             <nav className="mx-auto flex max-w-6xl items-center justify-between p-4 lg:px-8">
 
                 {/* LOGO */}
-                <a href="/dashboard" className="flex items-center gap-2">
+                <Link to="/dashboard" className="flex items-center gap-2">
                     <img src={itaLogo} alt="Logo" className="h-8 w-auto" />
-                </a>
+                </Link>
 
                 {/* DESKTOP MENU */}
                 <div className="hidden lg:flex gap-8">
                     {links.map((item) => (
-                        <a key={item.label} href={item.href}
+                        <Link key={item.label} to={item.href}
                             className="flex items-center gap-2 text-sm font-medium text-gray-200 hover:text-white transition">
                             {item.label}
-                        </a>
+                        </Link>
                     ))}
                 </div>
 
@@ -55,11 +55,11 @@ export default function Navbar() {
                 <div className="lg:hidden border-t border-gray-800 px-4 pb-4">
                     <div className="flex flex-col gap-4 pt-4">
                         {links.map((item) => (
-                            <a key={item.label} href={item.href}
+                            <Link key={item.label} to={item.href}
                                 onClick={() => setOpen(false)}
                                 className="flex items-center gap-2 text-gray-200 hover:text-white transition">
                                 {item.label}
-                            </a>
+                            </Link>
                         ))}
                         <button onClick={() => { setOpen(false); handleLogout(); }}
                             className="text-left font-medium text-red-400 hover:text-red-300 transition">
