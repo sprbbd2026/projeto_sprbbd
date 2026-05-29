@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { renderToString } from 'react-dom/server';
-import { MapPin, Satellite } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 import { MapDashboardLayout } from '../components/layout/MapDashboardLayout';
 import { useMapStore } from '../store/mapStore';
@@ -12,20 +12,20 @@ import { MapEvents } from '../components/map/MapEvents';
 import { SelectedPointCardDashboard } from '../components/map/SelectedPointCardDashboard';
 import { DashboardMarkers } from '../components/map/DashboardMarkers';
 
-const droppedPinIcon = L.divIcon({
-  html: renderToString(
-    <div className="text-gray-800 drop-shadow-md animate-bounce">
-      <MapPin size={36} fill="#FCA5A5" />
-    </div>
-  ),
-  className: 'dropped-pin-icon',
-  iconSize: [36, 36],
-  iconAnchor: [18, 36],
-});
-
 export function DashboardPage() {
   const initialPosition: [number, number] = [-23.2081, -45.8828];
   const { activeLayer, selectedCoord, fetchSatellites } = useMapStore();
+
+  const droppedPinIcon = useMemo(() => L.divIcon({
+    html: renderToString(
+      <div className="text-gray-800 drop-shadow-md animate-bounce">
+        <MapPin size={36} fill="#FCA5A5" />
+      </div>
+    ),
+    className: 'dropped-pin-icon',
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+  }), []);
 
   useEffect(() => {
     fetchSatellites();
