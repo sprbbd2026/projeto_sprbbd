@@ -41,18 +41,16 @@ class Satelite(Base):
 class Telemetria(Base):
     __tablename__ = "telemetria"
 
-    id_telemetria = Column(Integer, primary_key=True, index=True)
-    id_satelite = Column(Integer, ForeignKey(
-        "satelite.id_satelite"), nullable=False)
+    id_telemetria = Column("tlm_id", Integer, primary_key=True, index=True)
+    id_satelite = Column("sat_id", Integer, ForeignKey("satelite.id_satelite"), nullable=False)
 
-    temperatura = Column(Float)
-    timestamp_registro = Column(DateTime)
-    orientacao = Column(String)
-    checksum = Column(String)
-    memoria = Column(Float)
-    energia = Column(Float)
-    bateria = Column(Float)
-    relogio = Column(String)
-    cpu = Column(Float)
+    temperatura = Column("tlm_temperatura", Float)
+    timestamp_registro = Column("tlm_timestamp", DateTime)
+    orientacao = Column("tlm_orientacao", String)
+    checksum = Column("tlm_checksum", String)
+    memoria = Column("tlm_memoria", Float)
+    energia = Column("tlm_energia", Float)
+    relogio = Column("tlm_relogio", DateTime)
+    cpu = Column("tlm_cpu", Float)
 
     satelite = relationship("Satelite", back_populates="telemetrias")
