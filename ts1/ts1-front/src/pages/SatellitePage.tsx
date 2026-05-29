@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { deleteSatellite, getSatellites, type Satellite } from "../services/satellite";
+import { getConstelacoes, type Constelacao } from "../services/constelacao";
 import { useNavigate } from "react-router-dom";
 import { FaPen, FaTrashAlt } from "react-icons/fa";
 
 export default function SatellitePage() {
     const navigate = useNavigate();
     const [satellites, setSatellites] = useState<Satellite[]>([]);
+    const [constelacoes, setConstelacoes] = useState<Record<number, string>>({});
     const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -17,17 +19,20 @@ export default function SatellitePage() {
     };
 
     useEffect(() => {
-        async function loadSatellites() {
+        async function loadData() {
             try {
-                const data = await getSatellites();
-                setSatellites(data);
+                const [sats, cons] = await Promise.all([getSatellites(), getConstelacoes()]);
+                setSatellites(sats);
+                const map: Record<number, string> = {};
+                cons.forEach((c: Constelacao) => { map[c.con_id] = c.con_nome ?? `Constelação ${c.con_id}`; });
+                setConstelacoes(map);
             } catch (error) {
-                console.error("Erro ao buscar satélites:", error);
+                console.error("Erro ao buscar dados:", error);
             } finally {
                 setLoading(false);
             }
         }
-        loadSatellites();
+        loadData();
     }, []);
 
     return (
@@ -110,7 +115,7 @@ export default function SatellitePage() {
                                                 {satellite.sat_numero_svn ?? "—"}
                                             </td>
                                             <td className="py-4" style={{ color: "var(--text-h)" }}>
-                                                {satellite.con_id ?? "—"}
+                                                {satellite.con_id !== null ? (constelacoes[satellite.con_id] ?? satellite.con_id) : "—"}
                                             </td>
                                             <td className="py-4" style={{ color: "var(--text-h)" }}>
                                                 {satellite.sat_relogio_offset !== null ? satellite.sat_relogio_offset : "—"}
