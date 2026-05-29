@@ -7,7 +7,7 @@ from app.schemas.satellite_schema import SatelliteCreateRequest
 def get_all_satellites(db: Session, unassigned: bool = False):
     query = db.query(Satelite)
     if unassigned:
-        query = query.filter(Satelite.cnt_id.is_(None))
+        query = query.filter(Satelite.con_id.is_(None))
     return query.all()
 
 def create_satellite(db: Session, data: SatelliteCreateRequest) -> Satelite:
