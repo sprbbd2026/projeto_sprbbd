@@ -9,10 +9,8 @@ const PathDeleteConstellation = "/constellations/delete";
 export const MIN_SATELITES_CONSTELACAO = 4;
 
 export interface Constellation {
-    cnt_id: number;
-    cnt_nome: string;
-    cnt_descricao: string | null;
-    cnt_status: string;
+    con_id: number;
+    con_nome: string | null;
     sat_quantidade: number;
 }
 
@@ -21,9 +19,7 @@ export interface ConstellationDetail extends Constellation {
 }
 
 export interface CreateConstellationPayload {
-    cnt_nome: string;
-    cnt_descricao: string | null;
-    cnt_status: string;
+    con_nome: string;
     sat_ids: number[];
 }
 
@@ -55,18 +51,18 @@ export async function createConstellation(
 
 /* ATUALIZAR */
 export async function updateConstellation(
-    cnt_id: number,
+    con_id: number,
     payload: CreateConstellationPayload
 ): Promise<ConstellationDetail> {
-    return api<ConstellationDetail>(`${PathUpdateConstellation}/${cnt_id}`, {
+    return api<ConstellationDetail>(`${PathUpdateConstellation}/${con_id}`, {
         method: "PUT",
         body: payload,
     });
 }
 
 /* DELETAR */
-export async function deleteConstellation(cnt_id: number): Promise<void> {
-    return api<void>(`${PathDeleteConstellation}/${cnt_id}`, {
+export async function deleteConstellation(con_id: number): Promise<void> {
+    return api<void>(`${PathDeleteConstellation}/${con_id}`, {
         method: "DELETE",
     });
 }

@@ -30,7 +30,7 @@ export default function ConstellationEditPage() {
                     getUnassignedSatellites(),
                 ]);
 
-                setCntNome(detail.con_nome ?? "");
+                setConNome(detail.con_nome ?? "");
                 setSelectedIds(detail.satelites.map((s) => s.sat_id));
 
                 // elegíveis = livres + os já membros desta constelação
