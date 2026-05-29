@@ -36,6 +36,7 @@ function Layout() {
           <Route path="/register-satellite" element={<PrivateRoute><SatelliteRegisterPage /></PrivateRoute>} />
           <Route path="/satellites/edit/:id" element={<PrivateRoute><SatelliteEditPage /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><MainPage /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
 
