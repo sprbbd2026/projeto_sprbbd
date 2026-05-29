@@ -15,7 +15,7 @@ def send_command(
     data: CommandCreateRequest,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
-    _=Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     comando = create_command(db, data)
 
@@ -29,7 +29,8 @@ def send_command(
             "cmd_tipo": data.cmd_tipo,
             "est_id": data.est_id,
         },
-        status="SUCESSO"
+        status="SUCESSO",
+        operador_id=current_user.opr_id,
     )
 
     return comando
