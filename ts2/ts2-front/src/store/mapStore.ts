@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { fetchLocais, createLocal } from '../services/localService';
+import { fetchSatellites as getSatellitesApi } from '../services/satelliteService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
 export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'outros';
@@ -29,6 +30,7 @@ interface MapState {
   selectedCoord: { lat: number; lng: number } | null;
   isAddModalOpen: boolean;
   locations: LocationPoint[];
+  satellites: SatellitePoint[];
   isLoading: boolean;
   error: string | null;
   
@@ -40,6 +42,7 @@ interface MapState {
   setAddModalOpen: (isOpen: boolean) => void;
   fetchLocations: () => Promise<void>;
   addLocation: (location: Omit<LocationPoint, 'id'>) => Promise<void>;
+  fetchSatellites: () => Promise<void>;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -50,6 +53,7 @@ export const useMapStore = create<MapState>((set) => ({
   selectedCoord: null,
   isAddModalOpen: false,
   locations: [],
+  satellites: [],
   isLoading: false,
   error: null,
   
@@ -92,6 +96,16 @@ export const useMapStore = create<MapState>((set) => ({
       }));
     } catch (err: any) {
       set({ error: err.message || 'Erro ao adicionar local', isLoading: false });
+    }
+  },
+
+  fetchSatellites: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await getSatellitesApi();
+      set({ satellites: data, isLoading: false });
+    } catch (err: any) {
+      set({ error: err.message || 'Erro ao carregar satélites', isLoading: false });
     }
   }
 }));

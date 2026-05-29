@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
-import { MapPin, Radio, LayoutGrid, ShieldAlert } from 'lucide-react';
+import { MapPin, Radio, LayoutGrid, ShieldAlert, Activity } from 'lucide-react';
 import { useMapStore } from '../store/mapStore';
 
 // Vale do Paraíba/Litoral Norte Cities and centroids
@@ -63,9 +62,8 @@ function calculateCoverageArea(points: { lat: number; lng: number }[]): number {
   return areaInSquareDegrees * conversionFactor;
 }
 
-export function PointsSattelites() {
+export function PointsSatellite() {
   const { satellites, fetchSatellites, isLoading } = useMapStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSatellites();
@@ -112,6 +110,7 @@ export function PointsSattelites() {
 
   const totalPoints = satellites.length;
   const coverageArea = calculateCoverageArea(satellites);
+  const operationalPoints = satellites.filter(s => s.operational).length;
 
   // Grouped city data for Pie Chart
   const cityPieData = CITIES.map((city, idx) => {
@@ -157,6 +156,18 @@ export function PointsSattelites() {
               </h3>
             </div>
           </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+              <Activity size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium">Dispositivos Operacionais</p>
+              <h3 className="text-2xl font-bold text-gray-800">
+                {operationalPoints} / {totalPoints} ({((operationalPoints / totalPoints) * 100).toFixed(0)}%)
+              </h3>
+            </div>
+          </div>
         </div>
 
         {/* Main Content Layout */}
@@ -191,7 +202,7 @@ export function PointsSattelites() {
                       <td className="p-4 font-mono text-xs text-gray-500">
                         {sat.lat.toFixed(4)}, {sat.lng.toFixed(4)}
                       </td>
-                      <td className="p-4 text-gray-600 text-sm">{if sat.operational ? "Sim" : "Não"}</td>
+                      <td className="p-4 text-gray-600 text-sm">{sat.operational ? "Sim" : "Não"}</td>
                     </tr>
                   ))}
                 </tbody>
