@@ -12,9 +12,7 @@ export default function ConstellationEditPage() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [cnt_nome, setCntNome] = useState("");
-    const [cnt_descricao, setCntDescricao] = useState("");
-    const [cnt_status, setCntStatus] = useState("ativa");
+    const [con_nome, setConNome] = useState("");
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [eligible, setEligible] = useState<Satellite[]>([]);
 
@@ -32,9 +30,7 @@ export default function ConstellationEditPage() {
                     getUnassignedSatellites(),
                 ]);
 
-                setCntNome(detail.cnt_nome);
-                setCntDescricao(detail.cnt_descricao || "");
-                setCntStatus(detail.cnt_status);
+                setCntNome(detail.con_nome ?? "");
                 setSelectedIds(detail.satelites.map((s) => s.sat_id));
 
                 // elegíveis = livres + os já membros desta constelação
@@ -73,9 +69,7 @@ export default function ConstellationEditPage() {
 
         try {
             await updateConstellation(Number(id), {
-                cnt_nome,
-                cnt_descricao: cnt_descricao || null,
-                cnt_status,
+                con_nome,
                 sat_ids: selectedIds,
             });
             navigate("/constellation");
@@ -111,30 +105,12 @@ export default function ConstellationEditPage() {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <input
-                            value={cnt_nome}
-                            onChange={(e) => setCntNome(e.target.value)}
-                            placeholder="Nome da constelação"
+                            value={con_nome}
+                            onChange={(e) => setConNome(e.target.value)}
+                            placeholder="Nome da constelacao"
                             className={inputStyle}
                             required
                         />
-
-                        <textarea
-                            value={cnt_descricao}
-                            onChange={(e) => setCntDescricao(e.target.value)}
-                            placeholder="Descrição (opcional)"
-                            rows={3}
-                            className={inputStyle}
-                        />
-
-                        <select
-                            value={cnt_status}
-                            onChange={(e) => setCntStatus(e.target.value)}
-                            className={inputStyle}
-                        >
-                            <option value="ativa">Ativa</option>
-                            <option value="inativa">Inativa</option>
-                            <option value="manutencao">Manutenção</option>
-                        </select>
 
                         {/* SATÉLITES */}
                         <div>
@@ -163,9 +139,9 @@ export default function ConstellationEditPage() {
                                             className="accent-[var(--accent)]"
                                         />
                                         <span className="text-sm text-white">
-                                            {sat.sat_nome}
+                                            SAT {sat.sat_id}
                                             <span className="block text-xs text-gray-400">
-                                                {sat.sat_tipo_orbita} · {sat.sat_status}
+                                                PRN {sat.sat_codigo_prn ?? "—"} / SVN {sat.sat_numero_svn ?? "—"}
                                             </span>
                                         </span>
                                     </label>

@@ -10,9 +10,7 @@ import type { Satellite } from "../../services/satellite";
 export default function ConstellationForm() {
     const navigate = useNavigate();
 
-    const [cnt_nome, setCntNome] = useState("");
-    const [cnt_descricao, setCntDescricao] = useState("");
-    const [cnt_status, setCntStatus] = useState("ativa");
+    const [con_nome, setConNome] = useState("");
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
     const [available, setAvailable] = useState<Satellite[]>([]);
@@ -51,9 +49,7 @@ export default function ConstellationForm() {
 
         try {
             await createConstellation({
-                cnt_nome,
-                cnt_descricao: cnt_descricao || null,
-                cnt_status,
+                con_nome,
                 sat_ids: selectedIds,
             });
             navigate("/constellation");
@@ -72,40 +68,14 @@ export default function ConstellationForm() {
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     {/* NOME */}
-                    <div>
-                        <label className="block text-sm mb-2">Nome da Constelação</label>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm mb-2">Nome da Constelacao</label>
                         <input
                             type="text"
-                            value={cnt_nome}
-                            onChange={(e) => setCntNome(e.target.value)}
+                            value={con_nome}
+                            onChange={(e) => setConNome(e.target.value)}
                             className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
                             required
-                        />
-                    </div>
-
-                    {/* STATUS */}
-                    <div>
-                        <label className="block text-sm mb-2">Status</label>
-                        <select
-                            value={cnt_status}
-                            onChange={(e) => setCntStatus(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border bg-[var(--surface)] text-white focus:ring-2 focus:ring-[var(--accent)]"
-                            required
-                        >
-                            <option value="ativa">Ativa</option>
-                            <option value="inativa">Inativa</option>
-                            <option value="manutencao">Manutenção</option>
-                        </select>
-                    </div>
-
-                    {/* DESCRIÇÃO */}
-                    <div className="md:col-span-2">
-                        <label className="block text-sm mb-2">Descrição (opcional)</label>
-                        <textarea
-                            value={cnt_descricao}
-                            onChange={(e) => setCntDescricao(e.target.value)}
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-lg border bg-transparent text-white focus:ring-2 focus:ring-[var(--accent)]"
                         />
                     </div>
                 </div>
@@ -145,9 +115,9 @@ export default function ConstellationForm() {
                                         className="accent-[var(--accent)]"
                                     />
                                     <span className="text-sm text-white">
-                                        {sat.sat_nome}
+                                        SAT {sat.sat_id}
                                         <span className="block text-xs text-gray-400">
-                                            {sat.sat_tipo_orbita} · {sat.sat_status}
+                                            PRN {sat.sat_codigo_prn ?? "—"} / SVN {sat.sat_numero_svn ?? "—"}
                                         </span>
                                     </span>
                                 </label>
