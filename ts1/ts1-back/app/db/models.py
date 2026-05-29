@@ -23,6 +23,12 @@ class Comando(Base):
     cmd_tipo = Column(String)
     cmd_payload_binario = Column(LargeBinary)
 
+class Constelacao(Base):
+    __tablename__ = "constelacao"
+
+    con_id = Column(Integer, primary_key=True, index=True)
+    con_nome = Column(String, nullable=True)
+
 class Satelite(Base):
     __tablename__ = "satelite"
 
@@ -32,12 +38,6 @@ class Satelite(Base):
     sat_codigo_prn = Column(Integer, nullable=True)
     sat_numero_svn = Column(Integer, nullable=True)
     sat_status = Column(String, default="operacional")
-
-class Constelacao(Base):
-    __tablename__ = "constelacao"
-
-    con_id = Column(Integer, primary_key=True, index=True)
-    con_nome = Column(String, nullable=True)
 
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"

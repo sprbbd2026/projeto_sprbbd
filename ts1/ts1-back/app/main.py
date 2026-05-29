@@ -8,6 +8,7 @@ from app.routes.auth_routes import router as auth_router
 from app.routes.command_routes import router as command_router
 from app.routes.satellite_routes import router as satellite_router
 from app.routes.constelacao_routes import router as constelacao_router
+from app.routes.constellation_routes import router as constellation_router
 
 app = FastAPI(
     docs_url="/docs",
@@ -47,3 +48,4 @@ app.include_router(auth_router)
 app.include_router(command_router)
 app.include_router(satellite_router)
 app.include_router(constelacao_router)
+app.include_router(constellation_router)
