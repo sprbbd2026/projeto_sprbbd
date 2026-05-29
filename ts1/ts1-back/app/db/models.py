@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, DateTime, LargeBinary, Float
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, LargeBinary
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
 from app.db.database import Base
@@ -38,6 +39,20 @@ class Satelite(Base):
     sat_codigo_prn = Column(Integer, nullable=True)
     sat_numero_svn = Column(Integer, nullable=True)
     sat_status = Column(String, default="operacional")
+
+class Telemetria(Base):
+    __tablename__ = "telemetria"
+
+    id_telemetria = Column("tlm_id", Integer, primary_key=True, index=True)
+    id_satelite = Column("sat_id", Integer, ForeignKey("satelite.id_satelite"), nullable=False)
+    temperatura = Column("tlm_temperatura", Float)
+    timestamp_registro = Column("tlm_timestamp", DateTime)
+    orientacao = Column("tlm_orientacao", String)
+    checksum = Column("tlm_checksum", String)
+    memoria = Column("tlm_memoria", Float)
+    energia = Column("tlm_energia", Float)
+    relogio = Column("tlm_relogio", DateTime)
+    cpu = Column("tlm_cpu", Float)
 
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"

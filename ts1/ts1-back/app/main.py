@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
+from app.routes.telemetria_routes import router as telemetria_router
 from app.routes.command_routes import router as command_router
 from app.routes.satellite_routes import router as satellite_router
 from app.routes.constelacao_routes import router as constelacao_router
@@ -30,6 +31,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     first_error = exc.errors()[0]
@@ -52,6 +54,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 app.include_router(health_router)
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(telemetria_router)
 app.include_router(command_router)
 app.include_router(satellite_router)
 app.include_router(constelacao_router)
