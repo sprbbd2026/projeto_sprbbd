@@ -2,6 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
+import asyncio
 from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
@@ -10,11 +12,24 @@ from app.routes.command_routes import router as command_router
 from app.routes.satellite_routes import router as satellite_router
 from app.routes.constelacao_routes import router as constelacao_router
 from app.routes.constellation_routes import router as constellation_router
+from simulation.telemetry_simulation import run as run_simulation
+
+
+async def simulation_loop():
+    await run_simulation()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(simulation_loop())
+    yield
+
 
 app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 ALLOWED_ORIGINS = [

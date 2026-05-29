@@ -1,54 +1,51 @@
 import random
-import time
-import requests
-from datetime import datetime
+import asyncio
+from datetime import datetime, timezone
 
-URL = "http://localhost:8000/telemetria/ingest"
+from app.db.database import SessionLocal
+from app.db.models import Satelite, Telemetria
 
-SATELLITES = [1, 2, 3]
+INTERVAL_SECONDS = 30
 
-while True:
 
-    sat_id = random.choice(SATELLITES)
+def gerar_telemetria(sat: Satelite) -> Telemetria:
+    agora = datetime.now(timezone.utc)
+    return Telemetria(
+        id_satelite=sat.sat_id,
+        temperatura=random.uniform(20, 60),
+        timestamp_registro=agora,
+        orientacao=str([round(random.uniform(-1, 1), 4) for _ in range(3)]),
+        checksum=str(random.randint(1000, 9999)),
+        memoria=random.uniform(20, 90),
+        energia=random.uniform(20, 30),
+        relogio=agora,
+        cpu=random.uniform(10, 80),
+    )
 
-    payload = {
-        "header": {
-            "sat_id": sat_id,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
-            "packet_id": random.randint(1000, 9999)
-        },
-        "subsystems": {
-            "power": {
-                "battery_level": random.uniform(70, 100),
-                "solar_panel_v": random.uniform(20, 30)
-            },
-            "adcs": {
-                "attitude": [
-                    random.uniform(-1, 1),
-                    random.uniform(-1, 1),
-                    random.uniform(-1, 1)
-                ],
-                "pointing_error": random.uniform(0, 0.1)
-            },
-            "obc": {
-                "cpu_usage": random.uniform(10, 80),
-                "temp_core": random.uniform(20, 60),
-                "memory_usage": random.uniform(20, 90)
-            }
-        },
-        "gps_payload": {
-            "position_xyz": [
-                random.uniform(1000, 8000),
-                random.uniform(1000, 8000),
-                random.uniform(1000, 8000)
-            ],
-            "signal_integrity": "HEALTHY",
-            "active_channels": random.randint(8, 16)
-        }
-    }
 
-    response = requests.post(URL, json=payload)
+async def run():
+    print("Simulação de telemetria iniciada.")
+    while True:
+        db = SessionLocal()
+        try:
+            satelites = db.query(Satelite).filter(Satelite.sat_status == "operacional").all()
 
-    print(response.status_code, response.json())
+            if not satelites:
+                print(f"[{datetime.now()}] Nenhum satélite operacional encontrado.")
+            else:
+                for sat in satelites:
+                    tlm = gerar_telemetria(sat)
+                    db.add(tlm)
+                db.commit()
+                print(f"[{datetime.now()}] Telemetria gerada para {len(satelites)} satélite(s): {[s.sat_id for s in satelites]}")
+        except Exception as e:
+            db.rollback()
+            print(f"[{datetime.now()}] Erro na simulação: {e}")
+        finally:
+            db.close()
 
-    time.sleep(30)
+        await asyncio.sleep(INTERVAL_SECONDS)
+
+
+if __name__ == "__main__":
+    asyncio.run(run())

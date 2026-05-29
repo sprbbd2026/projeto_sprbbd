@@ -44,7 +44,7 @@ class Telemetria(Base):
     __tablename__ = "telemetria"
 
     id_telemetria = Column("tlm_id", Integer, primary_key=True, index=True)
-    id_satelite = Column("sat_id", Integer, ForeignKey("satelite.id_satelite"), nullable=False)
+    id_satelite = Column("sat_id", Integer, ForeignKey("satelite.sat_id"), nullable=True)
     temperatura = Column("tlm_temperatura", Float)
     timestamp_registro = Column("tlm_timestamp", DateTime)
     orientacao = Column("tlm_orientacao", String)

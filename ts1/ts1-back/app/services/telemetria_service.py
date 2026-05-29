@@ -7,7 +7,7 @@ from app.schemas.telemetria_schema import TelemetryInputPayload
 
 def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
     satelite = db.query(Satelite).filter(
-        Satelite.id_satelite == data.header.sat_id).first()
+        Satelite.sat_id == data.header.sat_id).first()
 
     if not satelite:
         raise HTTPException(
@@ -15,14 +15,14 @@ def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
             detail=f"Satélite '{data.header.sat_id}' não encontrado no banco de dados."
         )
 
-    if satelite.status != "ativo":
+    if satelite.sat_status != "operacional":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"A simulação para o satélite {satelite.id_satelite} não está ativa."
+            detail=f"O satélite {satelite.sat_id} não está operacional."
         )
 
     nova_telemetria = Telemetria(
-        id_satelite=satelite.id_satelite,
+        id_satelite=satelite.sat_id,
         temperatura=data.subsystems.obc.temp_core,
         timestamp_registro=datetime.fromisoformat(
             data.header.timestamp.replace("Z", "+00:00")),
@@ -30,8 +30,7 @@ def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
         checksum=str(data.header.packet_id),
         memoria=data.subsystems.obc.memory_usage,
         energia=data.subsystems.power.solar_panel_v,
-        bateria=data.subsystems.power.battery_level,
-        relogio=data.gps_payload.signal_integrity,
+        relogio=None,
         cpu=data.subsystems.obc.cpu_usage
     )
 
