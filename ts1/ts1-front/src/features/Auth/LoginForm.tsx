@@ -44,7 +44,8 @@ export default function LoginForm() {
 
         setLoading(true);
         try {
-            await login({ email, password });
+            const response = await login({ email, password });
+            localStorage.setItem("token", response.token);
             navigate("/dashboard");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Ocorreu um erro inesperado.");
