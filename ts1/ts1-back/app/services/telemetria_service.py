@@ -7,7 +7,7 @@ from app.schemas.telemetria_schema import TelemetryInputPayload
 
 def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
     satelite = db.query(Satelite).filter(
-        Satelite.codigo_prn == data.header.sat_id).first()
+        Satelite.id_satelite == data.header.sat_id).first()
 
     if not satelite:
         raise HTTPException(
@@ -18,7 +18,7 @@ def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
     if satelite.status != "ativo":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"A simulação para o satélite {satelite.codigo_prn} não está ativa."
+            detail=f"A simulação para o satélite {satelite.id_satelite} não está ativa."
         )
 
     nova_telemetria = Telemetria(

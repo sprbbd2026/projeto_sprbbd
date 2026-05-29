@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class HeaderPayload(BaseModel):
-    sat_id: str
+    sat_id: int
     timestamp: str
     packet_id: int
 
