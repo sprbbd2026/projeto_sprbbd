@@ -23,6 +23,12 @@ export async function api<T>(
     });
 
     if (!response.ok) {
+        if (response.status === 401) {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+            throw new Error("Sessão expirada. Faça login novamente.");
+        }
+
         let errorMessage = "Erro na requisição";
 
         try {
