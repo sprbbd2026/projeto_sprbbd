@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { fetchLocais, createLocal } from '../services/localService';
+import { fetchSatelites } from '../services/satelliteService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
 export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'outros';
@@ -13,6 +14,14 @@ export interface LocationPoint {
   rating: number; // 1 to 5
 }
 
+export interface SatellitePoint {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  operational: boolean;
+}
+
 interface MapState {
   activeLayer: MapLayer;
   searchQuery: string;
@@ -21,6 +30,7 @@ interface MapState {
   selectedCoord: { lat: number; lng: number } | null;
   isAddModalOpen: boolean;
   locations: LocationPoint[];
+  satellites: SatellitePoint[];
   isLoading: boolean;
   error: string | null;
   
@@ -31,6 +41,7 @@ interface MapState {
   setSelectedCoord: (coord: { lat: number; lng: number } | null) => void;
   setAddModalOpen: (isOpen: boolean) => void;
   fetchLocations: () => Promise<void>;
+  fetchSatellites: () => Promise<void>;
   addLocation: (location: Omit<LocationPoint, 'id'>) => Promise<void>;
 }
 
@@ -44,6 +55,7 @@ export const useMapStore = create<MapState>((set) => ({
   locations: [],
   isLoading: false,
   error: null,
+  satellites: [],
   
   setActiveLayer: (layer) => set({ activeLayer: layer }),
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -61,6 +73,16 @@ export const useMapStore = create<MapState>((set) => ({
     try {
       const data = await fetchLocais();
       set({ locations: data, isLoading: false });
+    } catch (err: any) {
+      set({ error: err.message || 'Erro ao carregar locais', isLoading: false });
+    }
+  },
+
+  fetchSatellites: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await fetchSatelites();
+      set({ satellites: data, isLoading: false });
     } catch (err: any) {
       set({ error: err.message || 'Erro ao carregar locais', isLoading: false });
     }
