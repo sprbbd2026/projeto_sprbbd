@@ -54,6 +54,14 @@ class Telemetria(Base):
     relogio = Column("tlm_relogio", DateTime)
     cpu = Column("tlm_cpu", Float)
 
+class Efemeride(Base):
+    __tablename__ = "efemeride"
+
+    efe_id = Column(Integer, primary_key=True, index=True)
+    sat_id = Column(Integer, ForeignKey("satelite.sat_id"), nullable=True)
+    efe_timestamp_ref = Column(DateTime, nullable=True)
+    efe_params_keplerian = Column(String, nullable=True)
+
 class EventoComunicacao(Base):
     __tablename__ = "comunicacao_eventos"
 

@@ -159,6 +159,27 @@
           }
         }
       ]
+    },
+    {
+      "name": "Cobertura",
+      "item": [
+        {
+          "name": "Cobertura Satélite",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/cobertura/satelite/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Cobertura Constelação",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/cobertura/constelacao/1",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
     }
   ]
 }
