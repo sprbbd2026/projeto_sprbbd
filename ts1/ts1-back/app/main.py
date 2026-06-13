@@ -13,6 +13,7 @@ from app.routes.satellite_routes import router as satellite_router
 from app.routes.constelacao_routes import router as constelacao_router
 from app.routes.constellation_routes import router as constellation_router
 from app.routes.cobertura_routes import router as cobertura_router
+from app.routes.dashboard_routes import router as dashboard_router
 from simulation.telemetry_simulation import run as run_simulation
 
 
@@ -35,6 +36,7 @@ app = FastAPI(
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:3000",
     "https://projeto-sprbbd-ts1-front.onrender.com",
 ]
@@ -76,3 +78,4 @@ app.include_router(satellite_router)
 app.include_router(constelacao_router)
 app.include_router(constellation_router)
 app.include_router(cobertura_router)
+app.include_router(dashboard_router)

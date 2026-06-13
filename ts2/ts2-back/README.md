@@ -1,58 +1,82 @@
-# 🛰️ SPRB-BD
-
-API feita com **FastAPI**, **PostgreSQL**, **Alembic** e gerenciamento super rápido de pacotes pelo **UV**.
-
----
-
-## 🛠️ Requisitos de Sistema
-
-Para rodar o projeto você precisa ter na máquina:
-- **[Docker](https://www.docker.com/)** e **Docker Compose**
-- **[UV](https://github.com/astral-sh/uv)** (gerenciador Python)
-
+# 🛰️ SPRB-BD (TS2)
+API feita com **FastAPI**, **PostgreSQL**, **Alembic** e gerenciamento de pacotes pelo **UV**.
 
 ---
 
-## ⚙️ Passo a Passo Rápido
+## 🔌 Portas (TS2)
 
-Siga os comandos abaixo na ordem para ter a aplicação rodando de primeira:
+| Serviço | Porta | Observação |
+|---------|-------|------------|
+| API (Uvicorn) | **8001** | http://localhost:8001/docs |
+| PostgreSQL (Docker) | **5433** | Container `ts2-db` (host); 5432 dentro do container |
 
-### 1. Clonando e Instalando as Dependências
-Clone o repositório na sua máquina, entre na pasta do backend e mande o UV sincronizar. Ele vai criar a Virtual Environment e baixar o FastAPI sozinho:
+> O TS1 usa **8000** e **5432**. A porta **5433** no host evita conflito entre os dois bancos Docker.
+
+---
+
+## 🛠️ Requisitos
+
+- [Docker](https://www.docker.com/) e Docker Compose
+- [UV](https://github.com/astral-sh/uv)
+
+---
+
+## ⚙️ Instalação
 
 ```bash
-git clone <url-do-repositorio>
 cd ts2/ts2-back
 uv sync
 ```
 
-### 2. Configurando o Banco de Dados (PostgreSQL via Docker)
+Configure o `.env`:
 
-Temos um arquivo `docker-compose.yml` já pronto com as configurações. Para subir e deixar rodando em segundo plano:
+```bash
+cp .env.example .env
+```
+
+Exemplo para desenvolvimento local:
+
+```env
+DATABASE_URL=postgresql+psycopg://admin:sua_senha@localhost:5433/sprbbd-db
+DATABASE_KEY=sua_senha
+```
+
+> `DATABASE_KEY` deve ser igual à senha usada no `docker-compose.yml`.
+
+---
+
+## 🚀 Execução
+
+**1. Subir o banco (Docker):**
+
 ```bash
 docker compose up -d
 ```
-*(Confira se a porta 5432 não está ocupada no seu computador).*
 
-### 3. Ajustando as Variáveis de Ambiente (.env)
-A aplicação lê os dados do banco a partir de um arquivo `.env`. 
-Crie um arquivo chamado `.env` na pasta `ts2-back` contendo as exatas configurações abaixo:
-
-```env
-DATABASE_URL=<CONSULTAR_COM_SCRUM_MASTER>
-DATABASE_KEY=<CONSULTAR_COM_SCRUM_MASTER>
-```
-
-### 4. Só Rodar 🔥
-O banco está montado e o ecossistema tá pronto. Agora é só iniciar o servidor do FastAPI. 
+**2. Aplicar migrações:**
 
 ```bash
-uv run uvicorn app.main:app --reload
+uv run alembic upgrade head
 ```
 
---
-Pronto! O servidor já está rodando e a documentação interativa da API está disponível nas seguintes rotas:
+**3. Iniciar a API na porta 8001:**
 
-- 🟢 **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) (Interface gráfica para testar as rotas nativamente, sem precisar do Postman)
-- 📝 **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc) (Visualização alternativa da documentação, excelente para leitura)
-- ⚙️ **OpenAPI JSON**: [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json) (Esquema numérico raw no formato JSON para integrações)
+```bash
+uv run uvicorn app.main:app --reload --port 8001
+```
+
+Documentação interativa:
+
+- Swagger: http://localhost:8001/docs
+- ReDoc: http://localhost:8001/redoc
+- Telemetria: http://localhost:8001/telemetry
+
+---
+
+## 🛑 Parar
+
+```bash
+docker compose down
+```
+
+Para encerrar a API: `Ctrl+C` no terminal do Uvicorn.
