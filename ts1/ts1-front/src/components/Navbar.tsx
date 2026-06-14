@@ -8,6 +8,7 @@ export default function Navbar() {
 
     const links = [
         { label: "Início", href: "/dashboard" },
+        { label: "Comandos", href: "/commands" },
         { label: "Satélites", href: "/satellite" },
         { label: "Constelações", href: "/constellation" },
     ];

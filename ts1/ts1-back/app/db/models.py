@@ -14,15 +14,28 @@ class Operador(Base):
     opr_funcao = Column(String)
     opr_status = Column(String, default="ativo")
 
+class EstacaoControle(Base):
+    __tablename__ = "estacao_controle"
+
+    est_id = Column(Integer, primary_key=True, index=True)
+    est_nome = Column(String, nullable=False)
+    est_latitude = Column(Float, nullable=True)
+    est_longitude = Column(Float, nullable=True)
+    est_status = Column(String, nullable=False, default="ativa")
+
+
 class Comando(Base):
     __tablename__ = "comando"
 
     cmd_id = Column(Integer, primary_key=True, index=True)
-    est_id = Column(Integer)
-    sat_id = Column(Integer)
+    opr_id = Column(Integer, ForeignKey("operador.opr_id"), nullable=True)
+    est_id = Column(Integer, ForeignKey("estacao_controle.est_id"), nullable=False)
+    sat_id = Column(Integer, ForeignKey("satelite.sat_id"), nullable=False)
     cmd_timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     cmd_tipo = Column(String)
     cmd_payload_binario = Column(LargeBinary)
+    cmd_status = Column(String, nullable=False, default="REGISTRADO")
+    cmd_descricao = Column(String, nullable=True)
 
 class Constelacao(Base):
     __tablename__ = "constelacao"
