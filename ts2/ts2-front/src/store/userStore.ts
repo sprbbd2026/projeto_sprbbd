@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import type { UserCreate, UserResponse } from '../types/user'
 import { createUser as postUser, fetchUsers as getUsers } from '../services/userService'
 import { getRequestErrorMessage } from '../utils/error'
+import { useAuthStore } from './authStore'
 
 type UserState = {
   users: UserResponse[]
@@ -37,6 +38,11 @@ export const useUserStore = create<UserState>((set) => ({
         users: [...s.users, created],
         loading: false,
       }))
+      // Persiste o device_uid gerado no cadastro para que o loginRequest
+      // subsequente reutilize o mesmo dispositivo em vez de criar um novo.
+      if (created.device_uid) {
+        useAuthStore.getState().setDeviceUid(created.device_uid)
+      }
     } catch (e) {
       set({ error: getRequestErrorMessage(e), loading: false })
     }
