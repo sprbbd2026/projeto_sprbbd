@@ -11,7 +11,6 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 import { LoginMapShell } from '../components/auth/LoginMapShell'
 import { type FormEvent, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import type { AuthMode } from '../components/ui/AuthModeSwitch'
 import { AuthModeSwitch } from '../components/ui/AuthModeSwitch'
 import { Button } from '../components/ui/Button'
