@@ -17,7 +17,8 @@ def list_locais(db: Session = Depends(get_db)):
             lat=l.lat,
             lng=l.lng,
             categoria=l.categoria,
-            rating=l.rating
+            rating=l.rating,
+            timestamp=l.timestamp
         ) for l in locais
     ]
 
@@ -30,5 +31,6 @@ def add_local(local: LocalCreate, db: Session = Depends(get_db)):
         lat=db_local.lat,
         lng=db_local.lng,
         categoria=db_local.categoria,
-        rating=db_local.rating
+        rating=db_local.rating,
+        timestamp=db_local.timestamp
     )
