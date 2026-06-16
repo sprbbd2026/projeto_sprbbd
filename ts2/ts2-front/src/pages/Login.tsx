@@ -8,9 +8,12 @@ import {
   Map,
   User,
 } from 'lucide-react'
-import { type FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { LoginMapShell } from '../components/auth/LoginMapShell'
+import { type FormEvent, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import type { AuthMode } from '../components/ui/AuthModeSwitch'
+import { AuthModeSwitch } from '../components/ui/AuthModeSwitch'
 import { Button } from '../components/ui/Button'
 import { InputField } from '../components/ui/InputField'
 import { useUsers } from '../hooks/useUsers'

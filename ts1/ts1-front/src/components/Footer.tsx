@@ -1,12 +1,15 @@
 export default function Footer() {
-
     return (
-        <div className="flex items-center justify-center">
+        <footer className="flex flex-col items-center justify-center py-6 gap-2">
 
-            <p className="text-xs text-gray-500 mt-4 mb-2">
-                © 2026 SPRB-BD
+            <p className="text-xs text-gray-400">
+                Acesso restrito a usuários autorizados
             </p>
-        </div>
+
+            <p className="text-xs text-gray-500">
+                © 2026 SPRB-BD
+            </p>
+
+        </footer>
     );
 }
-

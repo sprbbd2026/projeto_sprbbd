@@ -3,23 +3,15 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 class UserCreateRequest(BaseModel):
     name: str
-    document: str
     email: EmailStr
     password: str
-    accessLevel: str
+    funcao: str
 
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
         if len(v) > 255:
             raise ValueError("Nome não pode ter mais de 255 caracteres.")
-        return v
-
-    @field_validator("document")
-    @classmethod
-    def validate_document(cls, v: str) -> str:
-        if len(v) > 255:
-            raise ValueError("Documento não pode ter mais de 255 caracteres.")
         return v
 
     @field_validator("email")
@@ -36,21 +28,20 @@ class UserCreateRequest(BaseModel):
             raise ValueError("Senha não pode ter mais de 255 caracteres.")
         return v
 
-    @field_validator("accessLevel")
+    @field_validator("funcao")
     @classmethod
-    def validate_access_level(cls, v: str) -> str:
+    def validate_funcao(cls, v: str) -> str:
         if len(v) > 50:
-            raise ValueError("Nível de acesso não pode ter mais de 50 caracteres.")
+            raise ValueError("Função não pode ter mais de 50 caracteres.")
         return v
 
 
 class UserResponse(BaseModel):
-    usr_id: int
-    usr_nome: str
-    usr_email: str
-    usr_login: str
-    usr_status: str
-    prf_id: int
+    opr_id: int
+    opr_nome: str
+    opr_email: str
+    opr_funcao: str
+    opr_status: str
 
     class Config:
         from_attributes = True
