@@ -9,6 +9,7 @@ def get_locais(db: Session):
 def create_local(db: Session, local: LocalCreate):
     """Create a new location with validated timestamp."""
     db_local = Local(
+        id_ponto=local.id_ponto,
         nome=local.nome,
         lat=local.lat,
         lng=local.lng,

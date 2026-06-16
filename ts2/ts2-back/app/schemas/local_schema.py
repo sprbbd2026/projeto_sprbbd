@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -10,6 +10,7 @@ class LocalBase(BaseModel):
     rating: int = Field(default=5, ge=1, le=5)
 
 class LocalCreate(LocalBase):
+    id_ponto: int = Field(..., description="ID do ponto (FK)")
     timestamp: datetime = Field(..., description="ISO-8601 timestamp in UTC")
     
     @field_validator('timestamp')
@@ -25,7 +26,8 @@ class LocalCreate(LocalBase):
 class LocalResponse(LocalBase):
     id: int = Field(alias="id")
     timestamp: datetime
-
-    class Config:
-        from_attributes = True
-        populate_by_name = True
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        populate_by_name=True
+    )
