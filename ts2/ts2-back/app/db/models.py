@@ -74,6 +74,7 @@ class Local(Base):
     lng = Column("loc_lng", Float, nullable=False)
     categoria = Column("loc_categoria", String, nullable=False)
     rating = Column("loc_rating", Integer, nullable=False, default=5)
+    timestamp = Column("loc_timestamp", DateTime(timezone=True), nullable=False, index=True)
 
     tipo = Column(
         "loc_tipo", 
