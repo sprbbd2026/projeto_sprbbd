@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -11,6 +11,12 @@ import { CustomMapControls } from '../components/map/CustomMapControls';
 import { MapEvents } from '../components/map/MapEvents';
 import { SelectedPointCardDashboard } from '../components/map/SelectedPointCardDashboard';
 import { DashboardMarkers } from '../components/map/DashboardMarkers';
+import { ConnectedDevicesPanel } from '../components/map/ConnectedDevicesPanel';
+import { usePolling } from '../hooks/usePolling';
+import { sendHeartbeat } from '../services/deviceService';
+
+// Intervalo de atualização automática do dashboard (US304).
+const POLL_INTERVAL_MS = 15_000;
 
 const droppedPinIcon = L.divIcon({
   html: renderToString(
@@ -25,11 +31,18 @@ const droppedPinIcon = L.divIcon({
 
 export function DashboardPage() {
   const initialPosition: [number, number] = [-23.2081, -45.8828];
-  const { activeLayer, selectedCoord, fetchSatellites } = useMapStore();
+  const { activeLayer, selectedCoord, fetchSatellites, fetchLocations, fetchConnectedDevices } =
+    useMapStore();
 
-  useEffect(() => {
-    fetchSatellites();
-  }, [fetchSatellites]);
+  const refresh = useCallback(() => {
+    // Sinaliza que este dashboard está em uso e busca os dados mais recentes.
+    void sendHeartbeat().catch(() => undefined);
+    void fetchSatellites();
+    void fetchLocations();
+    void fetchConnectedDevices();
+  }, [fetchSatellites, fetchLocations, fetchConnectedDevices]);
+
+  usePolling(refresh, POLL_INTERVAL_MS);
 
   const getTileUrl = () => {
     switch (activeLayer) {
@@ -70,6 +83,7 @@ export function DashboardPage() {
       </MapContainer>
 
       {/* Floating Overlays */}
+      <ConnectedDevicesPanel />
       <SelectedPointCardDashboard />
     </MapDashboardLayout>
   );
