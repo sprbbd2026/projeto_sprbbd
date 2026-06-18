@@ -1,64 +1,59 @@
-"""Tests for US304 - Dispositivos conectados (online via heartbeat)."""
-from datetime import datetime, timedelta, timezone
-
+"""Tests for US304 - Dispositivos conectados (logins ativos do usuário)."""
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.orm import Session
 
-from app.db.models import Dispositivo
 from app.main import app
 
-DEVICE_UID = "device-uuid-de-teste-0001"
-HEADERS = {"X-Device-UID": DEVICE_UID}
+CADASTRO = {
+    "nome": "Maria",
+    "sobrenome": "Teste",
+    "email": "maria.teste@exemplo.com",
+    "data_nascimento": "1995-05-20",
+    "documento": "98765432100",
+    "senha": "senha_segura_123",
+}
 
 
 @pytest_asyncio.fixture
 async def client():
-    """HTTP client que despacha requisições direto para o app FastAPI."""
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
 
 
-@pytest.mark.asyncio
-async def test_heartbeat_marca_dispositivo_como_online(client: AsyncClient, db: Session):
-    """CA2 - ao enviar heartbeat, o dispositivo passa a aparecer como conectado."""
-    resp = await client.post("/dispositivos/heartbeat", headers=HEADERS)
-    assert resp.status_code == 200, resp.text
-    assert resp.json()["uuid"] == DEVICE_UID
-
-    conectados = await client.get("/dispositivos/conectados")
-    assert conectados.status_code == 200
-    uuids = [d["uuid"] for d in conectados.json()]
-    assert DEVICE_UID in uuids
-
-
-@pytest.mark.asyncio
-async def test_heartbeat_sem_header_retorna_erro(client: AsyncClient, db: Session):
-    """O heartbeat exige o header X-Device-UID."""
-    resp = await client.post("/dispositivos/heartbeat")
-    assert resp.status_code == 422
-
-
-@pytest.mark.asyncio
-async def test_dispositivo_com_sinal_antigo_nao_aparece(client: AsyncClient, db: Session):
-    """Um dispositivo cujo último sinal está fora da janela não é considerado online."""
-    antigo = Dispositivo(
-        uuid="device-offline-0002",
-        ultimo_sinal=datetime(2000, 1, 1, tzinfo=timezone.utc),
+async def _registrar_e_logar(client: AsyncClient) -> dict:
+    """Cadastra e loga um usuário; o login cria um registro ativo em LOGIN."""
+    await client.post("/users", json=CADASTRO)
+    res = await client.post(
+        "/auth/login",
+        json={"email": CADASTRO["email"], "password": CADASTRO["senha"]},
     )
-    db.add(antigo)
-    db.commit()
-
-    conectados = await client.get("/dispositivos/conectados")
-    assert conectados.status_code == 200
-    uuids = [d["uuid"] for d in conectados.json()]
-    assert "device-offline-0002" not in uuids
+    assert res.status_code == 200, res.text
+    data = res.json()
+    return {
+        "device_uid": data["device_uid"],
+        "headers": {
+            "Authorization": f"Bearer {data['access_token']}",
+            "X-Device-UID": data["device_uid"],
+        },
+    }
 
 
 @pytest.mark.asyncio
-async def test_conectados_vazio_sem_dispositivos(client: AsyncClient, db: Session):
-    """Sem nenhum sinal recente, a lista de conectados vem vazia."""
-    resp = await client.get("/dispositivos/conectados")
-    assert resp.status_code == 200
-    assert resp.json() == []
+async def test_conectados_lista_dispositivo_com_login_ativo(client: AsyncClient, db: Session):
+    """CA2 - o dispositivo do login ativo do usuário aparece como conectado."""
+    auth = await _registrar_e_logar(client)
+
+    res = await client.get("/dispositivos/conectados", headers=auth["headers"])
+    assert res.status_code == 200, res.text
+
+    uuids = [d["uuid"] for d in res.json()]
+    assert auth["device_uid"] in uuids
+
+
+@pytest.mark.asyncio
+async def test_conectados_exige_autenticacao(client: AsyncClient, db: Session):
+    """Sem token/dispositivo válido, o acesso é negado."""
+    res = await client.get("/dispositivos/conectados")
+    assert res.status_code in (401, 403, 422)

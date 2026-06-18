@@ -13,7 +13,6 @@ import { SelectedPointCardDashboard } from '../components/map/SelectedPointCardD
 import { DashboardMarkers } from '../components/map/DashboardMarkers';
 import { ConnectedDevicesPanel } from '../components/map/ConnectedDevicesPanel';
 import { usePolling } from '../hooks/usePolling';
-import { sendHeartbeat } from '../services/deviceService';
 
 // Intervalo de atualização automática do dashboard (US304).
 const POLL_INTERVAL_MS = 15_000;
@@ -35,8 +34,7 @@ export function DashboardPage() {
     useMapStore();
 
   const refresh = useCallback(() => {
-    // Sinaliza que este dashboard está em uso e busca os dados mais recentes.
-    void sendHeartbeat().catch(() => undefined);
+    // Busca os dados mais recentes do dashboard (atualização automática).
     void fetchSatellites();
     void fetchLocations();
     void fetchConnectedDevices();

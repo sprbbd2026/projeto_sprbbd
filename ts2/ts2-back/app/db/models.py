@@ -122,9 +122,6 @@ class Dispositivo(Base):
     id_ponto = Column("pon_id", Integer, ForeignKey("PONTO.pon_id"), nullable=True, index=True)
     metadados = Column("dis_metadados", JSON, nullable=True)
     uuid = Column("dis_uuid", String(36), nullable=False, unique=True, index=True)
-    # Momento do último "sinal de vida" (heartbeat). Usado para saber se o
-    # dispositivo está online — ver US304 (informações atualizadas automaticamente).
-    ultimo_sinal = Column("dis_ultimo_sinal", DateTime(timezone=True), nullable=True, index=True)
 
     usuario_dispositivos = relationship("Usuario_Dispositivo", back_populates="dispositivo")
     ponto = relationship("Ponto", back_populates="dispositivos")
