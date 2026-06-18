@@ -1,3 +1,4 @@
+import { api } from './api';
 import type { SatellitePoint } from '../store/mapStore';
 
 export async function fetchSatelites(): Promise<SatellitePoint[]> {
@@ -31,5 +32,15 @@ export async function fetchSatelites(): Promise<SatellitePoint[]> {
     operational: false,
   }
 ];
+}
+
+export async function getCoberturaConstelacao(conId: number): Promise<any> {
+  const { data } = await api.get(`/cobertura/constelacao/${conId}`);
+  return data;
+}
+
+export async function getCoberturaSatelite(satId: number): Promise<any> {
+  const { data } = await api.get(`/cobertura/satelite/${satId}`);
+  return data;
 }
 

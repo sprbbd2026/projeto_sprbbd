@@ -1,8 +1,8 @@
 import { useMapStore } from '../../store/mapStore';
-import { X, Plus, MapPin } from 'lucide-react';
+import { X, MapPin } from 'lucide-react';
 
 export function SelectedPointCardDashboard() {
-  const { selectedCoord, setSelectedCoord, setAddModalOpen } = useMapStore();
+  const { selectedCoord, setSelectedCoord } = useMapStore();
 
   if (!selectedCoord) return null;
 

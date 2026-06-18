@@ -152,3 +152,35 @@ class Login(Base):
 
     usuario = relationship("Usuario", back_populates="logins")
     dispositivo = relationship("Dispositivo", back_populates="logins")
+
+
+class Telemetria(Base):
+    __tablename__ = "telemetria"
+
+    id = Column("tlm_id", Integer, primary_key=True, index=True)
+    satelite_id = Column("satelite_id", String, nullable=False)
+    cpu_percentual = Column("cpu_percentual", Float, nullable=False)
+    temperatura_celsius = Column("temperatura_celsius", Float, nullable=False)
+    status = Column("status", String, nullable=False, default="operacional")
+    data_hora = Column("data_hora", DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class Satelite(Base):
+    __tablename__ = "satelite"
+
+    sat_id = Column(Integer, primary_key=True, index=True)
+    con_id = Column(Integer, nullable=True)
+    sat_relogio_offset = Column(Float, nullable=True)
+    sat_codigo_prn = Column(Integer, nullable=True)
+    sat_numero_svn = Column(Integer, nullable=True)
+    sat_status = Column(String, default="operacional")
+
+
+class Efemeride(Base):
+    __tablename__ = "efemeride"
+
+    efe_id = Column(Integer, primary_key=True, index=True)
+    sat_id = Column(Integer, ForeignKey("satelite.sat_id"), nullable=True)
+    efe_timestamp_ref = Column(DateTime, nullable=True)
+    efe_params_keplerian = Column(String, nullable=True)
+

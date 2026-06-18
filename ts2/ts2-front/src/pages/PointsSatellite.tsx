@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import { MapPin, Radio, LayoutGrid, ShieldAlert } from 'lucide-react';
@@ -65,7 +64,6 @@ function calculateCoverageArea(points: { lat: number; lng: number }[]): number {
 
 export function PointsSatellites() {
   const { satellites, fetchSatellites, isLoading } = useMapStore();
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSatellites();

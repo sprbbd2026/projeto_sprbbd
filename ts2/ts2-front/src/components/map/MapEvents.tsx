@@ -5,6 +5,7 @@ import { useMapStore } from '../../store/mapStore';
 export function MapEvents() {
   const setSelectedCoord = useMapStore((state) => state.setSelectedCoord);
   const isAddModalOpen = useMapStore((state) => state.isAddModalOpen);
+  const showCoverage = useMapStore((state) => state.showCoverage);
   const map = useMap();
   const [hasLocated, setHasLocated] = useState(false);
 
@@ -20,7 +21,7 @@ export function MapEvents() {
       map.flyTo(e.latlng, 14); // Zoom in on user
     },
     click(e) {
-      if (isAddModalOpen) return;
+      if (isAddModalOpen || showCoverage) return;
       setSelectedCoord({ lat: e.latlng.lat, lng: e.latlng.lng });
     },
   });

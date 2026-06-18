@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { fetchLocais, createLocal } from '../services/localService';
-import { fetchSatelites } from '../services/satelliteService';
+import { fetchSatelites, getCoberturaConstelacao } from '../services/satelliteService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
 export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'outros';
@@ -43,6 +43,10 @@ interface MapState {
   fetchLocations: () => Promise<void>;
   fetchSatellites: () => Promise<void>;
   addLocation: (location: Omit<LocationPoint, 'id'>) => Promise<void>;
+  showCoverage: boolean;
+  coverageData: any | null;
+  setShowCoverage: (show: boolean) => void;
+  fetchCoverage: (constellationId: number) => Promise<void>;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -56,6 +60,8 @@ export const useMapStore = create<MapState>((set) => ({
   isLoading: false,
   error: null,
   satellites: [],
+  showCoverage: false,
+  coverageData: null,
   
   setActiveLayer: (layer) => set({ activeLayer: layer }),
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -106,6 +112,18 @@ export const useMapStore = create<MapState>((set) => ({
       }));
     } catch (err: any) {
       set({ error: err.message || 'Erro ao adicionar local', isLoading: false });
+    }
+  },
+  
+  setShowCoverage: (show) => set({ showCoverage: show }),
+  
+  fetchCoverage: async (constellationId) => {
+    set({ isLoading: true, error: null });
+    try {
+      const data = await getCoberturaConstelacao(constellationId);
+      set({ coverageData: data, isLoading: false });
+    } catch (err: any) {
+      set({ error: err.message || 'Erro ao carregar cobertura', isLoading: false });
     }
   }
 }));

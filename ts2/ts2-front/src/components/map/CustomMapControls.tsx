@@ -1,8 +1,18 @@
+import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
+import L from 'leaflet';
 import { Plus, Minus, LocateFixed } from 'lucide-react';
 
 export function CustomMapControls() {
   const map = useMap();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      L.DomEvent.disableClickPropagation(containerRef.current);
+      L.DomEvent.disableScrollPropagation(containerRef.current);
+    }
+  }, []);
 
   const handleZoomIn = () => {
     map.zoomIn();
@@ -19,7 +29,7 @@ export function CustomMapControls() {
   };
 
   return (
-    <div className="absolute bottom-8 right-4 z-[900] flex flex-col gap-3">
+    <div ref={containerRef} className="absolute bottom-8 right-4 z-[900] flex flex-col gap-3">
       {/* Locate Button */}
       <button 
         onClick={handleLocate}

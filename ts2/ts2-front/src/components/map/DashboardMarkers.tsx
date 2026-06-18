@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Marker, Popup, useMapEvents } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
 import { renderToString } from 'react-dom/server';
@@ -31,7 +31,7 @@ const createCustomIcon = (operational: boolean) => {
 
 export function DashboardMarkers() {
   const { satellites } = useMapStore();
-  const [bounds, setBounds] = useState<LatLngBounds | null>(null);
+  const [, setBounds] = useState<LatLngBounds | null>(null);
 
   const map = useMapEvents({
     moveend: () => setBounds(map.getBounds()),
