@@ -1,50 +1,69 @@
-# 🛰️ SPRB-BD — Frontend
+# 🛰️ SPRB-BD — Frontend (TS1)
 
 Interface web do **SPRB-BD** em **React**, **TypeScript**, **Tailwind CSS**, **Vite** e **React Router**.
 
 ---
 
-## 🚀 Passo a passo
+## 🔌 Portas (TS1)
 
-### 1. Clonar o repositório e entrar na pasta do frontend
+| Serviço | Porta | URL |
+|---------|-------|-----|
+| Frontend | **5173** | http://localhost:5173 |
+| Backend (API) | **8000** | http://localhost:8000/docs |
+| PostgreSQL (Docker) | **5432** | localhost:5432 |
+
+> O TS2 usa portas diferentes (5174, 8001, 5433) para permitir execução simultânea.
+
+---
+
+## 🛠️ Requisitos
+
+- [Node.js](https://nodejs.org/) (LTS)
+- Backend TS1 em execução (ver [README do ts1-back](../ts1-back/README.md))
+
+---
+
+## ⚙️ Instalação
 
 ```bash
-git clone https://github.com/sprbbd2026/projeto_sprbbd
 cd ts1/ts1-front
-```
-
-### 2. Instalar dependências
-
-```bash
 npm install
 ```
 
-Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
+Copie o arquivo de ambiente:
 
-### 3. Configurar variáveis de ambiente
+```bash
+cp .env.example .env
+```
 
-Crie um arquivo `.env` na pasta `ts1-front` com base no `.env.example`:
+Conteúdo do `.env`:
 
 ```env
 VITE_API_URL=http://localhost:8000
+VITE_DEV_PORT=5173
 ```
 
-> O `.env` não vai para o git. Ajuste a URL caso o backend rode em outro endereço.
+---
 
-### 4. Rodar o projeto 🔥
+## 🚀 Execução
+
+Com o **backend TS1** já rodando na porta **8000**:
 
 ```bash
 npm run dev
 ```
 
+Acesse: **http://localhost:5173**
+
 ---
 
 ## ⌨️ Comandos úteis
 
-| Comando       | Descrição                          |
-| ------------- | ---------------------------------- |
-| `npm install` | Instala as Dependências do projeto |
-| `npm run dev` | Inicia o projeto                   |
+| Comando | Descrição |
+|---------|-----------|
+| `npm install` | Instala dependências |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
 
 ---
 
@@ -52,12 +71,12 @@ npm run dev
 
 ```bash
 src/
-├── assets/     #imagens
-├── components/   # componente reutilizáveis
-├── pages/        # telas (Login, Cadastro)
+├── assets/
+├── components/
+├── pages/
 ├── services/     # comunicação com API
-├── features/   # funcionalidades
-│   └── auth/    # formulários de autenticação
+├── features/
+│   └── auth/
 ├── App.tsx
 ├── main.tsx
 └── index.css
@@ -65,7 +84,7 @@ src/
 
 ---
 
-## 📝 Documentações
+## 📝 Documentação
 
 - [Vite](https://vite.dev/)
 - [React](https://react.dev/)

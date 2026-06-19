@@ -4,69 +4,97 @@ API feita com **FastAPI**, **PostgreSQL**, **Alembic** e gerenciamento de pacote
 
 ---
 
-## 🛠️ Requisitos de Sistema
+## 🔌 Portas (TS1)
 
-- **[Docker](https://www.docker.com/)** e **Docker Compose**
-- **[UV](https://github.com/astral-sh/uv)** (gerenciador Python)
+| Serviço | Porta | Observação |
+|---------|-------|------------|
+| API (Uvicorn) | **8000** | http://localhost:8000/docs |
+| PostgreSQL (Docker) | **5432** | Container `ts1-db` |
+
+> O TS2 usa **8001** e **5433** para não conflitar com o TS1.
 
 ---
 
-## ⚙️ Passo a Passo Rápido
+## 🛠️ Requisitos
 
-### 1. Instalando as Dependências
+- [Docker](https://www.docker.com/) e Docker Compose
+- [UV](https://github.com/astral-sh/uv)
+
+---
+
+## ⚙️ Instalação
 
 ```bash
 cd ts1/ts1-back
 uv sync
 ```
 
-### 2. Configurando o Banco de Dados (PostgreSQL via Docker)
+Configure o `.env` a partir do exemplo:
 
 ```bash
-docker compose up -d
+cp .env.example .env
 ```
 
-*(Confira se a porta 5432 não está ocupada no seu computador).*
-
-### 3. Ajustando as Variáveis de Ambiente (.env)
-
-Crie um arquivo `.env` na pasta `ts1-back` com base no `.env.example`:
+Exemplo de `.env` para desenvolvimento local:
 
 ```env
-POSTGRES_HOST=seu_host
+APP_NAME=ts1-back
+DEBUG=true
+HOST=0.0.0.0
+PORT=8000
+
+POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=seu_usuario
+POSTGRES_USER=admin
 POSTGRES_PASSWORD=sua_senha
-POSTGRES_DB=nome_do_banco
+POSTGRES_DB=sprbbd-db
 
 JWT_SECRET_KEY=sua_chave_secreta
 JWT_ALGORITHM=HS256
 JWT_EXPIRE_MINUTES=60
 ```
 
-> `POSTGRES_PASSWORD` é também usada pelo Docker Compose para criar o banco local.
+> `POSTGRES_PASSWORD` é usada também pelo Docker Compose.
 
-> Para gerar uma `JWT_SECRET_KEY` segura:
-> ```bash
-> openssl rand -hex 32
-> ```
+Gere uma chave JWT:
 
-### 4. Rodando as Migrações
+```bash
+openssl rand -hex 32
+```
+
+---
+
+## 🚀 Execução
+
+**1. Subir o banco (Docker):**
+
+```bash
+docker compose up -d
+```
+
+**2. Aplicar migrações:**
 
 ```bash
 uv run alembic upgrade head
 ```
 
-### 5. Iniciando o Servidor 🔥
+**3. Iniciar a API:**
 
 ```bash
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload --port 8000
 ```
+
+Documentação interativa:
+
+- Swagger: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
-Servidor rodando! Documentação disponível em:
+## 🛑 Parar
 
-- 🟢 **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- 📝 **ReDoc**: [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-- ⚙️ **OpenAPI JSON**: [http://127.0.0.1:8000/openapi.json](http://127.0.0.1:8000/openapi.json)
+```bash
+docker compose down
+```
+
+Para encerrar a API: `Ctrl+C` no terminal do Uvicorn.
