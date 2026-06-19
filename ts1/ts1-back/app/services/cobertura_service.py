@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import random
 from datetime import datetime, timezone, timedelta
@@ -24,6 +25,8 @@ BRASIL_BBOX = {
     "lng_min": -76.0,
     "lng_max": -32.0,
 }
+
+logger = logging.getLogger(__name__)
 
 
 def _resolver_kepler(M: float, e: float, tol: float = 1e-10) -> float:
@@ -142,6 +145,69 @@ def _propagar_satelite(efe: "Efemeride") -> dict:
         "sat_id": efe.sat_id,
         "posicao": {"lat": round(lat, 4), "lng": round(lng, 4), "alt_km": round(alt, 1)},
         "footprint": mapping(clipped) if not clipped.is_empty else None,
+    }
+
+
+def propagar_posicao_historica(db: Session, sat_id: int, target_ts: datetime) -> dict | None:
+    """Propaga efemeride mais proxima ate target_ts e retorna posicao calculada.
+
+    Args:
+        db: sessao do banco de dados.
+        sat_id: ID do satelite.
+        target_ts: instante alvo para o calculo da posicao (datetime aware).
+
+    Returns:
+        dict {"lat": float, "lng": float, "alt_km": float, "fonte_efe_id": int}
+        ou None se nao existir efemeride para o satelite.
+    """
+    efe = (
+        db.query(Efemeride)
+        .filter(
+            Efemeride.sat_id == sat_id,
+            Efemeride.efe_timestamp_ref <= target_ts,
+        )
+        .order_by(Efemeride.efe_timestamp_ref.desc())
+        .first()
+    )
+
+    if efe is None:
+        efe = (
+            db.query(Efemeride)
+            .filter(
+                Efemeride.sat_id == sat_id,
+                Efemeride.efe_timestamp_ref > target_ts,
+            )
+            .order_by(Efemeride.efe_timestamp_ref.asc())
+            .first()
+        )
+
+    if efe is None:
+        return None
+
+    if efe.efe_params_keplerian is None:
+        logger.warning(
+            "efe_params_keplerian nulo para efe_id=%s sat_id=%s",
+            efe.efe_id, efe.sat_id,
+        )
+        return None
+
+    try:
+        params = json.loads(efe.efe_params_keplerian)
+    except (json.JSONDecodeError, ValueError) as exc:
+        logger.warning(
+            "JSON invalido em efe_params_keplerian para efe_id=%s sat_id=%s: %s",
+            efe.efe_id, efe.sat_id, exc,
+        )
+        return None
+    delta_t_s = (target_ts - efe.efe_timestamp_ref).total_seconds()
+
+    lat, lng, alt = _keplerian_para_latLngAlt(params, delta_t_s)
+
+    return {
+        "lat": round(lat, 6),
+        "lng": round(lng, 6),
+        "alt_km": round(alt, 2),
+        "fonte_efe_id": efe.efe_id,
     }
 
 
