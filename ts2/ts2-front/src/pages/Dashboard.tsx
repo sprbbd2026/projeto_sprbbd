@@ -1,4 +1,4 @@
-import { Activity, Cpu, Thermometer, RefreshCw } from 'lucide-react'
+import { Activity, Cpu, Thermometer, RefreshCw, Map } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
@@ -60,6 +60,10 @@ export default function Dashboard() {
               <RefreshCw className={loading ? styles.spin : ''} size={16} style={{ marginRight: '0.5rem' }} />
               Atualizar
             </Button>
+            <Link to="/mapa" className={styles.navLink} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Map size={15} />
+              Mapa de Localização
+            </Link>
             <Link to="/" className={styles.navLink}>
               Voltar ao Início
             </Link>

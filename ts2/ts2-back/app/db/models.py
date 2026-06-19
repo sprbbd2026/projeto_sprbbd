@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime
 from app.db.database import Base
 import datetime
 
@@ -24,3 +24,15 @@ class Telemetria(Base):
     temperatura_celsius = Column(Float)
     status = Column(String, default="operacional")
     data_hora = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+class HistoricoLocalizacao(Base):
+    __tablename__ = "historico_localizacao"
+
+    id = Column(Integer, primary_key=True, index=True)
+    satelite_id = Column(String, index=True, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
+    altitude_km = Column(Float, nullable=True)
+    velocidade_kmh = Column(Float, nullable=True)
+    data_hora = Column(DateTime, default=datetime.datetime.utcnow, index=True)
