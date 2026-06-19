@@ -35,3 +35,42 @@ class TelemetryInputPayload(BaseModel):
     header: HeaderPayload
     subsystems: SubsystemsPayload
     gps_payload: GPSPayload
+
+
+# -----------------------------------------------------------
+# Schemas para US302 — Historico de localizacao
+# -----------------------------------------------------------
+
+class LocationPosition(BaseModel):
+    lat: float
+    lng: float
+    alt_km: float
+
+
+class LocationMetadata(BaseModel):
+    temperatura: float | None = None
+    energia: float | None = None
+    cpu: float | None = None
+
+
+class LocationResponse(BaseModel):
+    tlm_id: int
+    sat_id: int
+    timestamp: datetime
+    position: LocationPosition | None = None
+    metadata: LocationMetadata
+
+    class Config:
+        from_attributes = True
+
+
+class LocationPagination(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    next_offset: int | None = None
+
+
+class LocationPageResponse(BaseModel):
+    data: list[LocationResponse]
+    pagination: LocationPagination
