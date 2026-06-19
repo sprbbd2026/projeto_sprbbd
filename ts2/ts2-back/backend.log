@@ -1,0 +1,913 @@
+nohup: ignoring input
+2026-06-19 14:54:01,624 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:01,624 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("CIDADE")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("CIDADE")
+2026-06-19 14:54:01,624 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("RUA")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("RUA")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("PONTO")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("PONTO")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("LOCAL")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("LOCAL")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("USUARIO")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("USUARIO")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("refresh_tokens")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("refresh_tokens")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("DISPOSITIVO")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("DISPOSITIVO")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("USUARIO_DISPOSITIVO")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("USUARIO_DISPOSITIVO")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("LOGIN")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("LOGIN")
+2026-06-19 14:54:01,625 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,626 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("TELEMETRIA")
+INFO:sqlalchemy.engine.Engine:PRAGMA main.table_info("TELEMETRIA")
+2026-06-19 14:54:01,626 INFO sqlalchemy.engine.Engine [raw sql] ()
+INFO:sqlalchemy.engine.Engine:[raw sql] ()
+2026-06-19 14:54:01,626 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+INFO:     Started server process [7230]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+2026-06-19 14:54:57,994 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:57,996 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 14:54:57,996 INFO sqlalchemy.engine.Engine [generated in 0.00020s] ('SAT-VALE-01', -23.1896, -45.8841, 10.0, 25.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[generated in 0.00020s] ('SAT-VALE-01', -23.1896, -45.8841, 10.0, 25.0, 'operacional')
+2026-06-19 14:54:57,998 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:54:58,006 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,008 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 14:54:58,008 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (24,)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00017s] (24,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: SAT-VALE-01
+INFO:     127.0.0.1:53874 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 14:54:58,009 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:54:58,011 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,012 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 14:54:58,012 INFO sqlalchemy.engine.Engine [cached since 0.01582s ago] ('SAT-VALE-01', -23.2045, -45.8722, 15.0, 26.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 0.01582s ago] ('SAT-VALE-01', -23.2045, -45.8722, 15.0, 26.0, 'operacional')
+2026-06-19 14:54:58,012 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:54:58,018 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,018 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 14:54:58,018 INFO sqlalchemy.engine.Engine [cached since 0.01021s ago] (25,)
+INFO:sqlalchemy.engine.Engine:[cached since 0.01021s ago] (25,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: SAT-VALE-01
+INFO:     127.0.0.1:53888 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 14:54:58,019 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:54:58,021 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,021 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 14:54:58,021 INFO sqlalchemy.engine.Engine [cached since 0.0251s ago] ('SAT-VALE-01', -23.2198, -45.859, 20.0, 27.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 0.0251s ago] ('SAT-VALE-01', -23.2198, -45.859, 20.0, 27.0, 'operacional')
+2026-06-19 14:54:58,021 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:54:58,030 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,030 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 14:54:58,030 INFO sqlalchemy.engine.Engine [cached since 0.02266s ago] (26,)
+INFO:sqlalchemy.engine.Engine:[cached since 0.02266s ago] (26,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: SAT-VALE-01
+INFO:     127.0.0.1:53900 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 14:54:58,031 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:54:58,033 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,033 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 14:54:58,033 INFO sqlalchemy.engine.Engine [cached since 0.03752s ago] ('SAT-VALE-01', -23.235, -45.845, 25.0, 28.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 0.03752s ago] ('SAT-VALE-01', -23.235, -45.845, 25.0, 28.0, 'operacional')
+2026-06-19 14:54:58,034 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:54:58,041 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:54:58,041 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 14:54:58,041 INFO sqlalchemy.engine.Engine [cached since 0.03309s ago] (27,)
+INFO:sqlalchemy.engine.Engine:[cached since 0.03309s ago] (27,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: SAT-VALE-01
+INFO:     127.0.0.1:53910 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 14:54:58,042 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:56:07,142 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:56:07,144 INFO sqlalchemy.engine.Engine INSERT INTO "USUARIO" (usu_uuid, usu_nome, usu_sobrenome, usu_dt_nascimento, usu_email, usu_senha, usu_documento) VALUES (?, ?, ?, ?, ?, ?, ?)
+INFO:sqlalchemy.engine.Engine:INSERT INTO "USUARIO" (usu_uuid, usu_nome, usu_sobrenome, usu_dt_nascimento, usu_email, usu_senha, usu_documento) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-06-19 14:56:07,144 INFO sqlalchemy.engine.Engine [generated in 0.00015s] ('93b2e061-5a1f-40f9-b1c9-abd0ee93852a', 'User', 'Test', '1990-01-01', 'test@test.com', '$2b$12$itCoLanTrJTM7yGx8pprpexIODOh20QKRzDoeGxkkMwLgu1SgSiYK', '12345678901')
+INFO:sqlalchemy.engine.Engine:[generated in 0.00015s] ('93b2e061-5a1f-40f9-b1c9-abd0ee93852a', 'User', 'Test', '1990-01-01', 'test@test.com', '$2b$12$itCoLanTrJTM7yGx8pprpexIODOh20QKRzDoeGxkkMwLgu1SgSiYK', '12345678901')
+2026-06-19 14:56:07,144 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+INFO:     127.0.0.1:42090 - "POST /users HTTP/1.1" 409 Conflict
+[device_metadata] login: {'userAgent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', 'browser': 'Chrome 149.0.0.0', 'os': 'Windows 10+', 'deviceType': 'desktop', 'language': 'pt-BR', 'timezone': 'America/Sao_Paulo'}
+2026-06-19 14:58:15,977 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:15,980 INFO sqlalchemy.engine.Engine SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_email = ?
+ LIMIT ? OFFSET ?
+INFO:sqlalchemy.engine.Engine:SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_email = ?
+ LIMIT ? OFFSET ?
+2026-06-19 14:58:15,980 INFO sqlalchemy.engine.Engine [generated in 0.00023s] ('test@test.com', 1, 0)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00023s] ('test@test.com', 1, 0)
+2026-06-19 14:58:16,214 INFO sqlalchemy.engine.Engine INSERT INTO "DISPOSITIVO" (pon_id, dis_metadados, dis_uuid) VALUES (?, ?, ?)
+INFO:sqlalchemy.engine.Engine:INSERT INTO "DISPOSITIVO" (pon_id, dis_metadados, dis_uuid) VALUES (?, ?, ?)
+2026-06-19 14:58:16,215 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (None, 'null', '7365e3eb-929d-4e6f-9ecf-3a2c5c66b3c5')
+INFO:sqlalchemy.engine.Engine:[generated in 0.00024s] (None, 'null', '7365e3eb-929d-4e6f-9ecf-3a2c5c66b3c5')
+2026-06-19 14:58:16,215 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:58:16,239 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:16,239 INFO sqlalchemy.engine.Engine SELECT "DISPOSITIVO".dis_id, "DISPOSITIVO".pon_id, "DISPOSITIVO".dis_metadados, "DISPOSITIVO".dis_uuid 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "DISPOSITIVO".dis_id, "DISPOSITIVO".pon_id, "DISPOSITIVO".dis_metadados, "DISPOSITIVO".dis_uuid 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+2026-06-19 14:58:16,239 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (6,)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00016s] (6,)
+2026-06-19 14:58:16,241 INFO sqlalchemy.engine.Engine SELECT "USUARIO_DISPOSITIVO".usd_id AS "USUARIO_DISPOSITIVO_usd_id", "USUARIO_DISPOSITIVO".usu_id AS "USUARIO_DISPOSITIVO_usu_id", "USUARIO_DISPOSITIVO".dis_id AS "USUARIO_DISPOSITIVO_dis_id", "USUARIO_DISPOSITIVO".usd_data_hora AS "USUARIO_DISPOSITIVO_usd_data_hora", "USUARIO_DISPOSITIVO".usd_ativo AS "USUARIO_DISPOSITIVO_usd_ativo" 
+FROM "USUARIO_DISPOSITIVO" 
+WHERE "USUARIO_DISPOSITIVO".usu_id = ? AND "USUARIO_DISPOSITIVO".dis_id = ?
+ LIMIT ? OFFSET ?
+INFO:sqlalchemy.engine.Engine:SELECT "USUARIO_DISPOSITIVO".usd_id AS "USUARIO_DISPOSITIVO_usd_id", "USUARIO_DISPOSITIVO".usu_id AS "USUARIO_DISPOSITIVO_usu_id", "USUARIO_DISPOSITIVO".dis_id AS "USUARIO_DISPOSITIVO_dis_id", "USUARIO_DISPOSITIVO".usd_data_hora AS "USUARIO_DISPOSITIVO_usd_data_hora", "USUARIO_DISPOSITIVO".usd_ativo AS "USUARIO_DISPOSITIVO_usd_ativo" 
+FROM "USUARIO_DISPOSITIVO" 
+WHERE "USUARIO_DISPOSITIVO".usu_id = ? AND "USUARIO_DISPOSITIVO".dis_id = ?
+ LIMIT ? OFFSET ?
+2026-06-19 14:58:16,241 INFO sqlalchemy.engine.Engine [generated in 0.00014s] (3, 6, 1, 0)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00014s] (3, 6, 1, 0)
+2026-06-19 14:58:16,242 INFO sqlalchemy.engine.Engine INSERT INTO "USUARIO_DISPOSITIVO" (usu_id, dis_id, usd_ativo) VALUES (?, ?, ?) RETURNING usd_id, usd_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "USUARIO_DISPOSITIVO" (usu_id, dis_id, usd_ativo) VALUES (?, ?, ?) RETURNING usd_id, usd_data_hora
+2026-06-19 14:58:16,243 INFO sqlalchemy.engine.Engine [generated in 0.00014s] (3, 6, 1)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00014s] (3, 6, 1)
+2026-06-19 14:58:16,243 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:58:16,249 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:16,250 INFO sqlalchemy.engine.Engine SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_id = ?
+2026-06-19 14:58:16,250 INFO sqlalchemy.engine.Engine [generated in 0.00012s] (3,)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00012s] (3,)
+2026-06-19 14:58:16,250 INFO sqlalchemy.engine.Engine SELECT "DISPOSITIVO".dis_id AS "DISPOSITIVO_dis_id", "DISPOSITIVO".pon_id AS "DISPOSITIVO_pon_id", "DISPOSITIVO".dis_metadados AS "DISPOSITIVO_dis_metadados", "DISPOSITIVO".dis_uuid AS "DISPOSITIVO_dis_uuid" 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "DISPOSITIVO".dis_id AS "DISPOSITIVO_dis_id", "DISPOSITIVO".pon_id AS "DISPOSITIVO_pon_id", "DISPOSITIVO".dis_metadados AS "DISPOSITIVO_dis_metadados", "DISPOSITIVO".dis_uuid AS "DISPOSITIVO_dis_uuid" 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+2026-06-19 14:58:16,250 INFO sqlalchemy.engine.Engine [generated in 0.00012s] (6,)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00012s] (6,)
+2026-06-19 14:58:16,251 INFO sqlalchemy.engine.Engine INSERT INTO "LOGIN" (usu_id, dis_id, log_ip, log_ativo) VALUES (?, ?, ?, ?) RETURNING log_id, log_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "LOGIN" (usu_id, dis_id, log_ip, log_ativo) VALUES (?, ?, ?, ?) RETURNING log_id, log_data_hora
+2026-06-19 14:58:16,251 INFO sqlalchemy.engine.Engine [generated in 0.00012s] (3, 6, '127.0.0.1', 1)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00012s] (3, 6, '127.0.0.1', 1)
+2026-06-19 14:58:16,252 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 14:58:16,257 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:16,257 INFO sqlalchemy.engine.Engine SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "USUARIO".usu_id AS "USUARIO_usu_id", "USUARIO".usu_uuid AS "USUARIO_usu_uuid", "USUARIO".usu_nome AS "USUARIO_usu_nome", "USUARIO".usu_sobrenome AS "USUARIO_usu_sobrenome", "USUARIO".usu_dt_nascimento AS "USUARIO_usu_dt_nascimento", "USUARIO".usu_email AS "USUARIO_usu_email", "USUARIO".usu_senha AS "USUARIO_usu_senha", "USUARIO".usu_documento AS "USUARIO_usu_documento" 
+FROM "USUARIO" 
+WHERE "USUARIO".usu_id = ?
+2026-06-19 14:58:16,257 INFO sqlalchemy.engine.Engine [cached since 0.007804s ago] (3,)
+INFO:sqlalchemy.engine.Engine:[cached since 0.007804s ago] (3,)
+2026-06-19 14:58:16,258 INFO sqlalchemy.engine.Engine SELECT "DISPOSITIVO".dis_id AS "DISPOSITIVO_dis_id", "DISPOSITIVO".pon_id AS "DISPOSITIVO_pon_id", "DISPOSITIVO".dis_metadados AS "DISPOSITIVO_dis_metadados", "DISPOSITIVO".dis_uuid AS "DISPOSITIVO_dis_uuid" 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "DISPOSITIVO".dis_id AS "DISPOSITIVO_dis_id", "DISPOSITIVO".pon_id AS "DISPOSITIVO_pon_id", "DISPOSITIVO".dis_metadados AS "DISPOSITIVO_dis_metadados", "DISPOSITIVO".dis_uuid AS "DISPOSITIVO_dis_uuid" 
+FROM "DISPOSITIVO" 
+WHERE "DISPOSITIVO".dis_id = ?
+2026-06-19 14:58:16,259 INFO sqlalchemy.engine.Engine [cached since 0.00835s ago] (6,)
+INFO:sqlalchemy.engine.Engine:[cached since 0.00835s ago] (6,)
+INFO:     127.0.0.1:55792 - "POST /auth/login HTTP/1.1" 200 OK
+2026-06-19 14:58:16,260 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:16,330 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:16,331 INFO sqlalchemy.engine.Engine SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+INFO:sqlalchemy.engine.Engine:SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+2026-06-19 14:58:16,332 INFO sqlalchemy.engine.Engine [generated in 0.00020s] ()
+INFO:sqlalchemy.engine.Engine:[generated in 0.00020s] ()
+INFO:     127.0.0.1:55800 - "GET /locais HTTP/1.1" 200 OK
+2026-06-19 14:58:16,333 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:16,642 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:16,643 INFO sqlalchemy.engine.Engine SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+INFO:sqlalchemy.engine.Engine:SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+2026-06-19 14:58:16,643 INFO sqlalchemy.engine.Engine [cached since 0.3115s ago] ()
+INFO:sqlalchemy.engine.Engine:[cached since 0.3115s ago] ()
+INFO:     127.0.0.1:55804 - "GET /locais HTTP/1.1" 200 OK
+2026-06-19 14:58:16,644 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:23,178 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:23,179 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:23,179 INFO sqlalchemy.engine.Engine [generated in 0.00017s] ('1',)
+INFO:sqlalchemy.engine.Engine:[generated in 0.00017s] ('1',)
+INFO:     127.0.0.1:51878 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:23,180 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:25,485 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:25,485 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:25,485 INFO sqlalchemy.engine.Engine [cached since 2.307s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 2.307s ago] ('1',)
+INFO:     127.0.0.1:51888 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:25,487 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:25,777 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:25,778 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:25,778 INFO sqlalchemy.engine.Engine [cached since 2.599s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 2.599s ago] ('1',)
+INFO:     127.0.0.1:51904 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:25,779 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:27,813 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:27,814 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:27,814 INFO sqlalchemy.engine.Engine [cached since 4.635s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 4.635s ago] ('1',)
+INFO:     127.0.0.1:51916 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:27,815 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:33,387 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:33,387 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:33,387 INFO sqlalchemy.engine.Engine [cached since 10.21s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 10.21s ago] ('1',)
+INFO:     127.0.0.1:52668 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:33,389 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:34,920 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:34,921 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:34,921 INFO sqlalchemy.engine.Engine [cached since 11.74s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 11.74s ago] ('1',)
+INFO:     127.0.0.1:52682 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:34,922 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:47,543 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:47,543 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:47,543 INFO sqlalchemy.engine.Engine [cached since 24.36s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 24.36s ago] ('1',)
+INFO:     127.0.0.1:51576 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:58:47,545 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:53,615 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:53,616 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:53,616 INFO sqlalchemy.engine.Engine [cached since 30.44s ago] ('3',)
+INFO:sqlalchemy.engine.Engine:[cached since 30.44s ago] ('3',)
+INFO:     127.0.0.1:58892 - "GET /telemetry/history/3 HTTP/1.1" 200 OK
+2026-06-19 14:58:53,617 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:55,326 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:55,327 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:55,327 INFO sqlalchemy.engine.Engine [cached since 32.15s ago] ('3',)
+INFO:sqlalchemy.engine.Engine:[cached since 32.15s ago] ('3',)
+INFO:     127.0.0.1:58906 - "GET /telemetry/history/3 HTTP/1.1" 200 OK
+2026-06-19 14:58:55,328 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:58:59,286 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:58:59,287 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:58:59,287 INFO sqlalchemy.engine.Engine [cached since 36.11s ago] ('2',)
+INFO:sqlalchemy.engine.Engine:[cached since 36.11s ago] ('2',)
+INFO:     127.0.0.1:58912 - "GET /telemetry/history/2 HTTP/1.1" 200 OK
+2026-06-19 14:58:59,288 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 14:59:01,300 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 14:59:01,300 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 14:59:01,300 INFO sqlalchemy.engine.Engine [cached since 38.12s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 38.12s ago] ('1',)
+INFO:     127.0.0.1:46052 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 14:59:01,302 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:21,939 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:21,940 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:21,940 INFO sqlalchemy.engine.Engine [cached since 503.9s ago] ('1', -23.1896, -45.8841, 10.0, 20.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 503.9s ago] ('1', -23.1896, -45.8841, 10.0, 20.0, 'operacional')
+2026-06-19 15:03:21,940 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:21,946 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:21,946 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:21,946 INFO sqlalchemy.engine.Engine [cached since 503.9s ago] (28,)
+INFO:sqlalchemy.engine.Engine:[cached since 503.9s ago] (28,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45414 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:21,947 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,049 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,049 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,049 INFO sqlalchemy.engine.Engine [cached since 504.1s ago] ('1', -23.18093684210526, -45.86651578947368, 12.0, 21.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.1s ago] ('1', -23.18093684210526, -45.86651578947368, 12.0, 21.0, 'operacional')
+2026-06-19 15:03:22,050 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,061 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,061 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,061 INFO sqlalchemy.engine.Engine [cached since 504.1s ago] (29,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.1s ago] (29,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45428 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,062 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,166 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,166 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,166 INFO sqlalchemy.engine.Engine [cached since 504.2s ago] ('1', -23.172273684210523, -45.848931578947365, 14.0, 22.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.2s ago] ('1', -23.172273684210523, -45.848931578947365, 14.0, 22.0, 'operacional')
+2026-06-19 15:03:22,167 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,189 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,189 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,189 INFO sqlalchemy.engine.Engine [cached since 504.2s ago] (30,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.2s ago] (30,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45440 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,190 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,293 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,293 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,293 INFO sqlalchemy.engine.Engine [cached since 504.3s ago] ('1', -23.16361052631579, -45.83134736842105, 16.0, 23.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.3s ago] ('1', -23.16361052631579, -45.83134736842105, 16.0, 23.0, 'operacional')
+2026-06-19 15:03:22,293 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,317 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,317 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,317 INFO sqlalchemy.engine.Engine [cached since 504.3s ago] (31,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.3s ago] (31,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45450 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,318 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,421 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,421 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,421 INFO sqlalchemy.engine.Engine [cached since 504.4s ago] ('1', -23.154947368421052, -45.81376315789473, 18.0, 24.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.4s ago] ('1', -23.154947368421052, -45.81376315789473, 18.0, 24.0, 'operacional')
+2026-06-19 15:03:22,422 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,444 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,444 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,445 INFO sqlalchemy.engine.Engine [cached since 504.4s ago] (32,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.4s ago] (32,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45462 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,445 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,548 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,548 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,548 INFO sqlalchemy.engine.Engine [cached since 504.6s ago] ('1', -23.146284210526314, -45.79617894736842, 20.0, 25.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.6s ago] ('1', -23.146284210526314, -45.79617894736842, 20.0, 25.0, 'operacional')
+2026-06-19 15:03:22,548 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,556 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,557 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,557 INFO sqlalchemy.engine.Engine [cached since 504.5s ago] (33,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.5s ago] (33,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45468 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,557 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,660 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,661 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,661 INFO sqlalchemy.engine.Engine [cached since 504.7s ago] ('1', -23.137621052631577, -45.7785947368421, 22.0, 26.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.7s ago] ('1', -23.137621052631577, -45.7785947368421, 22.0, 26.0, 'operacional')
+2026-06-19 15:03:22,661 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,696 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,696 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,696 INFO sqlalchemy.engine.Engine [cached since 504.7s ago] (34,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.7s ago] (34,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45474 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,697 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,799 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,800 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,800 INFO sqlalchemy.engine.Engine [cached since 504.8s ago] ('1', -23.12895789473684, -45.761010526315786, 24.0, 27.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.8s ago] ('1', -23.12895789473684, -45.761010526315786, 24.0, 27.0, 'operacional')
+2026-06-19 15:03:22,800 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,822 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,822 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,822 INFO sqlalchemy.engine.Engine [cached since 504.8s ago] (35,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.8s ago] (35,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45480 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,823 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:22,926 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,926 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:22,926 INFO sqlalchemy.engine.Engine [cached since 504.9s ago] ('1', -23.120294736842105, -45.74342631578947, 26.0, 28.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 504.9s ago] ('1', -23.120294736842105, -45.74342631578947, 26.0, 28.0, 'operacional')
+2026-06-19 15:03:22,927 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:22,951 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:22,951 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:22,951 INFO sqlalchemy.engine.Engine [cached since 504.9s ago] (36,)
+INFO:sqlalchemy.engine.Engine:[cached since 504.9s ago] (36,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45488 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:22,952 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,054 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,055 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,055 INFO sqlalchemy.engine.Engine [cached since 505.1s ago] ('1', -23.111631578947367, -45.725842105263155, 28.0, 29.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.1s ago] ('1', -23.111631578947367, -45.725842105263155, 28.0, 29.0, 'operacional')
+2026-06-19 15:03:23,055 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,065 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,065 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,065 INFO sqlalchemy.engine.Engine [cached since 505.1s ago] (37,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.1s ago] (37,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45500 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,066 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,171 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,171 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,172 INFO sqlalchemy.engine.Engine [cached since 505.2s ago] ('1', -23.10296842105263, -45.70825789473684, 30.0, 20.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.2s ago] ('1', -23.10296842105263, -45.70825789473684, 30.0, 20.0, 'operacional')
+2026-06-19 15:03:23,172 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,198 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,198 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,198 INFO sqlalchemy.engine.Engine [cached since 505.2s ago] (38,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.2s ago] (38,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45512 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,199 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,302 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,302 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,302 INFO sqlalchemy.engine.Engine [cached since 505.3s ago] ('1', -23.094305263157892, -45.69067368421052, 32.0, 21.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.3s ago] ('1', -23.094305263157892, -45.69067368421052, 32.0, 21.0, 'operacional')
+2026-06-19 15:03:23,303 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,328 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,328 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,328 INFO sqlalchemy.engine.Engine [cached since 505.3s ago] (39,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.3s ago] (39,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45522 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,329 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,431 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,431 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,431 INFO sqlalchemy.engine.Engine [cached since 505.4s ago] ('1', -23.085642105263158, -45.67308947368421, 34.0, 22.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.4s ago] ('1', -23.085642105263158, -45.67308947368421, 34.0, 22.0, 'operacional')
+2026-06-19 15:03:23,432 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,457 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,457 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,457 INFO sqlalchemy.engine.Engine [cached since 505.4s ago] (40,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.4s ago] (40,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45530 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,458 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,561 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,562 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,562 INFO sqlalchemy.engine.Engine [cached since 505.6s ago] ('1', -23.07697894736842, -45.65550526315789, 36.0, 23.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.6s ago] ('1', -23.07697894736842, -45.65550526315789, 36.0, 23.0, 'operacional')
+2026-06-19 15:03:23,562 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,590 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,590 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,590 INFO sqlalchemy.engine.Engine [cached since 505.6s ago] (41,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.6s ago] (41,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45546 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,591 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,694 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,694 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,694 INFO sqlalchemy.engine.Engine [cached since 505.7s ago] ('1', -23.068315789473683, -45.637921052631576, 38.0, 24.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.7s ago] ('1', -23.068315789473683, -45.637921052631576, 38.0, 24.0, 'operacional')
+2026-06-19 15:03:23,695 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,721 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,721 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,721 INFO sqlalchemy.engine.Engine [cached since 505.7s ago] (42,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.7s ago] (42,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45558 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,722 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,825 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,826 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,826 INFO sqlalchemy.engine.Engine [cached since 505.8s ago] ('1', -23.059652631578945, -45.62033684210526, 40.0, 25.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 505.8s ago] ('1', -23.059652631578945, -45.62033684210526, 40.0, 25.0, 'operacional')
+2026-06-19 15:03:23,826 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,860 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,861 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,861 INFO sqlalchemy.engine.Engine [cached since 505.9s ago] (43,)
+INFO:sqlalchemy.engine.Engine:[cached since 505.9s ago] (43,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45562 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,862 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:23,965 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,966 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:23,966 INFO sqlalchemy.engine.Engine [cached since 506s ago] ('1', -23.050989473684208, -45.602752631578944, 42.0, 26.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 506s ago] ('1', -23.050989473684208, -45.602752631578944, 42.0, 26.0, 'operacional')
+2026-06-19 15:03:23,966 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:23,989 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:23,989 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:23,989 INFO sqlalchemy.engine.Engine [cached since 506s ago] (44,)
+INFO:sqlalchemy.engine.Engine:[cached since 506s ago] (44,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45564 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:23,990 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:24,097 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,097 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:24,097 INFO sqlalchemy.engine.Engine [cached since 506.1s ago] ('1', -23.042326315789474, -45.58516842105263, 44.0, 27.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 506.1s ago] ('1', -23.042326315789474, -45.58516842105263, 44.0, 27.0, 'operacional')
+2026-06-19 15:03:24,098 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:24,113 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,113 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:24,113 INFO sqlalchemy.engine.Engine [cached since 506.1s ago] (45,)
+INFO:sqlalchemy.engine.Engine:[cached since 506.1s ago] (45,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45580 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:24,114 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:24,221 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,221 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:24,221 INFO sqlalchemy.engine.Engine [cached since 506.2s ago] ('1', -23.033663157894736, -45.56758421052631, 46.0, 28.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 506.2s ago] ('1', -23.033663157894736, -45.56758421052631, 46.0, 28.0, 'operacional')
+2026-06-19 15:03:24,222 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:24,247 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,248 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:24,248 INFO sqlalchemy.engine.Engine [cached since 506.2s ago] (46,)
+INFO:sqlalchemy.engine.Engine:[cached since 506.2s ago] (46,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45594 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:24,249 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:24,355 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,355 INFO sqlalchemy.engine.Engine INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+INFO:sqlalchemy.engine.Engine:INSERT INTO "TELEMETRIA" (sat_id, tlm_latitude, tlm_longitude, tlm_cpu, tlm_temp, tlm_status) VALUES (?, ?, ?, ?, ?, ?) RETURNING tlm_id, tlm_data_hora
+2026-06-19 15:03:24,355 INFO sqlalchemy.engine.Engine [cached since 506.4s ago] ('1', -23.025, -45.55, 48.0, 29.0, 'operacional')
+INFO:sqlalchemy.engine.Engine:[cached since 506.4s ago] ('1', -23.025, -45.55, 48.0, 29.0, 'operacional')
+2026-06-19 15:03:24,356 INFO sqlalchemy.engine.Engine COMMIT
+INFO:sqlalchemy.engine.Engine:COMMIT
+2026-06-19 15:03:24,381 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:24,381 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id, "TELEMETRIA".sat_id, "TELEMETRIA".tlm_latitude, "TELEMETRIA".tlm_longitude, "TELEMETRIA".tlm_cpu, "TELEMETRIA".tlm_temp, "TELEMETRIA".tlm_status, "TELEMETRIA".tlm_data_hora 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".tlm_id = ?
+2026-06-19 15:03:24,381 INFO sqlalchemy.engine.Engine [cached since 506.4s ago] (47,)
+INFO:sqlalchemy.engine.Engine:[cached since 506.4s ago] (47,)
+INFO:app.services.telemetry_service:Telemetria recebida e salva com sucesso. Satélite: 1
+INFO:     127.0.0.1:45606 - "POST /telemetry/ HTTP/1.1" 200 OK
+2026-06-19 15:03:24,383 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:37,655 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:37,655 INFO sqlalchemy.engine.Engine SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+INFO:sqlalchemy.engine.Engine:SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+2026-06-19 15:03:37,655 INFO sqlalchemy.engine.Engine [cached since 321.3s ago] ()
+INFO:sqlalchemy.engine.Engine:[cached since 321.3s ago] ()
+INFO:     127.0.0.1:53390 - "GET /locais HTTP/1.1" 200 OK
+2026-06-19 15:03:37,656 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:37,660 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:37,661 INFO sqlalchemy.engine.Engine SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+INFO:sqlalchemy.engine.Engine:SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+2026-06-19 15:03:37,661 INFO sqlalchemy.engine.Engine [cached since 321.3s ago] ()
+INFO:sqlalchemy.engine.Engine:[cached since 321.3s ago] ()
+INFO:     127.0.0.1:53392 - "GET /locais HTTP/1.1" 200 OK
+2026-06-19 15:03:37,661 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:03:39,129 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:03:39,129 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 15:03:39,129 INFO sqlalchemy.engine.Engine [cached since 316s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 316s ago] ('1',)
+INFO:     127.0.0.1:53408 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 15:03:39,130 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:04:58,670 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:04:58,670 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 15:04:58,671 INFO sqlalchemy.engine.Engine [cached since 395.5s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 395.5s ago] ('1',)
+INFO:     127.0.0.1:51668 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 15:04:58,672 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:04:58,930 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:04:58,930 INFO sqlalchemy.engine.Engine SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+INFO:sqlalchemy.engine.Engine:SELECT "TELEMETRIA".tlm_id AS "TELEMETRIA_tlm_id", "TELEMETRIA".sat_id AS "TELEMETRIA_sat_id", "TELEMETRIA".tlm_latitude AS "TELEMETRIA_tlm_latitude", "TELEMETRIA".tlm_longitude AS "TELEMETRIA_tlm_longitude", "TELEMETRIA".tlm_cpu AS "TELEMETRIA_tlm_cpu", "TELEMETRIA".tlm_temp AS "TELEMETRIA_tlm_temp", "TELEMETRIA".tlm_status AS "TELEMETRIA_tlm_status", "TELEMETRIA".tlm_data_hora AS "TELEMETRIA_tlm_data_hora" 
+FROM "TELEMETRIA" 
+WHERE "TELEMETRIA".sat_id = ? ORDER BY "TELEMETRIA".tlm_data_hora ASC
+2026-06-19 15:04:58,930 INFO sqlalchemy.engine.Engine [cached since 395.8s ago] ('1',)
+INFO:sqlalchemy.engine.Engine:[cached since 395.8s ago] ('1',)
+INFO:     127.0.0.1:51670 - "GET /telemetry/history/1 HTTP/1.1" 200 OK
+2026-06-19 15:04:58,932 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
+2026-06-19 15:05:10,954 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:sqlalchemy.engine.Engine:BEGIN (implicit)
+2026-06-19 15:05:10,954 INFO sqlalchemy.engine.Engine SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+INFO:sqlalchemy.engine.Engine:SELECT "LOCAL".loc_id AS "LOCAL_loc_id", "LOCAL".pon_id AS "LOCAL_pon_id", "LOCAL".loc_nome AS "LOCAL_loc_nome", "LOCAL".loc_lat AS "LOCAL_loc_lat", "LOCAL".loc_lng AS "LOCAL_loc_lng", "LOCAL".loc_categoria AS "LOCAL_loc_categoria", "LOCAL".loc_rating AS "LOCAL_loc_rating", "LOCAL".loc_tipo AS "LOCAL_loc_tipo" 
+FROM "LOCAL"
+2026-06-19 15:05:10,954 INFO sqlalchemy.engine.Engine [cached since 414.6s ago] ()
+INFO:sqlalchemy.engine.Engine:[cached since 414.6s ago] ()
+INFO:     127.0.0.1:40386 - "GET /locais HTTP/1.1" 200 OK
+2026-06-19 15:05:10,955 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:sqlalchemy.engine.Engine:ROLLBACK
