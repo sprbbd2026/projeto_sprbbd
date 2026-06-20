@@ -1,4 +1,7 @@
-from pyspark.sql import SparkSession
+from app.services.satellite_log_spark_service import (
+    create_spark_session,
+    get_expected_schema,
+)
 from pyspark.sql.functions import (
     col,
     concat,
@@ -13,11 +16,9 @@ class SatelliteLogGoldService:
 
     def __init__(self):
 
-        self.spark = (
-            SparkSession.builder
-            .appName("US309_SPRBBD")
-            .getOrCreate()
-        )
+        self.spark = create_spark_session(
+        app_name="US309_SPRBBD"
+    )
 
     def read_sources(
         self,
@@ -261,8 +262,8 @@ class SatelliteLogGoldService:
         eventos_log = self.transform_eventos(eventos)
 
         comandos_log = self.transform_comandos(comandos)
-
-        return (
+        
+        final_df = (
 
             telemetria_log
 
@@ -282,6 +283,10 @@ class SatelliteLogGoldService:
 
         )
 
+        return final_df.select(
+            *[field.name for field in get_expected_schema().fields]
+        )
+
     def salvar_dataset(
         self,
         dataframe,
@@ -293,16 +298,4 @@ class SatelliteLogGoldService:
             .mode("overwrite")
             .partitionBy("dt")
             .parquet(output_path)
-        )
-
-        self.spark.sql(
-            "CREATE DATABASE IF NOT EXISTS analytics"
-        )
-
-        self.spark.sql(
-            f"""
-            CREATE TABLE IF NOT EXISTS analytics.log_satelite
-            USING PARQUET
-            LOCATION '{output_path}'
-            """
         )
