@@ -5,7 +5,7 @@ import random
 from datetime import datetime, timezone, timedelta
 
 import numpy as np
-from shapely.geometry import Point, mapping
+from shapely.geometry import Point, Polygon, mapping
 from shapely.ops import unary_union
 
 from sqlalchemy.orm import Session
@@ -275,3 +275,134 @@ def cobertura_constelacao(db: Session, con_id: int) -> dict:
     })
 
     return {"type": "FeatureCollection", "features": features}
+
+
+# ---------------------------------------------------------------------------
+# US308 — Identificar qual satélite atende uma determinada região
+# ---------------------------------------------------------------------------
+
+
+def _propagar_posicao(efe: "Efemeride") -> tuple[float, float, float, Polygon]:
+    """Propaga a órbita e devolve (lat, lng, alt, footprint_geodesico_completo).
+
+    O footprint retornado NÃO é recortado no Brasil: representa a área real
+    coberta pelo satélite no solo. É usado pela descoberta de qual satélite
+    atende uma região (US308 - Cenário 3).
+    """
+    params = json.loads(efe.efe_params_keplerian)
+
+    # Simula efeméride recebida há poucos minutos
+    delta_t_s = random.uniform(2 * 60, 8 * 60)
+
+    lat, lng, alt = _keplerian_para_latLngAlt(params, delta_t_s)
+    footprint_coords = _calcular_footprint(lat, lng, alt)
+    return lat, lng, alt, Polygon(footprint_coords)
+
+
+# Regiões do Brasil com um ponto representativo (centroide aproximado) cada.
+# Permite que o PO consulte a cobertura por nome de região, sem precisar saber
+# as coordenadas exatas.
+REGIOES_BRASIL = {
+    "norte": {"nome": "Norte", "lat": -3.4, "lng": -62.2},
+    "nordeste": {"nome": "Nordeste", "lat": -9.0, "lng": -40.0},
+    "centro_oeste": {"nome": "Centro-Oeste", "lat": -15.6, "lng": -56.1},
+    "sudeste": {"nome": "Sudeste", "lat": -20.5, "lng": -45.0},
+    "sul": {"nome": "Sul", "lat": -27.5, "lng": -51.0},
+}
+
+
+def listar_regioes() -> list[dict]:
+    """Lista as regiões do Brasil disponíveis para consulta de cobertura."""
+    return [{"id": chave, **dados} for chave, dados in REGIOES_BRASIL.items()]
+
+
+def satelites_que_atendem_regiao(db: Session, lat: float, lng: float) -> list[dict]:
+    """Retorna os satélites operacionais cujo footprint cobre o ponto (lat, lng).
+
+    Propaga cada satélite operacional com efeméride e testa se o ponto
+    consultado está dentro da área de cobertura no solo.
+    """
+    ponto = Point(lng, lat)
+
+    satelites = (
+        db.query(Satelite)
+        .filter(Satelite.sat_status == "operacional")
+        .order_by(Satelite.sat_id)
+        .all()
+    )
+
+    cobrindo: list[dict] = []
+    for sat in satelites:
+        efe = (
+            db.query(Efemeride)
+            .filter(Efemeride.sat_id == sat.sat_id)
+            .order_by(Efemeride.efe_timestamp_ref.desc())
+            .first()
+        )
+        if not efe:
+            continue
+
+        s_lat, s_lng, s_alt, footprint = _propagar_posicao(efe)
+        if footprint.is_empty or not footprint.intersects(ponto):
+            continue
+
+        cobrindo.append({
+            "sat_id": sat.sat_id,
+            "con_id": sat.con_id,
+            "sat_status": sat.sat_status,
+            "posicao": {
+                "lat": round(s_lat, 4),
+                "lng": round(s_lng, 4),
+                "alt_km": round(s_alt, 1),
+            },
+        })
+
+    return cobrindo
+
+
+def cobertura_por_regiao(
+    db: Session,
+    regiao: str | None = None,
+    lat: float | None = None,
+    lng: float | None = None,
+) -> dict:
+    """US308 — identifica o(s) satélite(s) que atende(m) uma região monitorada.
+
+    Aceita o nome de uma região do Brasil (`regiao`) OU um par de coordenadas
+    (`lat`, `lng`). Devolve as informações de cobertura, incluindo o satélite
+    associado (Cenário 3) e a posição de cada satélite no momento da consulta.
+    """
+    regiao_info: dict | None = None
+
+    if regiao:
+        chave = regiao.strip().lower()
+        if chave not in REGIOES_BRASIL:
+            disponiveis = ", ".join(REGIOES_BRASIL.keys())
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Região '{regiao}' não encontrada. Regiões disponíveis: {disponiveis}.",
+            )
+        dados = REGIOES_BRASIL[chave]
+        lat, lng = dados["lat"], dados["lng"]
+        regiao_info = {"id": chave, **dados}
+    elif lat is not None and lng is not None:
+        if not (-90.0 <= lat <= 90.0) or not (-180.0 <= lng <= 180.0):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Coordenadas fora dos limites válidos (lat -90..90, lng -180..180).",
+            )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Informe 'regiao' (nome) ou 'lat' e 'lng'.",
+        )
+
+    satelites = satelites_que_atendem_regiao(db, lat, lng)
+
+    return {
+        "regiao": regiao_info,
+        "ponto": {"lat": lat, "lng": lng},
+        "coberta": len(satelites) > 0,
+        "total": len(satelites),
+        "satelites": satelites,
+    }
