@@ -16,11 +16,13 @@ export interface LocationPoint {
 }
 
 export interface SatellitePoint {
-  id: string;
-  name: string;
-  lat: number;
-  lng: number;
-  operational: boolean;
+  sat_id: number;
+  con_id?: number | null;
+  con_nome?: string | null;
+  sat_relogio_offset?: number | null;
+  sat_codigo_prn?: number | null;
+  sat_numero_svn?: number | null;
+  sat_status: string;
 }
 
 interface MapState {

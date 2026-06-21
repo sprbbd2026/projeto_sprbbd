@@ -1,35 +1,22 @@
-import type { SatellitePoint } from '../store/mapStore';
+import { ts1Api } from './ts1Api'
+
+export interface SatellitePoint {
+  sat_id: number
+  con_id?: number | null
+  con_nome?: string | null
+  sat_relogio_offset?: number | null
+  sat_codigo_prn?: number | null
+  sat_numero_svn?: number | null
+  sat_status: string
+}
 
 export async function fetchSatelites(): Promise<SatellitePoint[]> {
-  return [
-  {
-    id: "1",
-    name: "Satélite 1",
-    lat: -23.000000,
-    lng: -46.000000,
-    operational: true,
-  },
-  {
-    id: "2",
-    name: "Satélite 2",
-    lat: -23.55200,
-    lng: -45.800000,
-    operational: true,
-  },
-  {
-    id: "3",
-    name: "Satélite 3",
-    lat: -23.100000,
-    lng: -46.000000 ,
-    operational: true,
-  },
-  {
-    id: "4",
-    name: "Satélite 24",
-    lat: -23.020000,
-    lng: -45.63250,
-    operational: false,
+  try {
+    const { data } = await ts1Api.get<SatellitePoint[]>('/satellites/')
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar satélites do ts1-back:', error)
+    return []
   }
-];
 }
 
