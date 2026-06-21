@@ -55,9 +55,6 @@ export default function Dashboard() {
               <Map size={15} />
               Mapa de Localização
             </Link>
-            <Link to="/" className={styles.navLink}>
-              Voltar ao Início
-            </Link>
           </div>
         </header>
 

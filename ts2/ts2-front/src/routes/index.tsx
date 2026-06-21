@@ -9,6 +9,7 @@ import { UsersDashboard } from '../pages/UsersDashboard'
 import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import Dashboard from '../pages/Dashboard'
+import HistoricoMapPage from '../pages/MapPage'
 
 const router = createBrowserRouter([
   {
@@ -32,6 +33,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/mapa',
+    element: (
+      <ProtectedRoute>
+        <HistoricoMapPage />
       </ProtectedRoute>
     ),
   },
