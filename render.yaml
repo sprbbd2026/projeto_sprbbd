@@ -18,6 +18,7 @@ services:
     autoDeploy: true
     paths:
       - ts1/ts1-front/**
+      - render.yaml
     envVars:
       - key: VITE_API_URL
         sync: false

@@ -2,23 +2,48 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
+import asyncio
 from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
+from app.routes.telemetria_routes import router as telemetria_router
+from app.routes.command_routes import router as command_router
+from app.routes.satellite_routes import router as satellite_router
+from app.routes.constelacao_routes import router as constelacao_router
+from app.routes.constellation_routes import router as constellation_router
+from app.routes.cobertura_routes import router as cobertura_router
+from app.routes.dashboard_routes import router as dashboard_router
+from simulation.telemetry_simulation import run as run_simulation
+
+
+async def simulation_loop():
+    await run_simulation()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    asyncio.create_task(simulation_loop())
+    yield
+
 
 app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
+
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "https://projeto-sprbbd-ts1-front.onrender.com",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://projeto-sprbbd-ts1-front.onrender.com",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -36,8 +61,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     else:
         message = msg.replace("Value error, ", "")
 
-    return JSONResponse(status_code=400, content={"detail": message})
+    response = JSONResponse(status_code=400, content={"detail": message})
+    origin = request.headers.get("origin", "")
+    if origin in ALLOWED_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 app.include_router(health_router)
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(telemetria_router)
+app.include_router(command_router)
+app.include_router(satellite_router)
+app.include_router(constelacao_router)
+app.include_router(constellation_router)
+app.include_router(cobertura_router)
+app.include_router(dashboard_router)

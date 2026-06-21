@@ -2,7 +2,7 @@
 
 **Projeto Acadêmico para um Sistema de Posicionamento Regional Brasileiro em Banco de Dados (SPRB-BD)**
 
-*The Academic Project for a Brazilian Data Base — Regional Positioning System (BDB-RPS)*
+_The Academic Project for a Brazilian Data Base — Regional Positioning System (BDB-RPS)_
 
 Este repositório e o material associado integram um **Estudo de Caso** no formato **Interdisciplinary Problem-Based Learning (IPBL)**, desenvolvido no **1º semestre de 2026**, com foco em centralizar materiais de aulas, listas, relações de alunos e artefatos produzidos.
 
@@ -14,8 +14,8 @@ Este repositório e o material associado integram um **Estudo de Caso** no forma
 
 ## 👨‍🏫 Professores
 
-| Nome | E-mail |
-|------|--------|
+| Nome                               | E-mail                              |
+| ---------------------------------- | ----------------------------------- |
 | Prof. Dr. Adilson Marques da Cunha | [cunha@ita.br](mailto:cunha@ita.br) |
 | Prof. Dr. Luiz Alberto Vieira Dias | [vdias@ita.br](mailto:vdias@ita.br) |
 
@@ -23,12 +23,12 @@ Este repositório e o material associado integram um **Estudo de Caso** no forma
 
 ## 🤝 Colaboradores
 
-| Nome | E-mail |
-|------|--------|
-| Prof. Dr. Lineu F. S. Mialaret | [lmialaret@terra.com.br](mailto:lmialaret@terra.com.br) |
-| Gildárcio S. Gonçalves | [gildarciosousa@gmail.com](mailto:gildarciosousa@gmail.com) |
-| Victor A. P. Cavichioli | [vivictoaraujo@gmail.com](mailto:vivictoaraujo@gmail.com) |
-| Juliana Medeiros F. da Silva | [juliana.medeirosmfs@gmail.com](mailto:juliana.medeirosmfs@gmail.com) |
+| Nome                           | E-mail                                                                |
+| ------------------------------ | --------------------------------------------------------------------- |
+| Prof. Dr. Lineu F. S. Mialaret | [lmialaret@terra.com.br](mailto:lmialaret@terra.com.br)               |
+| Gildárcio S. Gonçalves         | [gildarciosousa@gmail.com](mailto:gildarciosousa@gmail.com)           |
+| Victor A. P. Cavichioli        | [vivictoaraujo@gmail.com](mailto:vivictoaraujo@gmail.com)             |
+| Juliana Medeiros F. da Silva   | [juliana.medeirosmfs@gmail.com](mailto:juliana.medeirosmfs@gmail.com) |
 
 ---
 
@@ -43,9 +43,86 @@ Este repositório e o material associado integram um **Estudo de Caso** no forma
 ## 📂 Estrutura deste repositório
 
 | Pasta | Descrição |
-|-------|-----------|
-| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend (React, Vite, TypeScript). Ver [README do front](ts2/ts2-front/README.md). |
-| [`ts2/ts2-back/`](ts2/ts2-back/) | Backend (FastAPI, PostgreSQL). Ver [README do back](ts2/ts2-back/README.md). |
+| ----- | --------- |
+| [`ts1/ts1-front/`](ts1/ts1-front/) | Frontend TS1 (React, Vite, TypeScript). Ver [README](ts1/ts1-front/README.md). |
+| [`ts1/ts1-back/`](ts1/ts1-back/) | Backend TS1 (FastAPI, PostgreSQL, Docker). Ver [README](ts1/ts1-back/README.md). |
+| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend TS2 (React, Vite, TypeScript). Ver [README](ts2/ts2-front/README.md). |
+| [`ts2/ts2-back/`](ts2/ts2-back/) | Backend TS2 (FastAPI, PostgreSQL, Docker). Ver [README](ts2/ts2-back/README.md). |
+
+---
+
+## 🔌 Portas locais (TS1 e TS2 juntos)
+
+Cada time usa portas fixas para evitar conflito ao rodar as duas aplicações na mesma máquina:
+
+| Serviço | TS1 | TS2 |
+| ------- | --- | --- |
+| Frontend | **5173** | **5174** |
+| Backend (API) | **8000** | **8001** |
+| PostgreSQL (Docker) | **5432** | **5433** |
+
+---
+
+## 🚀 Instalação e execução
+
+### Pré-requisitos gerais
+
+- [Docker Desktop](https://www.docker.com/)
+- [Node.js](https://nodejs.org/) (LTS)
+- [UV](https://github.com/astral-sh/uv) (Python)
+
+### Time 1 (TS1)
+
+```bash
+# Backend
+cd ts1/ts1-back
+uv sync
+cp .env.example .env          # edite com suas credenciais
+docker compose up -d
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
+
+# Frontend (outro terminal)
+cd ts1/ts1-front
+npm install
+cp .env.example .env
+npm run dev
+```
+
+- Front: http://localhost:5173
+- API: http://localhost:8000/docs
+
+Detalhes: [ts1-back/README.md](ts1/ts1-back/README.md) · [ts1-front/README.md](ts1/ts1-front/README.md)
+
+### Time 2 (TS2)
+
+```bash
+# Backend
+cd ts2/ts2-back
+uv sync
+cp .env.example .env          # edite com suas credenciais
+docker compose up -d
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8001
+
+# Frontend (outro terminal)
+cd ts2/ts2-front
+npm install
+cp .env.example .env
+npm run dev
+```
+
+- Front: http://localhost:5174
+- API: http://localhost:8001/docs
+
+Detalhes: [ts2-back/README.md](ts2/ts2-back/README.md) · [ts2-front/README.md](ts2/ts2-front/README.md)
+
+### Ordem recomendada
+
+1. Docker (`docker compose up -d`)
+2. Migrações (`alembic upgrade head`)
+3. Backend (`uvicorn`)
+4. Frontend (`npm run dev`)
 
 ---
 
@@ -55,14 +132,15 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 ### Artefatos e ferramentas
 
-| Recurso | Link |
-|---------|------|
-| Repositório GitHub (organização) | [github.com/sprbbd2026](https://github.com/sprbbd2026) |
-| Kanban | [Project board no GitHub](https://github.com/users/sprbbd2026/projects/6/views/2) |
-| Burndown Chart | [Planilha Google](https://docs.google.com/spreadsheets/d/1Pc5yUxPV-RvyLq4gXpbr9fyPO5WH-2ELpKsUCLFSbcM/edit?pli=1&gid=1744797886#gid=1744797886) |
-| Refinamento técnico (documento) | [Google Docs](https://docs.google.com/document/d/1FlXOk5sRu6t3USotYFapx73YS7bIFjOx3y7yC-tyBg4/edit?tab=t.9t43qbiffxu6) |
-| Pasta Swagger (referência sugerida) | [Google Drive](https://drive.google.com/drive/u/1/folders/1ysrnkCaY6yHw4YALDFMUeFhqJPjkq1a6) |
-| Template de planilha de testes | [Google Sheets](https://docs.google.com/spreadsheets/d/1e9oa5HCPT6-N6Obtg8d9KT_kb0JJlWIw/edit?gid=1077019325#gid=1077019325) |
+| Recurso                             | Link                                                                                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Repositório GitHub (organização)    | [github.com/sprbbd2026](https://github.com/sprbbd2026)                                                                                          |
+| Kanban TS#02 (Sprints 1–2)          | [Project #6 — KanBan TS#02](https://github.com/users/sprbbd2026/projects/6/views/2)                                                             |
+| Kanban Sprint 3 (TS#03 unificado)   | [Project #10 — KanBan da 3ª Sprint](https://github.com/users/sprbbd2026/projects/10/views/1)                                                    |
+| Convenções GitHub (DoD, labels)     | [CONVENCOES_GITHUB_SPRB.md](../CONVENCOES_GITHUB_SPRB.md) (raiz do repositório local)                                                           |
+| Burndown Chart                      | [Planilha Google](https://docs.google.com/spreadsheets/d/1Y1tiQfzJkMUIHLXRgvcAWCQvrDC-cxpI/edit?usp=sharing&ouid=114433758697320974092&rtpof=true&sd=true) |                  |
+| Pasta Swagger (referência sugerida) | [Google Drive](https://drive.google.com/drive/u/1/folders/1ysrnkCaY6yHw4YALDFMUeFhqJPjkq1a6)                                                    |
+| Template de planilha de testes      | [Google Sheets](https://docs.google.com/spreadsheets/d/1-cdYuYugmJ8Q_RwXGj1u-apw8eb4dOb_A_fr93lj714/edit?usp=sharing)                    |
 
 ### User Stories da Sprint 1
 
@@ -70,13 +148,13 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsável (planejado):** Diogo · **Planning Poker:** 3 · **Issue:** [#29](https://github.com/sprbbd2026/projeto_sprbbd/issues/29)
 
-**História:** *Como* desenvolvedor, *quero* uma tela de cadastro de usuário *para* registrar usuários no sistema.
+**História:** _Como_ desenvolvedor, _quero_ uma tela de cadastro de usuário _para_ registrar usuários no sistema.
 
 **Entregas e critérios (resumo):**
 
 - **Tela de cadastro:** interface com campos de entrada e envio; campos **nome, e-mail e senha** (obrigatórios claros); botão **Cadastrar** visível e funcional; UI organizada e utilizável.
-- **Validação de formulário:** impedir envio vazio; mensagens de erro; e-mail em formato válido; senha com tamanho mínimo definido. *(Refinamento técnico no documento linkado acima.)*
-- **Integração com API:** enviar dados ao clicar em Cadastrar; tratar sucesso e erro; feedback ao usuário. *(Swagger sugerido na pasta do Drive.)*
+- **Validação de formulário:** impedir envio vazio; mensagens de erro; e-mail em formato válido; senha com tamanho mínimo definido. _(Refinamento técnico no documento linkado acima.)_
+- **Integração com API:** enviar dados ao clicar em Cadastrar; tratar sucesso e erro; feedback ao usuário. _(Swagger sugerido na pasta do Drive.)_
 
 **Casos de teste (referência):** 1.2.1.1 · 1.2.1.2 · 1.2.1.3
 
@@ -86,7 +164,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Issue:** [#33](https://github.com/sprbbd2026/projeto_sprbbd/issues/33)
 
-**História:** *Como* desenvolvedor, *quero* uma tela de login *para* o usuário entrar no sistema.
+**História:** _Como_ desenvolvedor, _quero_ uma tela de login _para_ o usuário entrar no sistema.
 
 **Entregas e critérios (resumo):**
 
@@ -102,7 +180,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsáveis (planejado):** Savio Vianna, Raphael Fernandes, João Pedro, Geison Filho, José Alberto · **Planning Poker:** 8 · **Issue:** [#30](https://github.com/sprbbd2026/projeto_sprbbd/issues/30)
 
-**História:** *Como* desenvolvedor, *quero* registrar novos usuários via API *para* permitir cadastro com dados válidos.
+**História:** _Como_ desenvolvedor, _quero_ registrar novos usuários via API _para_ permitir cadastro com dados válidos.
 
 **Critérios (resumo):** endpoint com nome, e-mail e senha; validação; persistência no banco; resposta de sucesso; sem e-mail duplicado; validação de e-mail e senha no back-end; erros claros.
 
@@ -112,7 +190,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Issue:** [#31](https://github.com/sprbbd2026/projeto_sprbbd/issues/31)
 
-**História:** *Como* desenvolvedor, *quero* armazenar usuários em banco estruturado *para* consistência e recuperação das informações.
+**História:** _Como_ desenvolvedor, _quero_ armazenar usuários em banco estruturado _para_ consistência e recuperação das informações.
 
 **Critérios (resumo):** tabela de usuários com campos necessários; e-mail único; persistência correta; estrutura preparada para evolução sem inconsistências.
 
@@ -122,7 +200,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Issue:** [#34](https://github.com/sprbbd2026/projeto_sprbbd/issues/34)
 
-**História:** *Como* desenvolvedor, *quero* autenticar por e-mail e senha *para* acesso seguro.
+**História:** _Como_ desenvolvedor, _quero_ autenticar por e-mail e senha _para_ acesso seguro.
 
 **Critérios (resumo):** endpoint com e-mail e senha; validar credenciais; permitir acesso só com dados corretos; respostas de sucesso ou erro adequadas.
 
@@ -132,7 +210,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Issue:** [#35](https://github.com/sprbbd2026/projeto_sprbbd/issues/35)
 
-**História:** *Como* Scrum Master, *quero* validar credenciais no login *para* que só usuários corretos acessem.
+**História:** _Como_ Scrum Master, _quero_ validar credenciais no login _para_ que só usuários corretos acessem.
 
 **Critérios (resumo):** rejeitar credenciais inválidas; mensagens claras; não expor informações sensíveis; boas práticas de autenticação.
 
@@ -140,9 +218,14 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 #### 1.2.7 — Gerenciamento de Sessão e Acesso (Scrum Master)
 
-**História:** *Como* Scrum Master, *quero* controlar a sessão do usuário autenticado *para* manter acesso seguro e rotas protegidas.
+**Issue (TS#02):** [#54 — US 2.2.3 Gerenciamento de Sessão por Dispositivo](https://github.com/sprbbd2026/projeto_sprbbd/issues/54)  
+**Referência TS#01:** [#83 — US119](https://github.com/sprbbd2026/projeto_sprbbd/issues/83)
+
+**História:** _Como_ Scrum Master, _quero_ controlar a sessão do usuário autenticado _para_ manter acesso seguro e rotas protegidas.
 
 **Critérios (resumo):** sessão/token após login; usuário autenticado na sessão; rotas protegidas exigem autenticação; permitir logout.
+
+> No TS#02, a US1.2.7 do planejamento acadêmico está implementada/rastreada pela **US 2.2.3** (#54), que cobre sessão por dispositivo (UUID, login, logout).
 
 ---
 
@@ -150,7 +233,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsáveis (planejado):** Diogo, Marcelo Ryaj · **Planning Poker:** 8 · **Issue:** [#26](https://github.com/sprbbd2026/projeto_sprbbd/issues/26)
 
-**História:** *Como* desenvolvedor, *quero* modelar dados com MER *para* definir estrutura lógica e relacionamentos.
+**História:** _Como_ desenvolvedor, _quero_ modelar dados com MER _para_ definir estrutura lógica e relacionamentos.
 
 **Critérios (resumo):** MER definido; validar persistência/recuperação; integrar scripts/modelos ao GitHub; documentar decisões.
 
@@ -160,7 +243,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsável (planejado):** Lidyane · **Planning Poker:** 8 · **Issue:** [#27](https://github.com/sprbbd2026/projeto_sprbbd/issues/27)
 
-**História:** *Como* desenvolvedor, *quero* implementar o banco com DDL e DML *para* persistência e manipulação dos dados.
+**História:** _Como_ desenvolvedor, _quero_ implementar o banco com DDL e DML _para_ persistência e manipulação dos dados.
 
 **Critérios (resumo):** DDL (tabelas, relacionamentos, constraints); DML para manipulação (insert, select, etc.).
 
@@ -170,7 +253,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsável (planejado):** Cesar Sales · **Planning Poker:** 13 · **Issue:** [#24](https://github.com/sprbbd2026/projeto_sprbbd/issues/24)
 
-**História:** *Como* responsável pelos testes, *quero* uma planilha de testes *para* organizar e acompanhar cenários de validação.
+**História:** _Como_ responsável pelos testes, _quero_ uma planilha de testes _para_ organizar e acompanhar cenários de validação.
 
 **Entregas (resumo):** modelo com colunas obrigatórias e padrão de IDs (ex.: TS01, TS02); planilha em Excel ou Google Sheets; casos por User Story; classificação (funcional, integração, etc.); acesso e permissões para o time; revisão com o time.
 
@@ -180,7 +263,7 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 **Responsáveis (planejado):** Paulo Cesar, Augusto Nascimento · **Planning Poker:** 5 · **Issue:** [#25](https://github.com/sprbbd2026/projeto_sprbbd/issues/25)
 
-**História:** *Como* Product Owner, *quero* os artefatos da Sprint Review (relatório, slides, vídeo demo) *para* comunicar resultados aos stakeholders.
+**História:** _Como_ Product Owner, _quero_ os artefatos da Sprint Review (relatório, slides, vídeo demo) _para_ comunicar resultados aos stakeholders.
 
 **Entregas (resumo):**
 
@@ -198,5 +281,10 @@ As colunas de aceite por **PO**, **Bkp PO**, **Prof. Cunha**, **Prof. Vieira Dia
 
 ## 📚 Documentação adicional
 
+Time 1
+
+- [README — Frontend](ts1/ts1-front/README.md)
+- [README — Backend](ts1/ts1-back/README.md)
+  Time 2
 - [README — Frontend](ts2/ts2-front/README.md)
 - [README — Backend](ts2/ts2-back/README.md)

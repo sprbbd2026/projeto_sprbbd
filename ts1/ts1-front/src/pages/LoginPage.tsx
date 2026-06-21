@@ -1,4 +1,3 @@
-// pages/LoginPage.tsx
 // Página de login da US103.
 // Estrutura: cabeçalho (logo ITA + nome do projeto) + formulário + link de cadastro.
 
@@ -29,8 +28,7 @@ export default function LoginPage() {
                     style={{
                         background: "var(--surface)",
                         boxShadow: "var(--shadow)",
-                    }}
-                >
+                    }}>
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-bold" style={{ color: "var(--text)" }}>
                             Entrar na sua conta

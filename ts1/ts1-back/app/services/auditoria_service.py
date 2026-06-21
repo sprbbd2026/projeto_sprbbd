@@ -9,7 +9,7 @@ def registrar_evento_db(
     satelite_id: str, 
     payload: dict, 
     status: str, 
-    usuario_id: int = None
+    operador_id: int = None
 ):
     """
     Função para registrar a caixa preta de comunicação com os satélites.
@@ -19,7 +19,7 @@ def registrar_evento_db(
         evt_satelite_id=satelite_id,
         evt_payload=payload,
         evt_status=status,
-        usr_id=usuario_id
+        opr_id=operador_id
     )
     
     db.add(novo_evento)
