@@ -1,6 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Marker, Popup, useMapEvents } from 'react-leaflet';
-import L, { LatLngBounds } from 'leaflet';
+import { Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
 import { Satellite } from 'lucide-react';
 import { useMapStore} from '../../store/mapStore';
@@ -31,29 +30,28 @@ const createCustomIcon = (operational: boolean) => {
 
 export function DashboardMarkers() {
   const { satellites } = useMapStore();
-  const [bounds, setBounds] = useState<LatLngBounds | null>(null);
-
-  const map = useMapEvents({
-    moveend: () => setBounds(map.getBounds()),
-    zoomend: () => setBounds(map.getBounds()),
-  });
-
-  useEffect(() => {
-    if (map) {
-      setBounds(map.getBounds());
-    }
-  }, [map]);
+  const satellitesWithCoordinates = satellites.filter(
+    (satellite): satellite is typeof satellite & { lat: number; lng: number } =>
+      typeof (satellite as { lat?: number }).lat === 'number' &&
+      typeof (satellite as { lng?: number }).lng === 'number'
+  );
 
 
   return (
     <>
-      {satellites.map((satellite) => (
-        <Marker key={satellite.id} position={[satellite.lat, satellite.lng]} icon={createCustomIcon(satellite.operational)}>
+      {satellitesWithCoordinates.map((satellite) => (
+        <Marker
+          key={satellite.sat_id}
+          position={[satellite.lat, satellite.lng]}
+          icon={createCustomIcon(satellite.sat_status === 'operacional')}
+        >
           <Popup>
             <div className="text-sm min-w-[150px]">
-              <strong className="block text-base mb-1">{satellite.name}</strong>
+              <strong className="block text-base mb-1">SAT-{satellite.sat_id}</strong>
               <div className="flex items-center gap-1 mb-2">
-                <span className="font-medium text-gray-700">{satellite.operational ? "Operacional" : "Não Operacional"}</span>
+                <span className="font-medium text-gray-700">
+                  {satellite.sat_status === 'operacional' ? 'Operacional' : 'Não Operacional'}
+                </span>
               </div>
             </div>
           </Popup>
