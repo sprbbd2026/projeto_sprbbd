@@ -10,6 +10,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Map, Filter, RefreshCw } from 'lucide-react'
 import { localizacaoService } from '../services/localizacaoService'
+import { fetchSatelites, type SatellitePoint } from '../services/satelliteService'
 import type { Localizacao } from '../types/localizacao'
 import SatelliteMap from '../components/ui/SatelliteMap'
 import styles from './MapPage.module.css'
@@ -19,7 +20,7 @@ type FetchStatus = 'idle' | 'loading' | 'success' | 'error'
 
 export default function MapPage() {
   // ── Estado dos satélites disponíveis ─────────────────────────
-  const [satelites, setSatelites] = useState<string[]>([])
+  const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [sateliteId, setSateliteId] = useState('')
 
   // ── Filtros de data ───────────────────────────────────────────
@@ -33,14 +34,15 @@ export default function MapPage() {
 
   // ── Carrega lista de satélites ao montar ──────────────────────
   useEffect(() => {
-    localizacaoService
-      .listarSatelites()
-      .then((ids) => {
-        setSatelites(ids)
-        if (ids.length > 0) setSateliteId(ids[0])
+    fetchSatelites()
+      .then((satellites) => {
+        setSatelites(satellites)
+        if (satellites.length > 0) {
+          setSateliteId(String(satellites[0].sat_id))
+        }
       })
       .catch(() => {
-        // Falha silenciosa — usuário pode digitar o ID
+        setSatelites([])
       })
   }, [])
 
@@ -100,29 +102,24 @@ export default function MapPage() {
               {/* Seleção de satélite */}
               <div className={styles.fieldGroup}>
                 <label htmlFor="satelite-select">Satélite</label>
-                {satelites.length > 0 ? (
-                  <select
-                    id="satelite-select"
-                    className={styles.select}
-                    value={sateliteId}
-                    onChange={(e) => setSateliteId(e.target.value)}
-                  >
-                    {satelites.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
+                <select
+                  id="satelite-select"
+                  className={styles.select}
+                  value={sateliteId}
+                  onChange={(e) => setSateliteId(e.target.value)}
+                  disabled={satelites.length === 0}
+                >
+                  {satelites.length === 0 ? (
+                    <option value="">Nenhum satélite disponível</option>
+                  ) : (
+                    satelites.map((satellite) => (
+                      <option key={satellite.sat_id} value={String(satellite.sat_id)}>
+                        {`SAT-${satellite.sat_id}`}
+                        {satellite.con_nome ? ` · ${satellite.con_nome}` : ''}
                       </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    id="satelite-select"
-                    type="text"
-                    className={styles.dateInput}
-                    placeholder="Ex: SAT-001"
-                    value={sateliteId}
-                    onChange={(e) => setSateliteId(e.target.value)}
-                  />
-                )}
+                    ))
+                  )}
+                </select>
               </div>
 
               {/* Data início */}
