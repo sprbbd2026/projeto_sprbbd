@@ -194,7 +194,7 @@ export default function MapPage() {
                 <span className={styles.stateIcon}>🛰️</span>
                 <p className={styles.stateTitle}>Nenhum ponto encontrado</p>
                 <p className={styles.stateText}>
-                  Não há registros de localização para <strong>{sateliteId}</strong> no
+                  Não há registros de localização para <strong>SAT-{sateliteId}</strong> no
                   período informado.
                 </p>
               </div>
