@@ -14,6 +14,5 @@ def listar_conectados(db: Session, user_id: int) -> list[Dispositivo]:
         .join(Login, Login.id_dispositivo == Dispositivo.id)
         .filter(Login.id_usuario == user_id)
         .filter(Login.ativo.is_(True))
-        .distinct()
         .all()
     )
