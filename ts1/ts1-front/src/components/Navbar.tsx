@@ -11,6 +11,7 @@ export default function Navbar() {
         { label: "Comandos", href: "/commands" },
         { label: "Satélites", href: "/satellite" },
         { label: "Constelações", href: "/constellation" },
+        { label: "Cobertura", href: "/cobertura" },
     ];
 
     function handleLogout() {
