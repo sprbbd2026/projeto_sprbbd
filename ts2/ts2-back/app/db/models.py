@@ -153,3 +153,14 @@ class Login(Base):
 
     usuario = relationship("Usuario", back_populates="logins")
     dispositivo = relationship("Dispositivo", back_populates="logins")
+
+
+class Telemetria(Base):
+    __tablename__ = "TELEMETRIA"
+
+    id = Column("tel_id", Integer, primary_key=True, index=True)
+    satelite_id = Column("tel_satelite_id", String, nullable=False, index=True)
+    cpu_percentual = Column("tel_cpu_percentual", Float, nullable=False)
+    temperatura_celsius = Column("tel_temperatura_celsius", Float, nullable=False)
+    status = Column("tel_status", String, nullable=False, default="operacional")
+    data_hora = Column("tel_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now())

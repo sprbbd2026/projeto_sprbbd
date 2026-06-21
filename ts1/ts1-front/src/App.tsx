@@ -13,6 +13,8 @@ import ConstellationPage from "./pages/ConstellationPage";
 import ConstellationRegisterPage from "./pages/ConstellationRegisterPage";
 import ConstellationEditPage from "./pages/ConstellationEditPage";
 import CoberturaPage from "./pages/CoberturaPage";
+import CommandSendPage from "./pages/CommandSendPage";
+import CommandHistoryPage from "./pages/CommandHistoryPage";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
@@ -44,6 +46,8 @@ function Layout() {
           <Route path="/constellations/edit/:id" element={<PrivateRoute><ConstellationEditPage /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><MainPage /></PrivateRoute>} />
           <Route path="/cobertura" element={<PrivateRoute><CoberturaPage /></PrivateRoute>} />
+          <Route path="/commands" element={<PrivateRoute><CommandHistoryPage /></PrivateRoute>} />
+          <Route path="/commands/send" element={<PrivateRoute><CommandSendPage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
