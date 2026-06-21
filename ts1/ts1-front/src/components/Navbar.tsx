@@ -10,6 +10,7 @@ export default function Navbar() {
         { label: "Início", href: "/dashboard" },
         { label: "Satélites", href: "/satellite" },
         { label: "Constelações", href: "/constellation" },
+        { label: "Cobertura", href: "/cobertura" },
     ];
 
     function handleLogout() {
