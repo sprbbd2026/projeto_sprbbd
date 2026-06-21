@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Dashboard.module.css'
 import { Button } from '../components/ui/Button'
+import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { fetchTelemetry, type Telemetry } from '../services/telemetryService'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8001'
@@ -35,7 +36,7 @@ export default function Dashboard() {
   const latest = telemetry.length > 0 ? telemetry[0] : null
 
   return (
-    <main className={styles.page}>
+    <DashboardLayout>
       <div className={styles.inner}>
         <header className={styles.header}>
           <div>
@@ -137,6 +138,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </main>
+    </DashboardLayout>
   )
 }

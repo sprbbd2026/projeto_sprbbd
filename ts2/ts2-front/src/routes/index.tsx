@@ -8,6 +8,7 @@ import { PointsSatellites } from '../pages/PointsSatellite'
 import { UsersDashboard } from '../pages/UsersDashboard'
 import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
+import Dashboard from '../pages/Dashboard'
 
 const router = createBrowserRouter([
   {
@@ -18,7 +19,7 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-    {
+  {
     path: '/dashboard',
     element: (
       <ProtectedRoute>
@@ -26,7 +27,15 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-    {
+  {
+    path: '/telemetry',
+    element: (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: '/satellites',
     element: (
       <ProtectedRoute>
