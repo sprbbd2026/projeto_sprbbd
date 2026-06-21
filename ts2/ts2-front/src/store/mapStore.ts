@@ -27,7 +27,7 @@ interface MapState {
   activeLayer: MapLayer;
   searchQuery: string;
   activeFilters: string[];
-  
+
   selectedCoord: { lat: number; lng: number } | null;
   isAddModalOpen: boolean;
   locations: LocationPoint[];
@@ -53,7 +53,7 @@ export const useMapStore = create<MapState>((set) => ({
   activeLayer: 'streets',
   searchQuery: '',
   activeFilters: [],
-  
+
   selectedCoord: null,
   isAddModalOpen: false,
   locations: [],
@@ -70,10 +70,10 @@ export const useMapStore = create<MapState>((set) => ({
       ? state.activeFilters.filter((f) => f !== filter)
       : [...state.activeFilters, filter]
   })),
-  
+
   setSelectedCoord: (coord) => set({ selectedCoord: coord }),
   setAddModalOpen: (isOpen) => set({ isAddModalOpen: isOpen }),
-  
+
   fetchLocations: async () => {
     set({ isLoading: true, error: null });
     try {

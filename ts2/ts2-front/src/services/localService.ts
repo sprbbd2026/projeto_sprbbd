@@ -7,6 +7,7 @@ export interface LocalCreate {
   lng: number;
   categoria: string;
   rating: number;
+  id_ponto?: number;
 }
 
 export async function fetchLocais(): Promise<LocationPoint[]> {
