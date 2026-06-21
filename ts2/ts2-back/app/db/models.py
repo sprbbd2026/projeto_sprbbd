@@ -22,5 +22,7 @@ class Telemetria(Base):
     satelite_id = Column(String, index=True)
     cpu_percentual = Column(Float)
     temperatura_celsius = Column(Float)
+    latitude = Column(Float, nullable=True) 
+    longitude = Column(Float, nullable=True)
     status = Column(String, default="operacional")
     data_hora = Column(DateTime, default=datetime.datetime.utcnow)
