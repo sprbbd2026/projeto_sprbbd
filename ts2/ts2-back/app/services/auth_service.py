@@ -60,7 +60,7 @@ def authenticate_device(db: Session, user_id: int, device_uid: str | None, metad
         )
         db.add(assoc)
         db.commit()
-    elif not assoc.ativo:
+    elif  assoc.ativo:
         assoc.ativo = True
         db.commit()
 

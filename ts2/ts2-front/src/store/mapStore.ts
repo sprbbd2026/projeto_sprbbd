@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { fetchLocais, createLocal } from '../services/localService';
 import { fetchSatelites } from '../services/satelliteService';
+import { fetchConnectedDevices, type ConnectedDevice } from '../services/deviceService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
 export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'outros';
@@ -26,22 +27,25 @@ interface MapState {
   activeLayer: MapLayer;
   searchQuery: string;
   activeFilters: string[];
-  
+
   selectedCoord: { lat: number; lng: number } | null;
   isAddModalOpen: boolean;
   locations: LocationPoint[];
   satellites: SatellitePoint[];
+  connectedDevices: ConnectedDevice[];
+  lastUpdated: Date | null;
   isLoading: boolean;
   error: string | null;
-  
+
   setActiveLayer: (layer: MapLayer) => void;
   setSearchQuery: (query: string) => void;
   toggleFilter: (filter: string) => void;
-  
+
   setSelectedCoord: (coord: { lat: number; lng: number } | null) => void;
   setAddModalOpen: (isOpen: boolean) => void;
   fetchLocations: () => Promise<void>;
   fetchSatellites: () => Promise<void>;
+  fetchConnectedDevices: () => Promise<void>;
   addLocation: (location: Omit<LocationPoint, 'id'>) => Promise<void>;
 }
 
@@ -49,14 +53,16 @@ export const useMapStore = create<MapState>((set) => ({
   activeLayer: 'streets',
   searchQuery: '',
   activeFilters: [],
-  
+
   selectedCoord: null,
   isAddModalOpen: false,
   locations: [],
   isLoading: false,
   error: null,
   satellites: [],
-  
+  connectedDevices: [],
+  lastUpdated: null,
+
   setActiveLayer: (layer) => set({ activeLayer: layer }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   toggleFilter: (filter) => set((state) => ({
@@ -64,10 +70,10 @@ export const useMapStore = create<MapState>((set) => ({
       ? state.activeFilters.filter((f) => f !== filter)
       : [...state.activeFilters, filter]
   })),
-  
+
   setSelectedCoord: (coord) => set({ selectedCoord: coord }),
   setAddModalOpen: (isOpen) => set({ isAddModalOpen: isOpen }),
-  
+
   fetchLocations: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -87,7 +93,18 @@ export const useMapStore = create<MapState>((set) => ({
       set({ error: err.message || 'Erro ao carregar locais', isLoading: false });
     }
   },
-  
+
+  fetchConnectedDevices: async () => {
+    try {
+      const data = await fetchConnectedDevices();
+      set({ connectedDevices: data, lastUpdated: new Date(), error: null });
+    } catch (err: any) {
+      // Mantém a última lista conhecida em caso de falha de rede.
+      set({ error: err.message || 'Erro ao carregar dispositivos conectados' });
+    }
+  },
+
+
   addLocation: async (location) => {
     set({ isLoading: true, error: null });
     try {

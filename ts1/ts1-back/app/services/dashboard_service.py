@@ -3,6 +3,8 @@ from sqlalchemy import func
 
 from app.db.models import Satelite, Operador, EventoComunicacao
 
+ALERT_EVENT_STATUSES = ("FALHA", "ERRO", "ALERTA", "FALHOU", "CRITICO")
+
 
 def get_dashboard_summary(db: Session) -> dict:
     active_satellites = (
@@ -19,7 +21,13 @@ def get_dashboard_summary(db: Session) -> dict:
         or 0
     )
 
-    alert_events = db.query(func.count(EventoComunicacao.evt_id)).scalar() or 0
+    # Eventos de auditoria (ex.: COMANDO_ENVIADO/SUCESSO) não são alertas operacionais.
+    alert_events = (
+        db.query(func.count(EventoComunicacao.evt_id))
+        .filter(EventoComunicacao.evt_status.in_(ALERT_EVENT_STATUSES))
+        .scalar()
+        or 0
+    )
     alerts = alert_satellites + alert_events
 
     users = (

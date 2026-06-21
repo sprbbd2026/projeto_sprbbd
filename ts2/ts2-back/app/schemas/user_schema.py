@@ -1,9 +1,7 @@
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from datetime import date
 from typing import Optional
 from uuid import UUID
-
-from pydantic import BaseModel, EmailStr, Field
-
 
 class UserBase(BaseModel):
     nome: str
@@ -48,8 +46,10 @@ class UserResponse(UserBase):
     uuid: UUID
     device_uid: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class Config:
+    from_attributes = True
 
 
 class UserDeleteById(BaseModel):

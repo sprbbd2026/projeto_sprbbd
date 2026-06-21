@@ -5,6 +5,7 @@ from app.routes.local_routes import router as local_router
 from app.routes.user_routes import router as user_router
 from app.routes.telemetry_routes import router as telemetry_router
 from app.routes.localizacao_routes import router as localizacao_router
+from app.routes.dispositivo_routes import router as dispositivo_router
 from app.db.database import engine
 from app.db import models
 
@@ -33,3 +34,4 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(local_router)
 app.include_router(telemetry_router)
+app.include_router(dispositivo_router)

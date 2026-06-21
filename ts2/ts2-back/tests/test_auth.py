@@ -1,8 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-@pytest.mark.asyncio
-async def test_fluxo_usuario_completo(client: AsyncClient):
+def test_fluxo_usuario_completo(client):
     # 1. DADOS DE CADASTRO
     payload_cadastro = {
         "nome": "João",
@@ -14,7 +13,7 @@ async def test_fluxo_usuario_completo(client: AsyncClient):
     }
 
     # Executa o Cadastro
-    res_cadastro = await client.post("/users", json=payload_cadastro)
+    res_cadastro = client.post("/users", json=payload_cadastro)
     
     # Validamos o sucesso (200 ou 201)
     assert res_cadastro.status_code in [200, 201], f"Erro no cadastro: {res_cadastro.text}"
@@ -27,7 +26,7 @@ async def test_fluxo_usuario_completo(client: AsyncClient):
     }
 
     # Executa o Login
-    res_login = await client.post("/auth/login", json=payload_login)
+    res_login = client.post("/auth/login", json=payload_login)
     
     # Validamos o Login
     assert res_login.status_code == 200, f"Erro no login: {res_login.text}"
