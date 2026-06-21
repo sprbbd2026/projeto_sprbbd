@@ -165,3 +165,15 @@ class Telemetria(Base):
     temperatura_celsius = Column("tel_temperatura_celsius", Float, nullable=False)
     status = Column("tel_status", String, nullable=False, default="operacional")
     data_hora = Column("tel_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class HistoricoLocalizacao(Base):
+    __tablename__ = "HISTORICO_LOCALIZACAO"
+
+    id = Column("hlc_id", Integer, primary_key=True, index=True)
+    satelite_id = Column("hlc_satelite_id", String, nullable=False, index=True)
+    latitude = Column("hlc_latitude", Float, nullable=False)
+    longitude = Column("hlc_longitude", Float, nullable=False)
+    altitude_km = Column("hlc_altitude_km", Float, nullable=True)
+    velocidade_kmh = Column("hlc_velocidade_kmh", Float, nullable=True)
+    data_hora = Column("hlc_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
