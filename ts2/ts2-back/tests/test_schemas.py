@@ -66,6 +66,7 @@ class TestUserResponse:
         # objeto (não-dict) com atributos — mata o mutante que o desativa.
         obj = types.SimpleNamespace(
             id=1,
+            uuid="550e8400-e29b-41d4-a716-446655440000",
             nome="Ada",
             sobrenome="Lovelace",
             email="ada@example.com",

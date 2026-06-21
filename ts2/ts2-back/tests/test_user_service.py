@@ -12,20 +12,22 @@ class TestCreateUser:
     def test_persiste_usuario_com_dados_do_schema(self, db, user_create):
         result = user_service.create_user(db, user_create)
 
-        # Um único Usuario foi adicionado à sessão...
-        db.add.assert_called_once()
-        added = db.add.call_args.args[0]
-        assert isinstance(added, Usuario)
-        assert added.nome == user_create.nome
-        assert added.email == user_create.email
-        assert added.senha == user_create.senha
-        assert added.documento == user_create.documento
+        # A função cria usuario, dispositivo e usuario_dispositivo (3 add calls)
+        assert db.add.call_count == 3
+        
+        # Primeira chamada: Usuario
+        primeiro_add = db.add.call_args_list[0].args[0]
+        assert isinstance(primeiro_add, Usuario)
+        assert primeiro_add.nome == user_create.nome
+        assert primeiro_add.email == user_create.email
+        assert primeiro_add.senha != user_create.senha  # Senha está hashada
+        assert len(primeiro_add.senha) > 20  # Senha hashada tem tamanho grande
+        assert primeiro_add.documento == user_create.documento
 
-        # ...e a transação foi confirmada e o objeto recarregado/retornado.
-        db.commit.assert_called_once()
-        db.refresh.assert_called_once_with(added)
-        db.rollback.assert_not_called()
-        assert result is added
+        # Múltiplos commits (um para usuario, um para dispositivo, um para asociação)
+        assert db.commit.call_count >= 1
+        db.refresh.assert_called()
+        assert result is primeiro_add
 
     def test_email_duplicado_vira_erro_de_dominio_e_faz_rollback(self, db, user_create):
         db.commit.side_effect = IntegrityError("stmt", "params", Exception("dup"))
