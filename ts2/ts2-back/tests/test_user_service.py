@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.models import Usuario
 from app.services import user_service
-from app.services.user_service import EmailJaCadastradoError
+from app.services.user_service import CadastroConflitoError
 
 
 class TestCreateUser:
@@ -30,7 +30,7 @@ class TestCreateUser:
     def test_email_duplicado_vira_erro_de_dominio_e_faz_rollback(self, db, user_create):
         db.commit.side_effect = IntegrityError("stmt", "params", Exception("dup"))
 
-        with pytest.raises(EmailJaCadastradoError):
+        with pytest.raises(CadastroConflitoError):
             user_service.create_user(db, user_create)
 
         db.rollback.assert_called_once()
