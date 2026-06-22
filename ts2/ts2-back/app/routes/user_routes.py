@@ -23,9 +23,15 @@ from app.services.user_service import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(tags=["Usuários"])
 
-@router.post("/users", response_model=UserResponse)
+@router.post(
+    "/users",
+    response_model=UserResponse,
+    summary="Cadastrar usuário",
+    description="Cria um novo usuário. Retorna 409 se e-mail/dados já estiverem cadastrados.",
+    responses={409: {"description": "Conflito de cadastro (dados já existentes)"}},
+)
 def create(user: UserCreate, db: Session = Depends(get_db)):
     if user.device_metadata:
         print(f"[device_metadata] register: {user.device_metadata}")
@@ -34,12 +40,28 @@ def create(user: UserCreate, db: Session = Depends(get_db)):
     except CadastroConflitoError as e:
         raise HTTPException(status_code=409, detail=e.detail)
 
-@router.get("/users", response_model=list[UserResponse])
+@router.get(
+    "/users",
+    response_model=list[UserResponse],
+    summary="Listar usuários",
+    description="Lista todos os usuários. Requer JWT e o cabeçalho `X-Device-UID`.",
+    responses={401: {"description": "Não autenticado ou dispositivo não autorizado"}},
+)
 def list_users(db: Session = Depends(get_db), _: Usuario = Depends(get_current_user)):
     return get_users(db)
 
 
-@router.put("/users", response_model=UserResponse)
+@router.put(
+    "/users",
+    response_model=UserResponse,
+    summary="Atualizar usuário",
+    description="Atualiza um usuário pelo `id`. Requer JWT e o cabeçalho `X-Device-UID`.",
+    responses={
+        401: {"description": "Não autenticado ou dispositivo não autorizado"},
+        404: {"description": "Usuário não encontrado"},
+        409: {"description": "Conflito de cadastro (dados já existentes)"},
+    },
+)
 def update(body: UserUpdateBody, db: Session = Depends(get_db), _: Usuario = Depends(get_current_user)):
     patch = UserUpdate(
         **body.model_dump(exclude={"id"}, exclude_unset=True)
@@ -53,7 +75,16 @@ def update(body: UserUpdateBody, db: Session = Depends(get_db), _: Usuario = Dep
     return updated
 
 
-@router.delete("/users", response_model=UserDeleteSuccess)
+@router.delete(
+    "/users",
+    response_model=UserDeleteSuccess,
+    summary="Remover usuário",
+    description="Remove um usuário pelo `id`. Requer JWT e o cabeçalho `X-Device-UID`.",
+    responses={
+        401: {"description": "Não autenticado ou dispositivo não autorizado"},
+        404: {"description": "Usuário não encontrado"},
+    },
+)
 def delete(body: UserDeleteById, db: Session = Depends(get_db), _: Usuario = Depends(get_current_user)):
     if not delete_user(db, body.id):
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")

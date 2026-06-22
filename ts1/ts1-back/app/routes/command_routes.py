@@ -18,7 +18,7 @@ from app.services.command_service import (
     list_commands,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Comandos"])
 
 
 @router.get(

@@ -14,7 +14,7 @@ from app.services.cobertura_service import (
 router = APIRouter(prefix="/cobertura", tags=["Cobertura"])
 
 
-@router.get("/satelite/{sat_id}")
+@router.get("/satelite/{sat_id}", summary="Cobertura de um satélite")
 def get_cobertura_satelite(
     sat_id: int,
     db: Session = Depends(get_db),
@@ -23,7 +23,7 @@ def get_cobertura_satelite(
     return cobertura_satelite(db, sat_id)
 
 
-@router.get("/constelacao/{con_id}")
+@router.get("/constelacao/{con_id}", summary="Cobertura de uma constelação")
 def get_cobertura_constelacao(
     con_id: int,
     db: Session = Depends(get_db),
