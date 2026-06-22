@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-from app.db.models import Satelite, Telemetria
+from app.db.models import Satelite, Telemetria, Efemeride
 from app.schemas.telemetria_schema import TelemetryInputPayload
 from app.services.cobertura_service import propagar_posicao_historica
 
@@ -79,57 +80,99 @@ def query_historico_localizacoes(
             detail=f"Satelite '{sat_id}' nao encontrado.",
         )
 
-    query = db.query(Telemetria).filter(Telemetria.id_satelite == sat_id)
+    filtros = [
+        Telemetria.id_satelite == sat_id,
+        Telemetria.timestamp_registro.isnot(None),
+    ]
 
     if dt_from is not None:
-        query = query.filter(Telemetria.timestamp_registro >= dt_from)
+        filtros.append(Telemetria.timestamp_registro >= dt_from)
     if dt_to is not None:
-        query = query.filter(Telemetria.timestamp_registro <= dt_to)
+        filtros.append(Telemetria.timestamp_registro <= dt_to)
 
-    total = query.count()
+    total = db.query(func.count(Telemetria.id_telemetria)).filter(*filtros).scalar() or 0
+    effective_limit = max(limit, 5)
 
     registros = (
-        query
+        db.query(
+            Telemetria.id_telemetria,
+            Telemetria.id_satelite,
+            Telemetria.timestamp_registro,
+            Telemetria.temperatura,
+            Telemetria.energia,
+            Telemetria.cpu,
+        )
+        .filter(*filtros)
         .order_by(Telemetria.timestamp_registro.asc(), Telemetria.id_telemetria.asc())
         .offset(offset)
-        .limit(limit)
+        .limit(effective_limit)
         .all()
     )
 
+    # Para projeto academico com efemerides mockadas, usa "agora" apenas
+    # como fase dentro de uma janela curta ancorada na efemeride mais recente.
+    # Assim, a trilha permanece dinamica sem afastar o satelite do contexto local.
+    latest_efe = (
+        db.query(Efemeride.efe_timestamp_ref)
+        .filter(Efemeride.sat_id == sat_id)
+        .order_by(Efemeride.efe_timestamp_ref.desc())
+        .first()
+    )
+
+    phase_window_seconds = 8 * 60
+    now = datetime.utcnow()
+    has_latest_efe = latest_efe is not None and latest_efe[0] is not None
+    phase_seconds = 0
+    if has_latest_efe:
+        efe_ref = latest_efe[0]
+        phase_seconds = int((now - efe_ref).total_seconds()) % phase_window_seconds
+        base_target_ts = efe_ref + timedelta(seconds=phase_seconds)
+    else:
+        base_target_ts = now
+
+    step_seconds = 30
+    total_registros = len(registros)
+    start_phase_seconds = (
+        phase_window_seconds - ((total_registros - 1) * step_seconds) % phase_window_seconds
+    ) % phase_window_seconds
+
     data: list[dict] = []
-    for tlm in registros:
+    for idx, (tlm_id, sat_tlm_id, timestamp_registro, temperatura, energia, cpu) in enumerate(registros):
         try:
-            pos = propagar_posicao_historica(db, sat_id, tlm.timestamp_registro)
+            point_phase_seconds = (start_phase_seconds + idx * step_seconds) % phase_window_seconds
+            phase_offset = (point_phase_seconds - phase_seconds) if has_latest_efe else (idx * step_seconds)
+            target_ts = base_target_ts + timedelta(seconds=phase_offset)
+            pos = propagar_posicao_historica(db, sat_id, target_ts)
         except Exception as exc:
             logger.warning(
                 "Falha ao propagar posicao historica para tlm_id=%s sat_id=%s: %s",
-                tlm.id_telemetria, sat_id, exc,
+                tlm_id, sat_id, exc,
             )
             pos = None
 
         data.append({
-            "tlm_id": tlm.id_telemetria,
-            "sat_id": tlm.id_satelite,
-            "timestamp": tlm.timestamp_registro,
+            "tlm_id": tlm_id,
+            "sat_id": sat_tlm_id,
+            "timestamp": timestamp_registro,
             "position": {
                 "lat": pos["lat"],
                 "lng": pos["lng"],
                 "alt_km": pos["alt_km"],
             } if pos else None,
             "metadata": {
-                "temperatura": tlm.temperatura,
-                "energia": tlm.energia,
-                "cpu": tlm.cpu,
+                "temperatura": temperatura,
+                "energia": energia,
+                "cpu": cpu,
             },
         })
 
-    next_offset = offset + limit if (offset + limit) < total else None
+    next_offset = offset + effective_limit if (offset + effective_limit) < total else None
 
     return {
         "data": data,
         "pagination": {
             "total": total,
-            "limit": limit,
+            "limit": effective_limit,
             "offset": offset,
             "next_offset": next_offset,
         },

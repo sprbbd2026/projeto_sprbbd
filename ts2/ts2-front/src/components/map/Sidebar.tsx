@@ -24,7 +24,7 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
     { icon: MapIcon, label: 'Mapa Principal', path: '/' },
     { icon: Activity, label: 'Dashboard', path: '/dashboard' },
     { icon: Gauge, label: 'Telemetria', path: '/telemetry' },
-    { icon: MapIcon, label: 'Histórico de Rota', path: '/mapa' },
+    { icon: MapIcon, label: 'Histórico de Rotas Satelitais', path: '/mapa' },
     { icon: Satellite, label: 'Satélites', path: '/satellites' },
     { icon: BarChart2, label: 'Análise de Pontos', path: '/dashboards/pontos' },
     { icon: Users, label: 'Análise de Usuários', path: '/dashboards/usuarios' },

@@ -17,6 +17,7 @@ import styles from './MapPage.module.css'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 
 type FetchStatus = 'idle' | 'loading' | 'success' | 'error'
+type VisualizationMode = 'fixed' | 'coverage'
 
 export default function MapPage() {
   // ── Estado dos satélites disponíveis ─────────────────────────
@@ -26,6 +27,7 @@ export default function MapPage() {
   // ── Filtros de data ───────────────────────────────────────────
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
+  const [visualizacao, setVisualizacao] = useState<VisualizationMode>('fixed')
 
   // ── Dados do mapa ─────────────────────────────────────────────
   const [pontos, setPontos] = useState<Localizacao[]>([])
@@ -58,7 +60,7 @@ export default function MapPage() {
       if (dataInicio) params.data_inicio = new Date(dataInicio).toISOString()
       if (dataFim) params.data_fim = new Date(dataFim).toISOString()
 
-      const data = await localizacaoService.getHistorico(
+      const data = await localizacaoService.getHistoricoTs1(
         params as unknown as Parameters<typeof localizacaoService.getHistorico>[0]
       )
       setPontos(data)
@@ -87,7 +89,7 @@ export default function MapPage() {
                 Histórico de Localização
               </h1>
               <p className={styles.subtitle}>
-                Visualize o trajeto e os pontos de posição registrados por satélite.
+                Alterne entre a visualização antiga de pontos fixos e a cobertura orbital.
               </p>
             </div>
           </header>
@@ -162,7 +164,9 @@ export default function MapPage() {
           {/* ── Painel do mapa ────────────────────────────────────── */}
           <section className={styles.mapCard} aria-label="Mapa de localização">
             <div className={styles.mapHeader}>
-              <h2 className={styles.mapTitle}>Mapa de Trajeto</h2>
+              <h2 className={styles.mapTitle}>
+                {visualizacao === 'coverage' ? 'Mapa de Cobertura' : 'Mapa de Pontos Fixos'}
+              </h2>
               {status === 'success' && pontos.length > 0 && (
                 <span className={`${styles.badge} ${styles.badgeBlue}`}>
                   <Map size={13} />
@@ -206,35 +210,55 @@ export default function MapPage() {
                 <span className={styles.stateIcon}>🌍</span>
                 <p className={styles.stateTitle}>Selecione um satélite e consulte</p>
                 <p className={styles.stateText}>
-                  O mapa exibirá o trajeto e os pontos de localização registrados.
+                  O mapa exibirá os pontos temporais, o satélite e a área de cobertura estimada.
                 </p>
               </div>
             )}
 
             {/* CA01 — Mapa com dados */}
             {status === 'success' && pontos.length > 0 && (
-              <SatelliteMap pontos={pontos} sateliteId={sateliteId} />
+              <SatelliteMap
+                pontos={pontos}
+                sateliteId={sateliteId}
+                visualizationMode={visualizacao}
+                onToggleVisualization={() => setVisualizacao((current) => (current === 'fixed' ? 'coverage' : 'fixed'))}
+              />
             )}
 
             {/* Legenda */}
             {status === 'success' && pontos.length > 0 && (
               <div className={styles.legend} aria-label="Legenda do mapa">
-                <div className={styles.legendItem}>
-                  <span className={styles.legendDot} style={{ background: '#22c55e' }} />
-                  Ponto inicial
-                </div>
-                <div className={styles.legendItem}>
-                  <span className={styles.legendDot} style={{ background: '#ef4444' }} />
-                  Ponto final
-                </div>
-                <div className={styles.legendItem}>
-                  <span className={styles.legendDot} style={{ background: '#3b82f6' }} />
-                  Pontos intermediários
-                </div>
-                <div className={styles.legendItem}>
-                  <span className={styles.legendLine} style={{ background: '#3b82f6' }} />
-                  Trilha (polyline)
-                </div>
+                {visualizacao === 'coverage' ? (
+                  <>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#1d4ed8' }} />
+                      Área de cobertura
+                    </div>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#0f172a' }} />
+                      Satélite
+                    </div>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#60a5fa' }} />
+                      Instante consultado
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#22c55e' }} />
+                      Ponto inicial
+                    </div>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#ef4444' }} />
+                      Ponto final
+                    </div>
+                    <div className={styles.legendItem}>
+                      <span className={styles.legendDot} style={{ background: '#3b82f6' }} />
+                      Pontos intermediários
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </section>

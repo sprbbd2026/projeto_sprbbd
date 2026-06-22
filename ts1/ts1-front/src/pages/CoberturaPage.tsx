@@ -121,7 +121,7 @@ export default function CoberturaPage() {
                         Cobertura por Região
                     </h1>
                     <p className="mt-1 text-sm" style={{ color: "var(--text-h)" }}>
-                        US308 — identifique qual satélite atende uma região. Selecione uma
+                        Identifique qual satélite atende uma região. Selecione uma
                         região ou informe coordenadas.
                     </p>
                 </div>
