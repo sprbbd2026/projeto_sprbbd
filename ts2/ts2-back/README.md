@@ -39,6 +39,7 @@ Exemplo para desenvolvimento local:
 ```env
 DATABASE_URL=postgresql+psycopg://admin:sua_senha@localhost:5433/sprbbd-db
 DATABASE_KEY=sua_senha
+JWT_SECRET_KEY=uma-chave-longa-qualquer-para-dev
 ```
 
 > `DATABASE_KEY` deve ser igual à senha usada no `docker-compose.yml`.
