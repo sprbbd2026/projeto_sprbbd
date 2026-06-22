@@ -1,4 +1,4 @@
-import { Radio, Wifi } from 'lucide-react';
+import { ChevronDown, ChevronUp, Radio, Wifi } from 'lucide-react';
 import { useMapStore } from '../../store/mapStore';
 
 function formatTime(date: Date): string {
@@ -10,44 +10,67 @@ function formatTime(date: Date): string {
  * atualização. Os dados são atualizados automaticamente pelo polling do
  * dashboard (US304).
  */
-export function ConnectedDevicesPanel() {
+interface ConnectedDevicesPanelProps {
+  collapsed: boolean
+  onToggle: () => void
+}
+
+export function ConnectedDevicesPanel({ collapsed, onToggle }: ConnectedDevicesPanelProps) {
   const { connectedDevices, lastUpdated } = useMapStore();
 
   return (
-    <div className="absolute top-4 right-4 z-[1000] w-72 max-w-[85vw]">
-      <div className="bg-white/95 backdrop-blur rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+    <div className="absolute top-4 right-4 z-1000 max-w-[85vw]">
+      <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white/95 shadow-2xl backdrop-blur transition-all duration-300">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="flex w-full items-center justify-between gap-3 border-b border-gray-100 px-4 py-3 text-left hover:bg-gray-50"
+          aria-expanded={!collapsed}
+        >
           <div className="flex items-center gap-2">
             <Wifi size={18} className="text-green-600" />
-            <h3 className="font-bold text-gray-800 text-sm">Dispositivos conectados</h3>
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-bold text-gray-800">Dispositivos conectados</h3>
+              <p className="text-[11px] text-gray-400">
+                {lastUpdated
+                  ? `Atualizado às ${formatTime(lastUpdated)}`
+                  : 'Aguardando primeira atualização…'}
+              </p>
+            </div>
           </div>
-          <span className="text-xs font-bold text-green-700 bg-green-100 rounded-full px-2 py-0.5">
-            {connectedDevices.length}
-          </span>
-        </div>
 
-        <ul className="max-h-64 overflow-y-auto divide-y divide-gray-50">
-          {connectedDevices.length === 0 ? (
-            <li className="px-4 py-6 text-center text-xs text-gray-400">
-              Nenhum dispositivo online no momento.
-            </li>
-          ) : (
-            connectedDevices.map((device) => (
-              <li key={device.uuid} className="flex items-center gap-2 px-4 py-2">
-                <Radio size={14} className="text-green-500 shrink-0" />
-                <span className="font-mono text-xs text-gray-700 truncate" title={device.uuid}>
-                  {device.uuid}
-                </span>
-              </li>
-            ))
-          )}
-        </ul>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
+              {connectedDevices.length}
+            </span>
+            {collapsed ? (
+              <ChevronDown size={18} className="text-gray-400" />
+            ) : (
+              <ChevronUp size={18} className="text-gray-400" />
+            )}
+          </div>
+        </button>
 
-        <div className="px-4 py-2 border-t border-gray-100 text-[11px] text-gray-400">
-          {lastUpdated
-            ? `Última atualização: ${formatTime(lastUpdated)}`
-            : 'Aguardando primeira atualização…'}
-        </div>
+        {!collapsed && (
+          <>
+            <ul className="max-h-64 overflow-y-auto divide-y divide-gray-50">
+              {connectedDevices.length === 0 ? (
+                <li className="px-4 py-6 text-center text-xs text-gray-400">
+                  Nenhum dispositivo online no momento.
+                </li>
+              ) : (
+                connectedDevices.map((device) => (
+                  <li key={device.uuid} className="flex items-center gap-2 px-4 py-2">
+                    <Radio size={14} className="shrink-0 text-green-500" />
+                    <span className="truncate font-mono text-xs text-gray-700" title={device.uuid}>
+                      {device.uuid}
+                    </span>
+                  </li>
+                ))
+              )}
+            </ul>
+          </>
+        )}
       </div>
     </div>
   );

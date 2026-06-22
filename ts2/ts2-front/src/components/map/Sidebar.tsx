@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Activity, Gauge, Satellite, Navigation } from 'lucide-react';
+import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Gauge, Satellite, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { BrazilIcon } from '../icons/BrazilIcon';
@@ -22,7 +22,6 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
 
   const navItems = [
     { icon: MapIcon, label: 'Mapa Principal', path: '/' },
-    { icon: Activity, label: 'Dashboard', path: '/dashboard' },
     { icon: Gauge, label: 'Telemetria', path: '/telemetry' },
     { icon: MapIcon, label: 'Histórico de Rotas Satelitais', path: '/mapa' },
     { icon: Satellite, label: 'Satélites', path: '/satellites' },
@@ -48,7 +47,7 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
       {!isFixed && !isOpen && (
         <button
           onClick={toggleSidebar}
-          className="absolute top-4 left-4 z-[1000] p-3 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors cursor-pointer"
+          className="absolute top-4 left-4 z-1000 p-3 bg-white rounded-full shadow-md hover:bg-gray-50 transition-colors cursor-pointer"
           aria-label="Menu"
         >
           <Menu size={24} className="text-gray-700" />
@@ -58,7 +57,7 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
       {/* Sidebar Overlay - Apenas se não for fixo */}
       {!isFixed && isOpen && (
         <div
-          className="absolute inset-0 bg-black/20 z-[990]"
+          className="absolute inset-0 bg-black/20 z-990"
           onClick={() => setIsOpen(false)}
         />
       )}

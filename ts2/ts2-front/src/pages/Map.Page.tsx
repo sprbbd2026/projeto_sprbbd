@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -12,6 +12,8 @@ import { MapEvents } from '../components/map/MapEvents';
 import { SelectedPointCard } from '../components/map/SelectedPointCard';
 import { AddLocationModal } from '../components/map/AddLocationModal';
 import { MapMarkers } from '../components/map/MapMarkers';
+import { ConnectedDevicesPanel } from '../components/map/ConnectedDevicesPanel';
+import { usePolling } from '../hooks/usePolling';
 
 const droppedPinIcon = L.divIcon({
   html: renderToString(
@@ -26,11 +28,18 @@ const droppedPinIcon = L.divIcon({
 
 export function MapPage() {
   const initialPosition: [number, number] = [-23.2081, -45.8828];
-  const { activeLayer, selectedCoord, fetchLocations } = useMapStore();
+  const { activeLayer, selectedCoord, fetchLocations, fetchConnectedDevices } = useMapStore();
+  const [isDevicesPanelCollapsed, setIsDevicesPanelCollapsed] = useState(false);
+
+  const refreshConnectedDevices = useCallback(() => {
+    void fetchConnectedDevices();
+  }, [fetchConnectedDevices]);
 
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
+
+  usePolling(refreshConnectedDevices, 15_000);
 
   const getTileUrl = () => {
     switch (activeLayer) {
@@ -54,16 +63,16 @@ export function MapPage() {
 
   return (
     <MapLayout>
-      <MapContainer 
-        center={initialPosition} 
-        zoom={10} 
+      <MapContainer
+        center={initialPosition}
+        zoom={10}
         style={{ height: '100%', width: '100%', zIndex: 0 }}
         zoomControl={false}
       >
         <MapEvents />
         <CustomMapControls />
         <TileLayer key={activeLayer} attribution={getAttribution()} url={getTileUrl()} />
-        
+
         <MapMarkers />
 
         {selectedCoord && (
@@ -72,6 +81,10 @@ export function MapPage() {
       </MapContainer>
 
       {/* Floating Overlays */}
+      <ConnectedDevicesPanel
+        collapsed={isDevicesPanelCollapsed}
+        onToggle={() => setIsDevicesPanelCollapsed((current) => !current)}
+      />
       <SelectedPointCard />
       <AddLocationModal />
     </MapLayout>
