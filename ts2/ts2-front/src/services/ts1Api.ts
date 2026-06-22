@@ -20,3 +20,19 @@ ts1Api.interceptors.request.use((config) => {
 
   return config
 })
+
+ts1Api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      useAuthStore.getState().logout()
+      localStorage.removeItem('ts2-auth-storage')
+
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+    }
+
+    return Promise.reject(error)
+  },
+)
