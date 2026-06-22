@@ -9,7 +9,7 @@ from app.services.dashboard_service import get_dashboard_summary
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 
 
-@router.get("/summary", response_model=DashboardSummary)
+@router.get("/summary", response_model=DashboardSummary, summary="Resumo do dashboard")
 def dashboard_summary(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),

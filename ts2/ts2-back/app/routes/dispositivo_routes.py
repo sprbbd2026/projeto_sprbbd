@@ -21,7 +21,12 @@ def _to_response(dispositivo: Dispositivo) -> DispositivoConectado:
     )
 
 
-@router.get("/conectados", response_model=list[DispositivoConectado])
+@router.get(
+    "/conectados",
+    response_model=list[DispositivoConectado],
+    summary="Listar dispositivos conectados",
+    responses={401: {"description": "Não autenticado ou dispositivo não autorizado"}},
+)
 def conectados(
     db: Session = Depends(get_db),
     user: Usuario = Depends(get_current_user),

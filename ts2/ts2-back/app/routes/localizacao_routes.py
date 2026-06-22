@@ -14,13 +14,22 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/historico", tags=["Histórico de Localização"])
 
 
-@router.post("/localizacao", response_model=LocalizacaoResponse, status_code=201)
+@router.post(
+    "/localizacao",
+    response_model=LocalizacaoResponse,
+    status_code=201,
+    summary="Registrar ponto de localização",
+)
 def registrar_localizacao(localizacao: LocalizacaoCreate, db: Session = Depends(get_db)):
     """Registra um novo ponto de localização para um satélite."""
     return localizacao_service.create_localizacao(db, localizacao)
 
 
-@router.get("/localizacao", response_model=list[LocalizacaoResponse])
+@router.get(
+    "/localizacao",
+    response_model=list[LocalizacaoResponse],
+    summary="Consultar histórico de localização (US302)",
+)
 def consultar_historico(
     satelite_id: str = Query(..., description="ID do satélite"),
     data_inicio: Optional[datetime] = Query(None, description="Data/hora inicial (ISO 8601)"),
@@ -38,7 +47,11 @@ def consultar_historico(
     return pontos
 
 
-@router.get("/rota", response_model=list[LocalizacaoResponse])
+@router.get(
+    "/rota",
+    response_model=list[LocalizacaoResponse],
+    summary="Consultar rota completa (US300)",
+)
 def consultar_rota(
     satelite_id: str = Query(..., description="ID do satélite"),
     limit: int = Query(200, ge=1, le=1000, description="Número máximo de pontos de rota"),
@@ -51,7 +64,11 @@ def consultar_rota(
     return localizacao_service.get_rota(db, satelite_id, limit)
 
 
-@router.get("/satelites", response_model=list[str])
+@router.get(
+    "/satelites",
+    response_model=list[str],
+    summary="Listar satélites com histórico",
+)
 def listar_satelites(db: Session = Depends(get_db)):
     """Lista os IDs únicos de satélites com histórico de localização registrado."""
     return localizacao_service.list_satelites(db)

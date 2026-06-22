@@ -12,12 +12,12 @@ from app.services.telemetria_service import ingest_satellite_telemetry, query_hi
 router = APIRouter(prefix="/telemetria", tags=["Telemetria"])
 
 
-@router.post("/ingest", status_code=201)
+@router.post("/ingest", status_code=201, summary="Ingerir telemetria de satélite")
 def receive_telemetry(data: TelemetryInputPayload, db: Session = Depends(get_db)):
     return ingest_satellite_telemetry(db, data)
 
 
-@router.get("/locations", response_model=LocationPageResponse)
+@router.get("/locations", response_model=LocationPageResponse, summary="Histórico de localizações")
 def list_locations(
     sat_id: int = Query(..., description="ID do satelite"),
     dt_from: Optional[datetime] = Query(None, alias="from", description="Inicio do intervalo (ISO 8601)"),
