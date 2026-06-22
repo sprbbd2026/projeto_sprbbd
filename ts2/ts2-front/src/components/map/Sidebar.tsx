@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Activity, Gauge, Satellite } from 'lucide-react';
+import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Activity, Gauge, Satellite, Navigation } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { BrazilIcon } from '../icons/BrazilIcon';
@@ -26,6 +26,7 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
     { icon: Gauge, label: 'Telemetria', path: '/telemetry' },
     { icon: MapIcon, label: 'Histórico de Rotas Satelitais', path: '/mapa' },
     { icon: Satellite, label: 'Satélites', path: '/satellites' },
+    { icon: Navigation, label: 'Simulador de Rotas', path: '/simulador' },
     { icon: BarChart2, label: 'Análise de Pontos', path: '/dashboards/pontos' },
     { icon: Users, label: 'Análise de Usuários', path: '/dashboards/usuarios' },
     { icon: Settings, label: 'Configurações', path: '/settings' },

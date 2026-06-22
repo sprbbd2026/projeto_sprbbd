@@ -10,6 +10,8 @@ import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import Dashboard from '../pages/Dashboard'
 import HistoricoMapPage from '../pages/MapPage'
+import { SimuladorPage } from '../pages/SimuladorPage'
+import { Sidebar } from '../components/map/Sidebar'
 
 const router = createBrowserRouter([
   {
@@ -67,6 +69,19 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <UsersDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/simulador',
+    element: (
+      <ProtectedRoute>
+        <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
+          <Sidebar isFixed={true} />
+          <main className="flex-1 overflow-hidden relative">
+            <SimuladorPage />
+          </main>
+        </div>
       </ProtectedRoute>
     ),
   },

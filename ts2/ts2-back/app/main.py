@@ -6,10 +6,13 @@ from app.routes.user_routes import router as user_router
 from app.routes.telemetry_routes import router as telemetry_router
 from app.routes.localizacao_routes import router as localizacao_router
 from app.routes.dispositivo_routes import router as dispositivo_router
+from app.routes.routing_routes import router as routing_router
 from app.db.database import engine
 from app.db import models
+from app.db import cache_models  # noqa: F401 — registra tabelas de cache
 
 models.Base.metadata.create_all(bind=engine)
+cache_models.Base.metadata.create_all(bind=engine)
 
 tags_metadata = [
     {"name": "auth", "description": "Autenticação de usuários e emissão/renovação de tokens JWT."},
@@ -18,6 +21,7 @@ tags_metadata = [
     {"name": "Telemetria", "description": "Registro e consulta de telemetria."},
     {"name": "Histórico de Localização", "description": "Histórico, rota e satélites monitorados (US300/US302)."},
     {"name": "Dispositivos", "description": "Dispositivos conectados do usuário autenticado."},
+    {"name": "Rotas", "description": "Cálculo de rotas terrestres e geocoding (OSRM/Nominatim)."},
 ]
 
 app = FastAPI(
@@ -53,3 +57,4 @@ app.include_router(local_router)
 app.include_router(telemetry_router)
 app.include_router(localizacao_router)
 app.include_router(dispositivo_router)
+app.include_router(routing_router)
