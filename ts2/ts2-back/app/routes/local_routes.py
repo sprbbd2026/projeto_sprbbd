@@ -6,7 +6,12 @@ from app.services.local_service import get_locais, create_local
 
 router = APIRouter(tags=["Locais"])
 
-@router.get("/locais", response_model=list[LocalResponse])
+@router.get(
+    "/locais",
+    response_model=list[LocalResponse],
+    summary="Listar locais",
+    description="Retorna todos os locais cadastrados.",
+)
 def list_locais(db: Session = Depends(get_db)):
     locais = get_locais(db)
     # Map model instances to match Pydantic schema with id alias
@@ -22,7 +27,12 @@ def list_locais(db: Session = Depends(get_db)):
         ) for l in locais
     ]
 
-@router.post("/locais", response_model=LocalResponse)
+@router.post(
+    "/locais",
+    response_model=LocalResponse,
+    summary="Criar local",
+    description="Cadastra um novo local de interesse.",
+)
 def add_local(local: LocalCreate, db: Session = Depends(get_db)):
     db_local = create_local(db, local)
     return LocalResponse(

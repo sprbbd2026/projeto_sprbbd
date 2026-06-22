@@ -27,7 +27,28 @@ async def lifespan(app: FastAPI):
     yield
 
 
+tags_metadata = [
+    {"name": "Health", "description": "Verificação de disponibilidade do serviço."},
+    {"name": "Autenticação", "description": "Login e emissão de token JWT."},
+    {"name": "Usuários", "description": "Cadastro de operadores/usuários."},
+    {"name": "Telemetria", "description": "Ingestão e consulta de telemetria e localizações."},
+    {"name": "Comandos", "description": "Envio e histórico de comandos remotos (US305)."},
+    {"name": "Satellites", "description": "CRUD de satélites."},
+    {"name": "Constellations", "description": "CRUD de constelações."},
+    {"name": "Constelacoes", "description": "Listagem de constelações (endpoint legado em PT)."},
+    {"name": "Cobertura", "description": "Cobertura por satélite, constelação e região (US308)."},
+    {"name": "Dashboard", "description": "Indicadores consolidados do painel."},
+]
+
 app = FastAPI(
+    title="SPRB-BD · API TS1",
+    description=(
+        "API do backend TS1 do projeto SPRB-BD.\n\n"
+        "Endpoints protegidos exigem token JWT no cabeçalho "
+        "`Authorization: Bearer <token>` (use o botão **Authorize**)."
+    ),
+    version="1.0.0",
+    openapi_tags=tags_metadata,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",

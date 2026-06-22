@@ -11,7 +11,24 @@ from app.db import models
 
 models.Base.metadata.create_all(bind=engine)
 
+tags_metadata = [
+    {"name": "auth", "description": "Autenticação de usuários e emissão/renovação de tokens JWT."},
+    {"name": "Usuários", "description": "Cadastro, consulta, atualização e remoção de usuários."},
+    {"name": "Locais", "description": "Cadastro e listagem de locais de interesse."},
+    {"name": "Telemetria", "description": "Registro e consulta de telemetria."},
+    {"name": "Histórico de Localização", "description": "Histórico, rota e satélites monitorados (US300/US302)."},
+    {"name": "Dispositivos", "description": "Dispositivos conectados do usuário autenticado."},
+]
+
 app = FastAPI(
+    title="SPRB-BD · API TS2",
+    description=(
+        "API do backend TS2 do projeto SPRB-BD.\n\n"
+        "Endpoints protegidos exigem token JWT no cabeçalho `Authorization: Bearer <token>` "
+        "(use o botão **Authorize**) e, quando indicado, o cabeçalho `X-Device-UID`."
+    ),
+    version="1.0.0",
+    openapi_tags=tags_metadata,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",

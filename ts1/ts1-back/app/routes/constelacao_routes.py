@@ -8,6 +8,6 @@ from app.dependencies import get_current_user
 
 router = APIRouter(prefix="/constelacoes", tags=["Constelacoes"])
 
-@router.get("/", response_model=list[ConstelacaoResponse])
+@router.get("/", response_model=list[ConstelacaoResponse], summary="Listar constelações (legado)")
 def list_constelacoes(db: Session = Depends(get_db), _=Depends(get_current_user)):
     return db.query(Constelacao).all()
