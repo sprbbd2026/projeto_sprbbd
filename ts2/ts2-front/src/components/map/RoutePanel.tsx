@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { X, Navigation, MapPin, ArrowRightLeft, Loader2, Route, LocateFixed } from 'lucide-react';
 import { useMapStore } from '../../store/mapStore';
-import { routingService, type GeocodeResult } from '../../services/routingService';
+import { routingService } from '../../services/routingService';
 
 interface RouteDestination {
   lat: number;

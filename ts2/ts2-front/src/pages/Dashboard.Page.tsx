@@ -1,9 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { renderToString } from 'react-dom/server';
-import { MapPin, Satellite } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 import { MapDashboardLayout } from '../components/layout/MapDashboardLayout';
 import { useMapStore } from '../store/mapStore';
@@ -29,6 +29,7 @@ const droppedPinIcon = L.divIcon({
 });
 
 export function DashboardPage() {
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
   const initialPosition: [number, number] = [-23.2081, -45.8828];
   const { activeLayer, selectedCoord, fetchSatellites, fetchLocations, fetchConnectedDevices } =
     useMapStore();
@@ -63,16 +64,16 @@ export function DashboardPage() {
   };
   return (
     <MapDashboardLayout>
-      <MapContainer 
-        center={initialPosition} 
-        zoom={10} 
+      <MapContainer
+        center={initialPosition}
+        zoom={10}
         style={{ height: '100%', width: '100%', zIndex: 0 }}
         zoomControl={false}
       >
         <MapEvents />
         <CustomMapControls />
         <TileLayer key={activeLayer} attribution={getAttribution()} url={getTileUrl()} />
-        
+
         <DashboardMarkers />
 
         {selectedCoord && (
@@ -81,7 +82,7 @@ export function DashboardPage() {
       </MapContainer>
 
       {/* Floating Overlays */}
-      <ConnectedDevicesPanel />
+      <ConnectedDevicesPanel collapsed={panelCollapsed} onToggle={() => setPanelCollapsed(!panelCollapsed)} />
       <SelectedPointCardDashboard />
     </MapDashboardLayout>
   );

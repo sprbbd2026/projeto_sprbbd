@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { routingService, type Coordenada, type RotaResponse, type GeocodeResult } from '../services/routingService'
+import { routingService, type Coordenada, type RotaResponse } from '../services/routingService'
 import { useMapStore } from '../store/mapStore'
 import 'leaflet/dist/leaflet.css'
 
