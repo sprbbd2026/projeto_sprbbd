@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Marker, Popup, useMapEvents } from 'react-leaflet';
+import { Marker, useMapEvents } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
 import { renderToString } from 'react-dom/server';
-import { Utensils, Bed, Landmark, Star, MapPin, Bus, Camera, HelpCircle } from 'lucide-react';
+import { Utensils, Bed, Landmark, MapPin, Bus, Camera, HelpCircle } from 'lucide-react';
 import { useMapStore, type LocationCategory } from '../../store/mapStore';
 
 const getCategoryConfig = (category: LocationCategory) => {
@@ -54,12 +54,12 @@ export function MapMarkers() {
       if (activeFilters.length > 0 && !activeFilters.includes(loc.category)) {
         return false;
       }
-      
+
       // 2. Lazy Loading (Filter by map bounds)
       if (bounds) {
         return bounds.contains(L.latLng(loc.lat, loc.lng));
       }
-      
+
       return true;
     });
   }, [locations, activeFilters, bounds]);
@@ -67,20 +67,25 @@ export function MapMarkers() {
   return (
     <>
       {visibleLocations.map((loc) => (
-        <Marker key={loc.id} position={[loc.lat, loc.lng]} icon={createCustomIcon(loc.category)}>
-          <Popup>
-            <div className="text-sm min-w-[150px]">
-              <strong className="block text-base mb-1">{loc.name}</strong>
-              <div className="flex items-center gap-1 mb-2">
-                <Star size={14} className="text-amber-500 fill-amber-500" />
-                <span className="font-medium text-gray-700">{loc.rating}.0</span>
-              </div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {loc.category}
-              </span>
-            </div>
-          </Popup>
-        </Marker>
+        <Marker
+          key={loc.id}
+          position={[loc.lat, loc.lng]}
+          icon={createCustomIcon(loc.category)}
+          eventHandlers={{
+            click: () => {
+              window.dispatchEvent(new CustomEvent('map:marker-clicked', {
+                detail: {
+                  type: 'location',
+                  id: loc.id,
+                  name: loc.name,
+                  lat: loc.lat,
+                  lng: loc.lng,
+                  category: loc.category,
+                },
+              }));
+            },
+          }}
+        />
       ))}
     </>
   );

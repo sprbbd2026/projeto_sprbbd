@@ -24,10 +24,18 @@ export function MapEvents() {
       });
     };
 
+    const handleNavigateTo = (event: Event) => {
+      const customEvent = event as CustomEvent<{ lat: number; lng: number }>;
+      const { lat, lng } = customEvent.detail;
+      map.flyTo([lat, lng], 15, { animate: true });
+    };
+
     window.addEventListener('map:locate-current', handleLocateCurrent);
+    window.addEventListener('map:navigate-to', handleNavigateTo);
 
     return () => {
       window.removeEventListener('map:locate-current', handleLocateCurrent);
+      window.removeEventListener('map:navigate-to', handleNavigateTo);
     };
   }, [map, setTemporaryLocation]);
 
