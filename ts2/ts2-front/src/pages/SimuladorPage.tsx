@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { routingService, type Coordenada, type RotaResponse, type GeocodeResult } from '../services/routingService'
 import 'leaflet/dist/leaflet.css'
@@ -41,6 +41,20 @@ function MapClickHandler({ onClick }: { onClick: (latlng: L.LatLng) => void }) {
       onClick(e.latlng)
     },
   })
+  return null
+}
+
+// ---- Componente que ajusta o zoom pra mostrar a rota toda ----
+function FitRouteBounds({ geometry }: { geometry: [number, number][] | null }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!geometry || geometry.length === 0) return
+
+    const bounds = L.latLngBounds(geometry.map(([lat, lng]) => [lat, lng] as [number, number]))
+    map.fitBounds(bounds, { padding: [50, 50], animate: true })
+  }, [geometry, map])
+
   return null
 }
 
@@ -284,8 +298,17 @@ export function SimuladorPage() {
     if (!rota || !rota.geometry.length) return []
 
     if (cenario === 'ifood' && rota.legs.length === 2 && ifoodRestaurante) {
-      // Divide a geometria em 2 trechos
-      const midIdx = Math.floor(rota.geometry.length * (rota.legs[0].distance_km / rota.distance_km))
+      // Encontra o ponto da geometria mais próximo do restaurante para dividir
+      let minDist = Infinity
+      let midIdx = 0
+      for (let i = 0; i < rota.geometry.length; i++) {
+        const [lat, lng] = rota.geometry[i]
+        const dist = Math.pow(lat - ifoodRestaurante.lat, 2) + Math.pow(lng - ifoodRestaurante.lng, 2)
+        if (dist < minDist) {
+          minDist = dist
+          midIdx = i
+        }
+      }
       const seg1 = rota.geometry.slice(0, midIdx + 1) as [number, number][]
       const seg2 = rota.geometry.slice(midIdx) as [number, number][]
       return [
@@ -513,6 +536,7 @@ export function SimuladorPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
           <MapClickHandler onClick={handleMapClick} />
+          <FitRouteBounds geometry={rota?.geometry ?? null} />
 
           {/* Polylines */}
           {getPolylineSegments().map((seg, i) => (
