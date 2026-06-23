@@ -39,9 +39,19 @@ export const routingService = {
     return data
   },
 
-  async geocode(query: string, noCache = false): Promise<GeocodeResult[]> {
+  async geocode(
+    query: string,
+    options: { lat?: number; lng?: number; maxDistanceKm?: number; noCache?: boolean } = {}
+  ): Promise<GeocodeResult[]> {
+    const { lat, lng, maxDistanceKm = 500, noCache = false } = options
     const { data } = await api.get<GeocodeResponse>('/rotas/geocode', {
-      params: { q: query, no_cache: noCache },
+      params: {
+        q: query,
+        ...(lat !== undefined && { lat }),
+        ...(lng !== undefined && { lng }),
+        max_distance_km: maxDistanceKm,
+        no_cache: noCache,
+      },
     })
     return data.results
   },

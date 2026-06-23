@@ -28,9 +28,14 @@ async def calculate_route(
 @router.get("/geocode", response_model=GeocodeResponse)
 async def geocode(
     q: str = Query(..., min_length=2, max_length=200, description="Texto de busca"),
+    lat: float | None = Query(None, description="Latitude de referência (padrão SJC)"),
+    lng: float | None = Query(None, description="Longitude de referência (padrão SJC)"),
+    max_distance_km: float = Query(500.0, description="Distância máxima em km"),
     no_cache: bool = Query(False, description="Bypass cache para benchmark"),
     db: Session = Depends(get_db),
 ):
-    """Busca endereços/POIs por texto via Nominatim."""
-    results = await geocode_search(q, db, no_cache=no_cache)
+    """Busca endereços/POIs por texto via Nominatim com filtro de distância."""
+    results = await geocode_search(
+        q, db, no_cache=no_cache, lat=lat, lng=lng, max_distance_km=max_distance_km
+    )
     return {"results": results}

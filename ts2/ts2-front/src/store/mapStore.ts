@@ -4,7 +4,7 @@ import { fetchSatelites } from '../services/satelliteService';
 import { fetchConnectedDevices, type ConnectedDevice } from '../services/deviceService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
-export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'outros';
+export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'shopping' | 'mercado' | 'saude' | 'educacao' | 'lazer' | 'outros';
 
 export interface LocationPoint {
   id: string;
@@ -47,6 +47,8 @@ interface MapState {
   setSelectedCoord: (coord: { lat: number; lng: number } | null) => void;
   setTemporaryLocation: (coord: { lat: number; lng: number } | null) => void;
   setAddModalOpen: (isOpen: boolean) => void;
+  addTemporaryLocationPin: (location: Omit<LocationPoint, 'id'>) => void;
+  clearTemporaryLocationPins: () => void;
   fetchLocations: () => Promise<void>;
   fetchSatellites: () => Promise<void>;
   fetchConnectedDevices: () => Promise<void>;
@@ -79,6 +81,26 @@ export const useMapStore = create<MapState>((set) => ({
   setSelectedCoord: (coord) => set({ selectedCoord: coord }),
   setTemporaryLocation: (coord) => set({ temporaryLocation: coord }),
   setAddModalOpen: (isOpen) => set({ isAddModalOpen: isOpen }),
+
+  addTemporaryLocationPin: (location) => {
+    const newLocation: LocationPoint = {
+      id: `search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: location.name,
+      lat: location.lat,
+      lng: location.lng,
+      category: location.category,
+      rating: location.rating,
+    };
+    set((state) => ({
+      locations: [...state.locations, newLocation],
+    }));
+  },
+
+  clearTemporaryLocationPins: () => {
+    set((state) => ({
+      locations: state.locations.filter((loc) => !loc.id.startsWith('search-')),
+    }));
+  },
 
   fetchLocations: async () => {
     set({ isLoading: true, error: null });

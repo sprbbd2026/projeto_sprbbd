@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Marker, useMapEvents } from 'react-leaflet';
 import L, { LatLngBounds } from 'leaflet';
 import { renderToString } from 'react-dom/server';
-import { Utensils, Bed, Landmark, MapPin, Bus, Camera, HelpCircle } from 'lucide-react';
+import { Utensils, Bed, Landmark, MapPin, Bus, Camera, ShoppingCart, Stethoscope, BookOpen, Trees, Building } from 'lucide-react';
 import { useMapStore, type LocationCategory } from '../../store/mapStore';
 
 const getCategoryConfig = (category: LocationCategory) => {
@@ -12,8 +12,13 @@ const getCategoryConfig = (category: LocationCategory) => {
     case 'museus': return { icon: Landmark, bg: 'bg-emerald-500' };
     case 'transporte': return { icon: Bus, bg: 'bg-amber-500' };
     case 'coisas_fazer': return { icon: Camera, bg: 'bg-purple-500' };
-    case 'outros': return { icon: HelpCircle, bg: 'bg-gray-500' };
-    default: return { icon: MapPin, bg: 'bg-gray-500' };
+    case 'shopping': return { icon: Building, bg: 'bg-pink-500' };
+    case 'mercado': return { icon: ShoppingCart, bg: 'bg-green-600' };
+    case 'saude': return { icon: Stethoscope, bg: 'bg-red-500' };
+    case 'educacao': return { icon: BookOpen, bg: 'bg-indigo-500' };
+    case 'lazer': return { icon: Trees, bg: 'bg-cyan-500' };
+    case 'outros': return { icon: MapPin, bg: 'bg-blue-500' };
+    default: return { icon: MapPin, bg: 'bg-blue-500' };
   }
 };
 

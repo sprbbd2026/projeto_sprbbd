@@ -1,11 +1,11 @@
 import { Search, MapPin, Utensils, Bed, Camera, Landmark, Bus, HelpCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useMapStore } from '../../store/mapStore';
+import { useMapStore, type LocationCategory } from '../../store/mapStore';
 import { SearchSuggestions } from './SearchSuggestions';
 import { SearchResultCard } from './SearchResultCard';
 
 interface SearchResult {
-  type: 'location' | 'device' | 'street';
+  type: 'location' | 'device' | 'street' | 'poi';
   id: string;
   name: string;
   lat: number;
@@ -19,6 +19,8 @@ export function TopControls() {
   const setSearchQuery = useMapStore((state) => state.setSearchQuery);
   const activeFilters = useMapStore((state) => state.activeFilters);
   const toggleFilter = useMapStore((state) => state.toggleFilter);
+  const addTemporaryLocationPin = useMapStore((state) => state.addTemporaryLocationPin);
+  const clearTemporaryLocationPins = useMapStore((state) => state.clearTemporaryLocationPins);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [selectedSearchResult, setSelectedSearchResult] = useState<SearchResult | null>(null);
 
@@ -48,11 +50,37 @@ export function TopControls() {
   };
 
   const handleSelectLocation = (result: SearchResult) => {
-    // First: navigate to the location
+    // Map search result categories to system categories
+    const categoryMap: Record<string, LocationCategory> = {
+      'Restaurante': 'restaurantes',
+      'Hospedagem': 'hoteis',
+      'Museu': 'museus',
+      'Lazer': 'lazer',
+      'Transporte': 'transporte',
+      'Shopping': 'shopping',
+      'Mercado': 'mercado',
+      'Saúde': 'saude',
+      'Educação': 'educacao',
+      'Local': 'outros',
+      'Rua': 'outros',
+    };
+
+    const mappedCategory = result.category ? categoryMap[result.category] || 'outros' : 'outros';
+
+    // Navigate to the location
     window.dispatchEvent(new CustomEvent('map:navigate-to', {
       detail: { lat: result.lat, lng: result.lng },
     }));
-    // Then: show the card with the result
+
+    // Add as a temporary marker on the map
+    addTemporaryLocationPin({
+      name: result.name,
+      lat: result.lat,
+      lng: result.lng,
+      category: mappedCategory,
+      rating: 0,
+    });
+
     setSelectedSearchResult(result);
     setSearchQuery('');
     setIsSuggestionsOpen(false);
@@ -83,10 +111,10 @@ export function TopControls() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
+                clearTemporaryLocationPins();
                 setIsSuggestionsOpen(true);
               }}
               onFocus={() => setIsSuggestionsOpen(true)}
-              onBlur={() => setTimeout(() => setIsSuggestionsOpen(false), 200)}
             />
             <button
               type="button"
