@@ -9,6 +9,14 @@ interface RouteDestination {
   label: string;
 }
 
+interface RouteSuggestion {
+  label: string;
+  sublabel?: string;
+  lat: number;
+  lng: number;
+  isMarker: boolean;
+}
+
 export function RoutePanel() {
   const {
     isRoutePanelOpen,
@@ -19,18 +27,38 @@ export function RoutePanel() {
     routeError,
     clearRoute,
   } = useMapStore();
+  const locations = useMapStore((state) => state.locations);
+  const connectedDevices = useMapStore((state) => state.connectedDevices);
 
   const [destination, setDestination] = useState<RouteDestination | null>(null);
   const [destinationInput, setDestinationInput] = useState('');
-  const [destinationSuggestions, setDestinationSuggestions] = useState<GeocodeResult[]>([]);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<RouteSuggestion[]>([]);
   const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
   const [originInput, setOriginInput] = useState('Minha localização');
   const [originCoord, setOriginCoord] = useState<{ lat: number; lng: number } | null>(null);
-  const [originSuggestions, setOriginSuggestions] = useState<GeocodeResult[]>([]);
+  const [originSuggestions, setOriginSuggestions] = useState<RouteSuggestion[]>([]);
   const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
   const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const destDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper: search markers locally by text
+  const getMarkerMatches = (query: string): RouteSuggestion[] => {
+    const q = query.toLowerCase();
+    const matched: RouteSuggestion[] = [];
+
+    for (const loc of locations) {
+      if (loc.name.toLowerCase().includes(q)) {
+        matched.push({ label: loc.name, sublabel: loc.category, lat: loc.lat, lng: loc.lng, isMarker: true });
+      }
+    }
+    for (const dev of connectedDevices) {
+      if (dev.lat != null && dev.lng != null && dev.uuid.toLowerCase().includes(q)) {
+        matched.push({ label: `Dispositivo ${dev.uuid.substring(0, 8)}...`, lat: dev.lat, lng: dev.lng, isMarker: true });
+      }
+    }
+    return matched;
+  };
 
   // Listen for route panel open events
   useEffect(() => {
@@ -72,11 +100,17 @@ export function RoutePanel() {
   }, [isRoutePanelOpen, originCoord, destination, isUsingCurrentLocation]);
 
   // Search origin suggestions
+  // Search origin suggestions (markers first, then geocode)
   useEffect(() => {
     if (isUsingCurrentLocation || originInput.length < 3) {
       setOriginSuggestions([]);
       return;
     }
+
+    // Immediately show marker matches
+    const markerMatches = getMarkerMatches(originInput);
+    setOriginSuggestions(markerMatches);
+    if (markerMatches.length > 0) setShowOriginSuggestions(true);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -87,20 +121,32 @@ export function RoutePanel() {
           lng: originCoord?.lng,
           maxDistanceKm: 500,
         });
-        setOriginSuggestions(results.slice(0, 5));
+        const geocodeSuggestions: RouteSuggestion[] = results.slice(0, 5).map((r) => ({
+          label: r.display_name.split(',')[0],
+          sublabel: r.display_name.split(',').slice(1, 3).join(',').trim(),
+          lat: r.lat,
+          lng: r.lng,
+          isMarker: false,
+        }));
+        setOriginSuggestions([...markerMatches, ...geocodeSuggestions]);
         setShowOriginSuggestions(true);
       } catch {
-        setOriginSuggestions([]);
+        setOriginSuggestions(markerMatches);
       }
     }, 350);
   }, [originInput, isUsingCurrentLocation]);
 
-  // Search destination suggestions
+  // Search destination suggestions (markers first, then geocode)
   useEffect(() => {
     if (!destinationInput || destinationInput.length < 3 || (destination && destinationInput === destination.label)) {
       setDestinationSuggestions([]);
       return;
     }
+
+    // Immediately show marker matches
+    const markerMatches = getMarkerMatches(destinationInput);
+    setDestinationSuggestions(markerMatches);
+    if (markerMatches.length > 0) setShowDestinationSuggestions(true);
 
     if (destDebounceRef.current) clearTimeout(destDebounceRef.current);
 
@@ -111,35 +157,41 @@ export function RoutePanel() {
           lng: originCoord?.lng,
           maxDistanceKm: 500,
         });
-        setDestinationSuggestions(results.slice(0, 5));
+        const geocodeSuggestions: RouteSuggestion[] = results.slice(0, 5).map((r) => ({
+          label: r.display_name.split(',')[0],
+          sublabel: r.display_name.split(',').slice(1, 3).join(',').trim(),
+          lat: r.lat,
+          lng: r.lng,
+          isMarker: false,
+        }));
+        setDestinationSuggestions([...markerMatches, ...geocodeSuggestions]);
         setShowDestinationSuggestions(true);
       } catch {
-        setDestinationSuggestions([]);
+        setDestinationSuggestions(markerMatches);
       }
     }, 350);
   }, [destinationInput]);
 
-  const handleSelectDestination = (result: GeocodeResult) => {
-    const label = result.display_name.split(',')[0];
-    setDestination({ lat: result.lat, lng: result.lng, label });
-    setDestinationInput(label);
+  const handleSelectDestination = (suggestion: RouteSuggestion) => {
+    setDestination({ lat: suggestion.lat, lng: suggestion.lng, label: suggestion.label });
+    setDestinationInput(suggestion.label);
     setShowDestinationSuggestions(false);
 
     const origin = originCoord || { lat: -23.1813, lng: -45.8879 };
-    calculateRoute(origin, { lat: result.lat, lng: result.lng }, originInput, label);
+    calculateRoute(origin, { lat: suggestion.lat, lng: suggestion.lng }, originInput, suggestion.label);
   };
 
-  const handleSelectOrigin = (result: GeocodeResult) => {
-    setOriginCoord({ lat: result.lat, lng: result.lng });
-    setOriginInput(result.display_name.split(',')[0]);
+  const handleSelectOrigin = (suggestion: RouteSuggestion) => {
+    setOriginCoord({ lat: suggestion.lat, lng: suggestion.lng });
+    setOriginInput(suggestion.label);
     setShowOriginSuggestions(false);
     setIsUsingCurrentLocation(false);
 
     if (destination) {
       calculateRoute(
-        { lat: result.lat, lng: result.lng },
+        { lat: suggestion.lat, lng: suggestion.lng },
         destination,
-        result.display_name.split(',')[0],
+        suggestion.label,
         destination.label,
       );
     }
@@ -249,14 +301,22 @@ export function RoutePanel() {
 
           {/* Origin suggestions dropdown */}
           {showOriginSuggestions && originSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
               {originSuggestions.map((s, i) => (
                 <button
                   key={i}
                   onClick={() => handleSelectOrigin(s)}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 flex items-center gap-2"
                 >
-                  {s.display_name.split(',').slice(0, 2).join(',')}
+                  {s.isMarker ? (
+                    <MapPin size={14} className="text-red-500 shrink-0" />
+                  ) : (
+                    <Navigation size={14} className="text-gray-400 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 truncate">{s.label}</p>
+                    {s.sublabel && <p className="text-xs text-gray-400 truncate">{s.sublabel}</p>}
+                  </div>
                 </button>
               ))}
             </div>
@@ -297,14 +357,22 @@ export function RoutePanel() {
 
           {/* Destination suggestions dropdown */}
           {showDestinationSuggestions && destinationSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
               {destinationSuggestions.map((s, i) => (
                 <button
                   key={i}
                   onClick={() => handleSelectDestination(s)}
-                  className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 border-b border-gray-100 last:border-0"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-100 last:border-0 flex items-center gap-2"
                 >
-                  {s.display_name.split(',').slice(0, 2).join(',')}
+                  {s.isMarker ? (
+                    <MapPin size={14} className="text-red-500 shrink-0" />
+                  ) : (
+                    <Navigation size={14} className="text-gray-400 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-700 truncate">{s.label}</p>
+                    {s.sublabel && <p className="text-xs text-gray-400 truncate">{s.sublabel}</p>}
+                  </div>
                 </button>
               ))}
             </div>
