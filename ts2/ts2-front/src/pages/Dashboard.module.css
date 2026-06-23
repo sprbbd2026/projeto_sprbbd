@@ -48,6 +48,23 @@
   align-items: center;
 }
 
+.satSelect {
+  padding: 0.55rem 0.875rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--surface-elevated);
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.satSelect:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+}
+
 .navLink {
   color: var(--btn-primary-bg);
   text-decoration: none;

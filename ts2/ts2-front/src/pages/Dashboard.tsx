@@ -1,37 +1,47 @@
 import { Activity, Cpu, Thermometer, RefreshCw, Map } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styles from './Dashboard.module.css'
 import { Button } from '../components/ui/Button'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
 import { fetchTelemetry, type Telemetry } from '../services/telemetryService'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8001'
+import { fetchSatelites, type SatellitePoint } from '../services/satelliteService'
 
 export default function Dashboard() {
   const [telemetry, setTelemetry] = useState<Telemetry[]>([])
+  const [satellites, setSatellites] = useState<SatellitePoint[]>([])
+  const [selectedSatId, setSelectedSatId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const loadTelemetry = async () => {
+  useEffect(() => {
+    fetchSatelites().then((sats) => {
+      setSatellites(sats)
+      if (sats.length > 0) setSelectedSatId(sats[0].sat_id)
+    })
+  }, [])
+
+  const loadTelemetry = useCallback(async () => {
+    if (!selectedSatId) return
     setLoading(true)
     setError('')
     try {
-      const response = await fetchTelemetry()
+      const response = await fetchTelemetry(selectedSatId)
       setTelemetry(response.reverse())
     } catch (err) {
-      setError(`Erro ao buscar telemetria. Verifique se o backend está rodando em ${API_URL}.`)
+      setError('Erro ao buscar telemetria. Verifique se o backend está rodando.')
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedSatId])
 
   useEffect(() => {
+    if (!selectedSatId) return
     void loadTelemetry()
     const interval = setInterval(() => void loadTelemetry(), 5000)
     return () => clearInterval(interval)
-  }, [])
+  }, [selectedSatId, loadTelemetry])
 
   const latest = telemetry.length > 0 ? telemetry[0] : null
 
@@ -47,6 +57,22 @@ export default function Dashboard() {
             </p>
           </div>
           <div className={styles.headerActions}>
+            <select
+              className={styles.satSelect}
+              value={selectedSatId ?? ''}
+              onChange={(e) => setSelectedSatId(Number(e.target.value))}
+              disabled={satellites.length === 0}
+            >
+              {satellites.length === 0 ? (
+                <option value="">Nenhum satélite</option>
+              ) : (
+                satellites.map((s) => (
+                  <option key={s.sat_id} value={s.sat_id}>
+                    {`SAT-${s.sat_id}`}{s.con_nome ? ` · ${s.con_nome}` : ''}
+                  </option>
+                ))
+              )}
+            </select>
             <Button onClick={() => void loadTelemetry()} disabled={loading}>
               <RefreshCw className={loading ? styles.spin : ''} size={16} style={{ marginRight: '0.5rem' }} />
               Atualizar
