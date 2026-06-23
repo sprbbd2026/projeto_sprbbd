@@ -31,6 +31,7 @@ interface MapState {
   activeFilters: string[];
 
   selectedCoord: { lat: number; lng: number } | null;
+  temporaryLocation: { lat: number; lng: number } | null;
   isAddModalOpen: boolean;
   locations: LocationPoint[];
   satellites: SatellitePoint[];
@@ -44,6 +45,7 @@ interface MapState {
   toggleFilter: (filter: string) => void;
 
   setSelectedCoord: (coord: { lat: number; lng: number } | null) => void;
+  setTemporaryLocation: (coord: { lat: number; lng: number } | null) => void;
   setAddModalOpen: (isOpen: boolean) => void;
   fetchLocations: () => Promise<void>;
   fetchSatellites: () => Promise<void>;
@@ -57,6 +59,7 @@ export const useMapStore = create<MapState>((set) => ({
   activeFilters: [],
 
   selectedCoord: null,
+  temporaryLocation: null,
   isAddModalOpen: false,
   locations: [],
   isLoading: false,
@@ -74,6 +77,7 @@ export const useMapStore = create<MapState>((set) => ({
   })),
 
   setSelectedCoord: (coord) => set({ selectedCoord: coord }),
+  setTemporaryLocation: (coord) => set({ temporaryLocation: coord }),
   setAddModalOpen: (isOpen) => set({ isAddModalOpen: isOpen }),
 
   fetchLocations: async () => {

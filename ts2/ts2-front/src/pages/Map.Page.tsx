@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { renderToString } from 'react-dom/server';
@@ -25,6 +25,33 @@ const droppedPinIcon = L.divIcon({
   iconSize: [36, 36],
   iconAnchor: [18, 36],
 });
+
+const currentLocationIcon = L.divIcon({
+  html: renderToString(
+    <div className="text-blue-600 drop-shadow-md animate-pulse">
+      <MapPin size={34} fill="#93C5FD" />
+    </div>
+  ),
+  className: 'current-location-icon',
+  iconSize: [34, 34],
+  iconAnchor: [17, 34],
+});
+
+function TemporaryLocationPin() {
+  const map = useMap();
+  const temporaryLocation = useMapStore((state) => state.temporaryLocation);
+
+  useEffect(() => {
+    if (!temporaryLocation) return;
+    map.flyTo([temporaryLocation.lat, temporaryLocation.lng], 15, {
+      animate: true,
+    });
+  }, [map, temporaryLocation]);
+
+  if (!temporaryLocation) return null;
+
+  return <Marker position={[temporaryLocation.lat, temporaryLocation.lng]} icon={currentLocationIcon} />;
+}
 
 export function MapPage() {
   const initialPosition: [number, number] = [-23.2081, -45.8828];
@@ -74,6 +101,7 @@ export function MapPage() {
         <TileLayer key={activeLayer} attribution={getAttribution()} url={getTileUrl()} />
 
         <MapMarkers />
+        <TemporaryLocationPin />
 
         {selectedCoord && (
           <Marker position={[selectedCoord.lat, selectedCoord.lng]} icon={droppedPinIcon} />

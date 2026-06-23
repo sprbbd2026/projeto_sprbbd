@@ -2,7 +2,14 @@ import { Search, MapPin, Utensils, Bed, Camera, Landmark, Bus, HelpCircle } from
 import { useMapStore } from '../../store/mapStore';
 
 export function TopControls() {
-  const { searchQuery, setSearchQuery, activeFilters, toggleFilter } = useMapStore();
+  const searchQuery = useMapStore((state) => state.searchQuery);
+  const setSearchQuery = useMapStore((state) => state.setSearchQuery);
+  const activeFilters = useMapStore((state) => state.activeFilters);
+  const toggleFilter = useMapStore((state) => state.toggleFilter);
+
+  const handleLocateCurrentPosition = () => {
+    window.dispatchEvent(new Event('map:locate-current'));
+  };
 
   const filters = [
     { id: 'restaurantes', label: 'Restaurantes', icon: Utensils },
@@ -14,9 +21,9 @@ export function TopControls() {
   ];
 
   return (
-    <div className="absolute top-4 left-16 md:left-20 right-4 z-[900] flex flex-col md:flex-row gap-3 items-start md:items-center pointer-events-none">
+    <div className="absolute top-4 left-16 right-4 z-900 flex flex-col gap-3 pointer-events-none md:left-20 md:flex-row md:items-center">
       {/* Search Input */}
-      <div className="flex-shrink-0 w-full md:w-[350px] relative flex items-center h-12 rounded-full focus-within:shadow-lg bg-white shadow-md overflow-hidden transition-shadow pointer-events-auto">
+      <div className="relative flex h-12 w-full items-center overflow-hidden rounded-full bg-white shadow-md transition-shadow focus-within:shadow-lg pointer-events-auto md:w-87.5">
         <div className="grid place-items-center h-full w-12 text-gray-400">
           <Search size={20} />
         </div>
@@ -27,7 +34,12 @@ export function TopControls() {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button className="grid place-items-center h-full w-12 text-blue-500 hover:bg-gray-50 transition-colors border-l border-gray-100">
+        <button
+          type="button"
+          onClick={handleLocateCurrentPosition}
+          className="grid place-items-center h-full w-12 text-blue-500 hover:bg-gray-50 transition-colors border-l border-gray-100"
+          title="Minha localização atual"
+        >
           <MapPin size={20} />
         </button>
       </div>
@@ -40,11 +52,10 @@ export function TopControls() {
             <button
               key={filter.id}
               onClick={() => toggleFilter(filter.id)}
-              className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium shadow-md transition-all ${
-                isActive 
-                  ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-transparent'
-              }`}
+              className={`flex shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium shadow-md transition-all ${isActive
+                ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-transparent'
+                }`}
             >
               <filter.icon size={16} className={isActive ? 'text-white' : 'text-blue-500'} />
               {filter.label}
