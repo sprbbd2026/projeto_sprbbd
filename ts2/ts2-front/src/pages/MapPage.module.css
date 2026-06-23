@@ -207,6 +207,21 @@
   border: 1px solid var(--info-border);
 }
 
+.demoBanner {
+  margin-bottom: 1rem;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.mapLoadingWrap {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 /* ── Legenda ────────────────────────────────── */
 .legend {
   display: flex;

@@ -1,6 +1,6 @@
 import { api } from './api'
 import { ts1Api } from './ts1Api'
-import type { Localizacao, HistoricoLocalizacaoParams } from '../types/localizacao'
+import type { Localizacao, HistoricoLocalizacaoParams, RotaResponse } from '../types/localizacao'
 
 interface Ts1LocationRow {
   tlm_id: number
@@ -34,7 +34,7 @@ export const localizacaoService = {
       sat_id: Number(params.satelite_id),
       from: params.data_inicio,
       to: params.data_fim,
-      limit: params.limit ?? 10,
+      limit: params.limit ?? 200,
       offset: 0,
     }
 
@@ -55,13 +55,25 @@ export const localizacaoService = {
   },
 
   /**
-   * Busca a rota completa de um satélite (US300).
+   * Busca a rota de um satélite no período informado (US300).
    */
-  async getRota(satelite_id: string, limit = 200): Promise<Localizacao[]> {
-    const { data } = await api.get<Localizacao[]>('/historico/rota', {
-      params: { satelite_id, limit },
-    })
+  async getRota(params: HistoricoLocalizacaoParams): Promise<RotaResponse> {
+    const { data } = await api.get<RotaResponse>('/historico/rota', { params })
     return data
+  },
+
+  async getRotaComoHistorico(
+    params: HistoricoLocalizacaoParams,
+  ): Promise<{ pontos: Localizacao[]; geradoAutomaticamente: boolean }> {
+    const response = await this.getRota(params)
+    const pontos = response.rota.map((p, i) => ({
+      id: i + 1,
+      satelite_id: response.satelite_id,
+      latitude: p.latitude,
+      longitude: p.longitude,
+      data_hora: p.data_hora,
+    }))
+    return { pontos, geradoAutomaticamente: !!response.gerado_automaticamente }
   },
 
   /**
