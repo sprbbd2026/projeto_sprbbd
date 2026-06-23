@@ -13,6 +13,8 @@ import { SelectedPointCard } from '../components/map/SelectedPointCard';
 import { AddLocationModal } from '../components/map/AddLocationModal';
 import { MapMarkers } from '../components/map/MapMarkers';
 import { ConnectedDevicesPanel } from '../components/map/ConnectedDevicesPanel';
+import { RoutePanel } from '../components/map/RoutePanel';
+import { RoutePolyline } from '../components/map/RoutePolyline';
 import { usePolling } from '../hooks/usePolling';
 
 const droppedPinIcon = L.divIcon({
@@ -102,6 +104,7 @@ export function MapPage() {
 
         <MapMarkers />
         <TemporaryLocationPin />
+        <RoutePolyline />
 
         {selectedCoord && (
           <Marker position={[selectedCoord.lat, selectedCoord.lng]} icon={droppedPinIcon} />
@@ -115,6 +118,7 @@ export function MapPage() {
       />
       <SelectedPointCard />
       <AddLocationModal />
+      <RoutePanel />
     </MapLayout>
   );
 }

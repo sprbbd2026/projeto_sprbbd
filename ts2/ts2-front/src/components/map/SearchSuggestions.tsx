@@ -183,12 +183,12 @@ export function SearchSuggestions({ isOpen, query, onSelectLocation }: SearchSug
           lazer: ['lazer', 'parque', 'cinema', 'teatro', 'piscina'],
         };
 
-        // Check if query matches a category - if yes, search for category keywords
+        // Check if query IS exactly a category keyword - only then override
+        // e.g. "mercado" → search "supermercado", but "vale sul shopping" → search as-is
         let searchQuery = query;
-        for (const [category, keywords] of Object.entries(categoryKeywords)) {
-          const matchesKeyword = keywords.some((keyword) => queryLower.includes(keyword) || keyword.includes(queryLower));
-          if (matchesKeyword) {
-            // Use first keyword for category search
+        for (const [, keywords] of Object.entries(categoryKeywords)) {
+          const isExactMatch = keywords.some((keyword) => queryLower === keyword);
+          if (isExactMatch) {
             searchQuery = keywords[0];
             break;
           }

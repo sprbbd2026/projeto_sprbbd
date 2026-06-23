@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { fetchLocais, createLocal } from '../services/localService';
 import { fetchSatelites } from '../services/satelliteService';
 import { fetchConnectedDevices, type ConnectedDevice } from '../services/deviceService';
+import { routingService, type Coordenada } from '../services/routingService';
 
 export type MapLayer = 'streets' | 'satellite' | 'terrain' | 'carto';
 export type LocationCategory = 'restaurantes' | 'hoteis' | 'museus' | 'coisas_fazer' | 'transporte' | 'shopping' | 'mercado' | 'saude' | 'educacao' | 'lazer' | 'outros';
@@ -25,6 +26,16 @@ export interface SatellitePoint {
   sat_status: string;
 }
 
+export interface RouteInfo {
+  origin: Coordenada;
+  destination: Coordenada;
+  originLabel: string;
+  destinationLabel: string;
+  geometry: [number, number][];
+  distance_km: number;
+  duration_min: number;
+}
+
 interface MapState {
   activeLayer: MapLayer;
   searchQuery: string;
@@ -40,6 +51,12 @@ interface MapState {
   isLoading: boolean;
   error: string | null;
 
+  // Route state
+  activeRoute: RouteInfo | null;
+  isRouteLoading: boolean;
+  routeError: string | null;
+  isRoutePanelOpen: boolean;
+
   setActiveLayer: (layer: MapLayer) => void;
   setSearchQuery: (query: string) => void;
   toggleFilter: (filter: string) => void;
@@ -53,6 +70,12 @@ interface MapState {
   fetchSatellites: () => Promise<void>;
   fetchConnectedDevices: () => Promise<void>;
   addLocation: (location: Omit<LocationPoint, 'id'>) => Promise<void>;
+
+  // Route actions
+  openRoutePanel: (destination: Coordenada, destinationLabel: string) => void;
+  closeRoutePanel: () => void;
+  calculateRoute: (origin: Coordenada, destination: Coordenada, originLabel: string, destinationLabel: string) => Promise<void>;
+  clearRoute: () => void;
 }
 
 export const useMapStore = create<MapState>((set) => ({
@@ -69,6 +92,12 @@ export const useMapStore = create<MapState>((set) => ({
   satellites: [],
   connectedDevices: [],
   lastUpdated: null,
+
+  // Route state
+  activeRoute: null,
+  isRouteLoading: false,
+  routeError: null,
+  isRoutePanelOpen: false,
 
   setActiveLayer: (layer) => set({ activeLayer: layer }),
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -152,5 +181,47 @@ export const useMapStore = create<MapState>((set) => ({
     } catch (err: any) {
       set({ error: err.message || 'Erro ao adicionar local', isLoading: false });
     }
-  }
+  },
+
+  // Route actions
+  openRoutePanel: (destination, destinationLabel) => {
+    set({ isRoutePanelOpen: true, routeError: null, activeRoute: null });
+    // Store destination temporarily via a custom event
+    window.dispatchEvent(new CustomEvent('route:open-panel', {
+      detail: { destination, destinationLabel },
+    }));
+  },
+
+  closeRoutePanel: () => {
+    set({ isRoutePanelOpen: false, activeRoute: null, routeError: null });
+  },
+
+  calculateRoute: async (origin, destination, originLabel, destinationLabel) => {
+    set({ isRouteLoading: true, routeError: null });
+    try {
+      const result = await routingService.calcularRota([origin, destination]);
+      if (result.error) {
+        set({ routeError: result.error, isRouteLoading: false });
+        return;
+      }
+      set({
+        activeRoute: {
+          origin,
+          destination,
+          originLabel,
+          destinationLabel,
+          geometry: result.geometry,
+          distance_km: result.distance_km,
+          duration_min: result.duration_min,
+        },
+        isRouteLoading: false,
+      });
+    } catch (err: any) {
+      set({ routeError: err.message || 'Erro ao calcular rota', isRouteLoading: false });
+    }
+  },
+
+  clearRoute: () => {
+    set({ activeRoute: null, routeError: null });
+  },
 }));

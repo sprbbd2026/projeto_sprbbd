@@ -1,4 +1,5 @@
-import { X, MapPin, Star, Navigation } from 'lucide-react';
+import { X, Star, Navigation, Route } from 'lucide-react';
+import { useMapStore } from '../../store/mapStore';
 
 interface SearchResultCardProps {
   result: {
@@ -14,6 +15,8 @@ interface SearchResultCardProps {
 }
 
 export function SearchResultCard({ result, onClose }: SearchResultCardProps) {
+  const openRoutePanel = useMapStore((state) => state.openRoutePanel);
+
   if (!result) return null;
 
   const hash = (text: string) => {
@@ -128,10 +131,16 @@ export function SearchResultCard({ result, onClose }: SearchResultCardProps) {
           <span>Abrir com navegador</span>
         </div>
 
-        {/* Action button */}
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
-          <MapPin size={18} />
-          Instruções
+        {/* Route button */}
+        <button
+          onClick={() => openRoutePanel(
+            { lat: result.lat, lng: result.lng },
+            result.name,
+          )}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          <Route size={18} />
+          Traçar rota
         </button>
 
         {/* Share/More options */}

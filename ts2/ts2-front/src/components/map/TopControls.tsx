@@ -21,6 +21,9 @@ export function TopControls() {
   const toggleFilter = useMapStore((state) => state.toggleFilter);
   const addTemporaryLocationPin = useMapStore((state) => state.addTemporaryLocationPin);
   const clearTemporaryLocationPins = useMapStore((state) => state.clearTemporaryLocationPins);
+  const isRoutePanelOpen = useMapStore((state) => state.isRoutePanelOpen);
+  const closeRoutePanel = useMapStore((state) => state.closeRoutePanel);
+  const clearRoute = useMapStore((state) => state.clearRoute);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [selectedSearchResult, setSelectedSearchResult] = useState<SearchResult | null>(null);
 
@@ -112,6 +115,10 @@ export function TopControls() {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 clearTemporaryLocationPins();
+                if (isRoutePanelOpen) {
+                  closeRoutePanel();
+                  clearRoute();
+                }
                 setIsSuggestionsOpen(true);
               }}
               onFocus={() => setIsSuggestionsOpen(true)}
@@ -154,7 +161,7 @@ export function TopControls() {
       </div>
 
       <SearchResultCard
-        result={selectedSearchResult}
+        result={isRoutePanelOpen ? null : selectedSearchResult}
         onClose={() => setSelectedSearchResult(null)}
       />
     </>
