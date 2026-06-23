@@ -180,3 +180,33 @@ async def test_consulta_por_nome_de_regiao_responde_bem_formada():
     assert data["ponto"]["lat"] == pytest.approx(-9.0)
     assert isinstance(data["coberta"], bool)
     assert isinstance(data["satelites"], list)
+
+
+@pytest.mark.asyncio
+async def test_cobertura_satelites_retorna_footprint_para_satelite_operacional():
+    sat_id = _seed_sat_com_efemeride(PARAMS_ORBITA)
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/cobertura/satelites")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["type"] == "FeatureCollection"
+    assert len(data["features"]) == 1
+    feature = data["features"][0]
+    assert feature["properties"]["sat_id"] == sat_id
+    assert feature["geometry"]["type"] == "Polygon"
+    assert isinstance(feature["geometry"]["coordinates"], list)
+
+
+@pytest.mark.asyncio
+async def test_cobertura_satelites_ignora_satelite_nao_operacional():
+    _seed_sat_com_efemeride(PARAMS_ORBITA, sat_status="manutencao")
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        resp = await client.get("/cobertura/satelites")
+
+    assert resp.status_code == 200
+    assert resp.json()["features"] == []

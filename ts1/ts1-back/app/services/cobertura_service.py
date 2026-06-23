@@ -40,6 +40,47 @@ def _resolver_kepler(M: float, e: float, tol: float = 1e-10) -> float:
     return E
 
 
+def _parse_kepler_params(raw: str | dict) -> dict:
+    """Aceita JSON (string) ou CSV simples e retorna dict com chaves:
+    a, e, i, omega, w, M0.
+
+    Lança ValueError em caso de formato inválido.
+    """
+    if raw is None:
+        raise ValueError("efe_params_keplerian é nulo")
+
+    if isinstance(raw, dict):
+        return raw
+
+    if isinstance(raw, str):
+        s = raw.strip()
+        # Primeiro tente JSON
+        try:
+            return json.loads(s)
+        except Exception:
+            pass
+
+        # Tente CSV com separador vírgula ou espaço
+        sep_candidates = [",", " ", ";"]
+        parts = None
+        for sep in sep_candidates:
+            pts = [p.strip() for p in s.split(sep) if p.strip()]
+            if len(pts) >= 6:
+                parts = pts
+                break
+
+        if parts is None:
+            raise ValueError("Formato kepleriano inválido: precisa ser JSON ou 6 valores numéricos")
+
+        try:
+            a, e, i, omega, w, M0 = [float(x) for x in parts[:6]]
+            return {"a": a, "e": e, "i": i, "omega": omega, "w": w, "M0": M0}
+        except Exception as exc:
+            raise ValueError("Conversão dos parâmetros keplerianos falhou") from exc
+
+    raise ValueError("Tipo inválido para efe_params_keplerian")
+
+
 def _keplerian_para_latLngAlt(params: dict, delta_t_s: float) -> tuple[float, float, float]:
     """Propaga elementos Keplerianos por delta_t_s segundos e retorna (lat_deg, lng_deg, alt_km)."""
     a = params["a"]       # km
@@ -127,9 +168,13 @@ def _clipar_brasil(polygon):
     return polygon.intersection(brasil)
 
 
-def _propagar_satelite(efe: "Efemeride") -> dict:
+def _propagar_satelite(efe: "Efemeride", clip=True) -> dict:
     """Propaga órbita do satélite e retorna posição + footprint."""
-    params = json.loads(efe.efe_params_keplerian)
+    try:
+        params = _parse_kepler_params(efe.efe_params_keplerian)
+    except ValueError as exc:
+        logger.warning("efemeride inválida efe_id=%s sat_id=%s: %s", efe.efe_id, efe.sat_id, exc)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
     # Simula efeméride recebida há poucos minutos
     delta_t_s = random.uniform(2 * 60, 8 * 60)
@@ -139,12 +184,12 @@ def _propagar_satelite(efe: "Efemeride") -> dict:
 
     from shapely.geometry import Polygon
     poly = Polygon(footprint_coords)
-    clipped = _clipar_brasil(poly)
+    footprint = _clipar_brasil(poly) if clip else poly
 
     return {
         "sat_id": efe.sat_id,
         "posicao": {"lat": round(lat, 4), "lng": round(lng, 4), "alt_km": round(alt, 1)},
-        "footprint": mapping(clipped) if not clipped.is_empty else None,
+        "footprint": mapping(footprint) if not footprint.is_empty else None,
     }
 
 
@@ -192,10 +237,10 @@ def propagar_posicao_historica(db: Session, sat_id: int, target_ts: datetime) ->
         return None
 
     try:
-        params = json.loads(efe.efe_params_keplerian)
-    except (json.JSONDecodeError, ValueError) as exc:
+        params = _parse_kepler_params(efe.efe_params_keplerian)
+    except ValueError as exc:
         logger.warning(
-            "JSON invalido em efe_params_keplerian para efe_id=%s sat_id=%s: %s",
+            "efemeride inválida em efe_id=%s sat_id=%s: %s",
             efe.efe_id, efe.sat_id, exc,
         )
         return None
@@ -277,6 +322,44 @@ def cobertura_constelacao(db: Session, con_id: int) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
 
+def cobertura_satelites(db: Session) -> dict:
+    """Retorna a camada de cobertura de todos os satélites operacionais."""
+    satelites = (
+        db.query(Satelite)
+        .filter(Satelite.sat_status == "operacional")
+        .order_by(Satelite.sat_id)
+        .all()
+    )
+
+    features = []
+    for sat in satelites:
+        efe = (
+            db.query(Efemeride)
+            .filter(Efemeride.sat_id == sat.sat_id)
+            .order_by(Efemeride.efe_timestamp_ref.desc())
+            .first()
+        )
+        if not efe:
+            continue
+
+        resultado = _propagar_satelite(efe, clip=False)
+        if resultado["footprint"] is None:
+            continue
+
+        features.append({
+            "type": "Feature",
+            "properties": {
+                "sat_id": resultado["sat_id"],
+                "con_id": sat.con_id,
+                "sat_status": sat.sat_status,
+                "posicao": resultado["posicao"],
+            },
+            "geometry": resultado["footprint"],
+        })
+
+    return {"type": "FeatureCollection", "features": features}
+
+
 # ---------------------------------------------------------------------------
 # US308 — Identificar qual satélite atende uma determinada região
 # ---------------------------------------------------------------------------
@@ -289,7 +372,11 @@ def _propagar_posicao(efe: "Efemeride") -> tuple[float, float, float, Polygon]:
     coberta pelo satélite no solo. É usado pela descoberta de qual satélite
     atende uma região (US308 - Cenário 3).
     """
-    params = json.loads(efe.efe_params_keplerian)
+    try:
+        params = _parse_kepler_params(efe.efe_params_keplerian)
+    except ValueError as exc:
+        logger.warning("efemeride inválida em efe_id=%s sat_id=%s: %s", efe.efe_id, efe.sat_id, exc)
+        raise
 
     # Simula efeméride recebida há poucos minutos
     delta_t_s = random.uniform(2 * 60, 8 * 60)

@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import {
     getRegioes,
     getCoberturaPorRegiao,
+    getCoberturaSatelites,
     type Regiao,
     type CoberturaRegiao,
+    type FootprintFeatureCollection,
 } from "../services/cobertura";
 
 // ---- Projeção (equiretangular) sobre a América do Sul / Brasil ----
@@ -61,6 +63,9 @@ export default function CoberturaPage() {
     const [result, setResult] = useState<CoberturaRegiao | null>(null);
     const [selSatId, setSelSatId] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [coverageLoading, setCoverageLoading] = useState(false);
+    const [coverageError, setCoverageError] = useState<string | null>(null);
+    const [satCoverage, setSatCoverage] = useState<FootprintFeatureCollection | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [latInput, setLatInput] = useState("");
     const [lngInput, setLngInput] = useState("");
@@ -69,6 +74,12 @@ export default function CoberturaPage() {
         getRegioes()
             .then(setRegioes)
             .catch((err) => setError(err.message || "Erro ao carregar regiões."));
+
+        setCoverageLoading(true);
+        getCoberturaSatelites()
+            .then(setSatCoverage)
+            .catch((err) => setCoverageError(err.message || "Erro ao carregar cobertura."))
+            .finally(() => setCoverageLoading(false));
     }, []);
 
     async function consultar(
@@ -162,6 +173,26 @@ export default function CoberturaPage() {
                                 strokeDasharray="5 4"
                             />
 
+                            {/* Camada de cobertura ativa de satélites operacionais */}
+                            {satCoverage?.features.map((feature, i) => {
+                                if (!feature.geometry || feature.geometry.type !== "Polygon") {
+                                    return null;
+                                }
+                                const coords = feature.geometry.coordinates[0];
+                                const cor = CORES[i % CORES.length];
+                                return (
+                                    <polygon
+                                        key={`cov${i}`}
+                                        points={toPoints(coords)}
+                                        fill={cor}
+                                        fillOpacity={0.08}
+                                        stroke={cor}
+                                        strokeWidth={1}
+                                        strokeOpacity={0.2}
+                                    />
+                                );
+                            })}
+
                             {/* Footprints dos satélites que cobrem a região */}
                             {satelites.map((s, i) => {
                                 const cor = CORES[i % CORES.length];
@@ -209,6 +240,14 @@ export default function CoberturaPage() {
                             ◆ satélite · ● região · área colorida = cobertura aproximada no solo.
                             Contorno do Brasil é apenas referência visual.
                         </p>
+                        {coverageLoading && (
+                            <p className="mt-1 text-xs" style={{ color: "var(--text-h)" }}>
+                                Carregando cobertura ativa dos satélites...
+                            </p>
+                        )}
+                        {coverageError && (
+                            <p className="mt-1 text-xs text-red-500">{coverageError}</p>
+                        )}
                     </section>
 
                     {/* PAINEL */}

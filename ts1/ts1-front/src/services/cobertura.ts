@@ -65,3 +65,9 @@ export async function getCoberturaSatelite(
         method: "GET",
     });
 }
+
+export async function getCoberturaSatelites(): Promise<FootprintFeatureCollection> {
+    return api<FootprintFeatureCollection>(`/cobertura/satelites`, {
+        method: "GET",
+    });
+}

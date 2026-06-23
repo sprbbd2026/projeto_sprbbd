@@ -102,7 +102,8 @@ def query_historico_localizacoes(
         filtros.append(Telemetria.timestamp_registro <= dt_to)
 
     total = db.query(func.count(Telemetria.id_telemetria)).filter(*filtros).scalar() or 0
-    effective_limit = max(limit, 5)
+    # Clamp limit to allowed range (1..100)
+    effective_limit = min(max(limit, 1), 100)
 
     registros = (
         db.query(

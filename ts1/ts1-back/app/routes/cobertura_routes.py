@@ -8,6 +8,7 @@ from app.services.cobertura_service import (
     cobertura_constelacao,
     cobertura_por_regiao,
     cobertura_satelite,
+    cobertura_satelites,
     listar_regioes,
 )
 
@@ -30,6 +31,14 @@ def get_cobertura_constelacao(
     _=Depends(get_current_user),
 ):
     return cobertura_constelacao(db, con_id)
+
+
+@router.get("/satelites", summary="Cobertura de todos os satélites operacionais")
+def get_cobertura_satelites(
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    return cobertura_satelites(db)
 
 
 @router.get("/regioes", response_model=list[RegiaoInfo])
