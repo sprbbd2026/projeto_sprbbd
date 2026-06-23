@@ -1,4 +1,5 @@
 import logging
+import math
 from datetime import datetime, timedelta
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -8,6 +9,16 @@ from app.schemas.telemetria_schema import TelemetryInputPayload
 from app.services.cobertura_service import propagar_posicao_historica
 
 logger = logging.getLogger(__name__)
+
+
+def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Distancia em km entre dois pontos (graus) na superficie terrestre."""
+    R = 6371.0
+    rlat1, rlng1, rlat2, rlng2 = map(math.radians, (lat1, lng1, lat2, lng2))
+    dlat = rlat2 - rlat1
+    dlng = rlng2 - rlng1
+    a = math.sin(dlat / 2) ** 2 + math.cos(rlat1) * math.cos(rlat2) * math.sin(dlng / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
 def ingest_satellite_telemetry(db: Session, data: TelemetryInputPayload):
@@ -137,6 +148,7 @@ def query_historico_localizacoes(
     ) % phase_window_seconds
 
     data: list[dict] = []
+    prev_pos = None
     for idx, (tlm_id, sat_tlm_id, timestamp_registro, temperatura, energia, cpu) in enumerate(registros):
         try:
             point_phase_seconds = (start_phase_seconds + idx * step_seconds) % phase_window_seconds
@@ -150,6 +162,15 @@ def query_historico_localizacoes(
             )
             pos = None
 
+        # Calcula velocidade entre pontos consecutivos (km/h)
+        velocidade_kmh = None
+        if pos and prev_pos and step_seconds > 0:
+            dist_km = _haversine_km(prev_pos["lat"], prev_pos["lng"], pos["lat"], pos["lng"])
+            velocidade_kmh = round(dist_km / (step_seconds / 3600), 1)
+
+        if pos:
+            prev_pos = pos
+
         data.append({
             "tlm_id": tlm_id,
             "sat_id": sat_tlm_id,
@@ -158,6 +179,7 @@ def query_historico_localizacoes(
                 "lat": pos["lat"],
                 "lng": pos["lng"],
                 "alt_km": pos["alt_km"],
+                "velocidade_kmh": velocidade_kmh,
             } if pos else None,
             "metadata": {
                 "temperatura": temperatura,
@@ -165,6 +187,10 @@ def query_historico_localizacoes(
                 "cpu": cpu,
             },
         })
+
+    # Preenche velocidade do primeiro ponto com a do segundo (mesma órbita)
+    if len(data) >= 2 and data[0].get("position") and data[1].get("position"):
+        data[0]["position"]["velocidade_kmh"] = data[1]["position"]["velocidade_kmh"]
 
     next_offset = offset + effective_limit if (offset + effective_limit) < total else None
 

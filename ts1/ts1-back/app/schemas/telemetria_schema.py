@@ -45,6 +45,7 @@ class LocationPosition(BaseModel):
     lat: float
     lng: float
     alt_km: float
+    velocidade_kmh: float | None = None
 
 
 class LocationMetadata(BaseModel):

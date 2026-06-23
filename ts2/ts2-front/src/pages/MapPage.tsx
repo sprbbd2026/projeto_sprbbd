@@ -83,7 +83,7 @@ export default function MapPage() {
           {/* ── Cabeçalho ─────────────────────────────────────────── */}
           <header className={styles.header}>
             <div>
-              <p className={styles.kicker}>SPRB-BD · US303</p>
+              <p className={styles.kicker}>SPRB-BD</p>
               <h1 className={styles.title}>
                 <Map size={28} strokeWidth={1.8} />
                 Histórico de Localização

@@ -10,6 +10,7 @@ interface Ts1LocationRow {
     lat: number
     lng: number
     alt_km: number
+    velocidade_kmh?: number | null
   } | null
 }
 
@@ -50,6 +51,7 @@ export const localizacaoService = {
         latitude: item.position!.lat,
         longitude: item.position!.lng,
         altitude_km: item.position!.alt_km,
+        velocidade_kmh: item.position!.velocidade_kmh ?? undefined,
         data_hora: item.timestamp,
       }))
   },

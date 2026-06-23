@@ -136,7 +136,6 @@ export default function Dashboard() {
               <thead>
                 <tr>
                   <th>Data/Hora</th>
-                  <th>ID Satélite</th>
                   <th>Status</th>
                   <th>CPU (%)</th>
                   <th>Temp (°C)</th>
@@ -153,7 +152,6 @@ export default function Dashboard() {
                   telemetry.map((t) => (
                     <tr key={t.id}>
                       <td>{new Date(t.data_hora).toLocaleString()}</td>
-                      <td>{t.satelite_id}</td>
                       <td style={{ textTransform: 'capitalize' }}>{t.status || 'Operacional'}</td>
                       <td>{t.cpu_percentual.toFixed(1)}%</td>
                       <td>{t.temperatura_celsius.toFixed(1)} °C</td>
