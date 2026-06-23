@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { routingService, type Coordenada, type RotaResponse, type GeocodeResult } from '../services/routingService'
+import { useMapStore } from '../store/mapStore'
 import 'leaflet/dist/leaflet.css'
 
 type Cenario = 'ifood' | 'waze' | 'mercadolivre'
@@ -70,7 +71,7 @@ function SearchInput({
   value?: string
   onChangeText: (text: string) => void
 }) {
-  const [results, setResults] = useState<GeocodeResult[]>([])
+  const [results, setResults] = useState<{ label: string; sublabel?: string; lat: number; lng: number; isMarker: boolean }[]>([])
   const [showResults, setShowResults] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -82,13 +83,32 @@ function SearchInput({
       setShowResults(false)
       return
     }
+
+    // Busca imediata nos marcadores salvos
+    const { locations } = useMapStore.getState()
+    const q = text.toLowerCase()
+    const markerMatches = locations
+      .filter((loc) => loc.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((loc) => ({ label: loc.name, sublabel: loc.category, lat: loc.lat, lng: loc.lng, isMarker: true }))
+
+    setResults(markerMatches)
+    if (markerMatches.length > 0) setShowResults(true)
+
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await routingService.geocode(text)
-        setResults(res)
+        const geocodeResults = res.slice(0, 5).map((r) => ({
+          label: r.display_name.split(',')[0],
+          sublabel: r.display_name.split(',').slice(1, 3).join(',').trim(),
+          lat: r.lat,
+          lng: r.lng,
+          isMarker: false,
+        }))
+        setResults([...markerMatches, ...geocodeResults])
         setShowResults(true)
       } catch {
-        setResults([])
+        setResults(markerMatches)
       }
     }, 400)
   }
@@ -109,14 +129,16 @@ function SearchInput({
           {results.map((r, i) => (
             <li
               key={i}
-              className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50"
+              className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2"
               onMouseDown={() => {
-                onSelect({ lat: r.lat, lng: r.lng }, r.display_name)
-                onChangeText(r.display_name.slice(0, 60))
+                onSelect({ lat: r.lat, lng: r.lng }, r.label)
+                onChangeText(r.label)
                 setShowResults(false)
               }}
             >
-              {r.display_name}
+              {r.isMarker && <span className="text-red-500 text-xs">📍</span>}
+              <span className="truncate">{r.label}</span>
+              {r.sublabel && <span className="text-xs text-gray-400 truncate ml-auto">{r.sublabel}</span>}
             </li>
           ))}
         </ul>
