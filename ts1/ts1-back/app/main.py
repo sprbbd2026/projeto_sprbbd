@@ -62,6 +62,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:5174",
     "http://localhost:3000",
     "https://projeto-sprbbd-ts1-front.onrender.com",
+    "https://projeto-sprbbd-ts2-front.onrender.com",
 ]
 
 app.add_middleware(
