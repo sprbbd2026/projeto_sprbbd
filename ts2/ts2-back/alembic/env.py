@@ -26,7 +26,17 @@ load_dotenv()
 from app.db.models import Base
 target_metadata = Base.metadata
 
-config.set_main_option("sqlalchemy.url", os.getenv("DATABASE_URL"))
+# Tenta DATABASE_URL direto, senão constrói a partir das variáveis POSTGRES_*
+database_url = os.getenv("DATABASE_URL")
+if not database_url:
+    pg_host = os.getenv("POSTGRES_HOST")
+    pg_port = os.getenv("POSTGRES_PORT", "5432")
+    pg_user = os.getenv("POSTGRES_USER")
+    pg_password = os.getenv("POSTGRES_PASSWORD")
+    pg_db = os.getenv("POSTGRES_DB", "postgres")
+    database_url = f"postgresql://{pg_user}:{pg_password}@{pg_host}:{pg_port}/{pg_db}"
+
+config.set_main_option("sqlalchemy.url", database_url)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -11,6 +11,7 @@ class SatelliteCreateRequest(BaseModel):
 class SatelliteResponse(BaseModel):
     sat_id: int
     con_id: Optional[int]
+    con_nome: Optional[str] = None
     sat_relogio_offset: Optional[float]
     sat_codigo_prn: Optional[int]
     sat_numero_svn: Optional[int]

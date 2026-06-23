@@ -5,6 +5,12 @@ __pycache__/
 venv/
 env/
 .pytest_cache/
+/.coverage
+
+# Mutation testing (mutmut)
+.mutmut-cache
+mutants/
+html/
 
 # Environment Variables
 .env

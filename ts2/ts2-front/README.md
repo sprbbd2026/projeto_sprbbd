@@ -1,72 +1,88 @@
-# 🛰️ SPRB-BD — Frontend
+# 🛰️ SPRB-BD — Frontend (TS2)
 
-Interface web do **SPRB-BD** em **React 19**, **TypeScript**, **Vite** e **React Router**, com gerenciamento de estado via **Zustand** e chamadas HTTP com **Axios**. Ícones com **Lucide React**.
-
----
-
-## 🛠️ Requisitos de sistema
-
-Para desenvolver e rodar o projeto localmente você precisa de:
-
-- **[Node.js](https://nodejs.org/)** (versão LTS recomendada; inclui **npm**)
-- Navegador atualizado (Chrome, Firefox, Safari ou Edge)
-
-Para a tela funcionar de ponta a ponta com listagem e cadastro de usuários, o **backend FastAPI** deve estar em execução (por padrão em `http://127.0.0.1:8000`). Consulte o README em `ts2/ts2-back`.
+Interface web em **React 19**, **TypeScript**, **Vite**, **React Router**, **Zustand** e **Axios**.
 
 ---
 
-## ⚙️ Passo a passo rápido
+## 🔌 Portas (TS2)
 
-Siga os passos na ordem para subir o front na primeira vez.
+| Serviço | Porta | URL |
+|---------|-------|-----|
+| Frontend | **5174** | http://localhost:5174 |
+| Backend (API) | **8001** | http://localhost:8001/docs |
+| PostgreSQL (Docker) | **5433** | localhost:5433 |
 
-### 1. Clonar o repositório e entrar na pasta do frontend
+> O TS1 usa portas diferentes (5173, 8000, 5432).
+
+---
+
+## 🛠️ Requisitos
+
+- [Node.js](https://nodejs.org/) (LTS)
+- Backend TS2 em execução (ver [README do ts2-back](../ts2-back/README.md))
+
+---
+
+## ⚙️ Instalação
 
 ```bash
-git clone <url-do-repositorio>
 cd ts2/ts2-front
-```
-
-### 2. Instalar dependências
-
-```bash
 npm install
 ```
 
-Isso instala React, Vite, TypeScript, ESLint e as demais dependências listadas no `package.json`.
+Copie o arquivo de ambiente:
 
-### 3. Subir o servidor de desenvolvimento 🔥
+```bash
+cp .env.example .env
+```
+
+Conteúdo do `.env`:
+
+```env
+VITE_API_URL=http://localhost:8001
+VITE_DEV_PORT=5174
+```
+
+---
+
+## 🚀 Execução
+
+Com o **backend TS2** já rodando na porta **8001**:
 
 ```bash
 npm run dev
 ```
 
---
-Pronto! O Vite informa o endereço local (em geral **http://127.0.0.1:5173**). Abra esse endereço no navegador.
+Acesse: **http://localhost:5174**
 
-Certifique-se de que o **backend** está rodando se você for testar a lista de usuários (`GET /users`) e o cadastro (`POST /users`).
+Rotas principais:
+
+- `/` — login
+- `/dashboard` — telemetria
 
 ---
 
-## 📋 Scripts úteis
+## ⌨️ Comandos úteis
 
 | Comando | Descrição |
-|--------|------------|
-| `npm run dev` | Servidor de desenvolvimento com hot reload |
+|---------|-----------|
+| `npm install` | Instala dependências |
+| `npm run dev` | Servidor de desenvolvimento |
+| `npm run build` | Build de produção |
 
 ---
 
-## 📁 Estrutura resumida
+## 📁 Estrutura
 
-- `src/pages/` — páginas (por exemplo tela de acesso/cadastro)
+- `src/pages/` — telas
 - `src/components/` — componentes reutilizáveis
 - `src/services/` — cliente HTTP e chamadas à API
 - `src/store/` — estado global (Zustand)
-- `src/hooks/` — hooks customizados
-- `public/` — arquivos estáticos (favicon, etc.)
+- `public/` — arquivos estáticos
 
 ---
 
-## 📚 Documentação das ferramentas
+## 📝 Documentação
 
 - [Vite](https://vite.dev/)
 - [React](https://react.dev/)

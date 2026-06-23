@@ -1,34 +1,26 @@
-import { Activity, Cpu, Thermometer, RefreshCw } from 'lucide-react'
+import { Activity, Cpu, Thermometer, RefreshCw, Map } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
 import styles from './Dashboard.module.css'
 import { Button } from '../components/ui/Button'
+import { DashboardLayout } from '../components/layout/DashboardLayout'
+import { fetchTelemetry, type Telemetry } from '../services/telemetryService'
 
-interface Telemetry {
-  id: number
-  satelite_id: string
-  cpu_percentual: number
-  temperatura_celsius: number
-  status: string
-  data_hora: string
-}
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8001'
 
 export default function Dashboard() {
   const [telemetry, setTelemetry] = useState<Telemetry[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const fetchTelemetry = async () => {
+  const loadTelemetry = async () => {
     setLoading(true)
     setError('')
     try {
-      // Endpoint created in the backend
-      const response = await axios.get('http://127.0.0.1:8000/telemetry')
-      // Reverse to show latest first
-      setTelemetry(response.data.reverse())
+      const response = await fetchTelemetry()
+      setTelemetry(response.reverse())
     } catch (err) {
-      setError('Erro ao buscar telemetria. Verifique se o backend está rodando em http://127.0.0.1:8000.')
+      setError(`Erro ao buscar telemetria. Verifique se o backend está rodando em ${API_URL}.`)
       console.error(err)
     } finally {
       setLoading(false)
@@ -36,16 +28,15 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    fetchTelemetry()
-    // Poll every 5 seconds
-    const interval = setInterval(fetchTelemetry, 5000)
+    void loadTelemetry()
+    const interval = setInterval(() => void loadTelemetry(), 5000)
     return () => clearInterval(interval)
   }, [])
 
   const latest = telemetry.length > 0 ? telemetry[0] : null
 
   return (
-    <main className={styles.page}>
+    <DashboardLayout>
       <div className={styles.inner}>
         <header className={styles.header}>
           <div>
@@ -56,12 +47,13 @@ export default function Dashboard() {
             </p>
           </div>
           <div className={styles.headerActions}>
-            <Button onClick={() => void fetchTelemetry()} disabled={loading}>
+            <Button onClick={() => void loadTelemetry()} disabled={loading}>
               <RefreshCw className={loading ? styles.spin : ''} size={16} style={{ marginRight: '0.5rem' }} />
               Atualizar
             </Button>
-            <Link to="/" className={styles.navLink}>
-              Voltar ao Início
+            <Link to="/mapa" className={styles.navLink} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <Map size={15} />
+              Mapa de Localização
             </Link>
           </div>
         </header>
@@ -73,7 +65,6 @@ export default function Dashboard() {
         )}
 
         <div className={styles.grid}>
-          {/* Latest Stats Cards */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <Cpu className={styles.cardIcon} />
@@ -148,6 +139,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-    </main>
+    </DashboardLayout>
   )
 }

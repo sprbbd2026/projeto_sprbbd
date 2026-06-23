@@ -42,12 +42,87 @@ Este repositório e o material associado integram um **Estudo de Caso** no forma
 
 ## 📂 Estrutura deste repositório
 
-| Pasta                              | Descrição                                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------------------ |
-| [`ts1/ts1-front/`](ts2/ts2-front/) | Frontend (React, Vite, TypeScript). Ver [README do front](ts1/ts1-front/README.md).  |
-| [`ts1/ts1-back/`](ts2/ts2-back/)   | Backend (FastAPI, PostgreSQL, Docker). Ver [README do back](ts1/ts1-back/README.md). |
-| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend (React, Vite, TypeScript). Ver [README do front](ts2/ts2-front/README.md).  |
-| [`ts2/ts2-back/`](ts2/ts2-back/)   | Backend (FastAPI, PostgreSQL). Ver [README do back](ts2/ts2-back/README.md).         |
+| Pasta | Descrição |
+| ----- | --------- |
+| [`ts1/ts1-front/`](ts1/ts1-front/) | Frontend TS1 (React, Vite, TypeScript). Ver [README](ts1/ts1-front/README.md). |
+| [`ts1/ts1-back/`](ts1/ts1-back/) | Backend TS1 (FastAPI, PostgreSQL, Docker). Ver [README](ts1/ts1-back/README.md). |
+| [`ts2/ts2-front/`](ts2/ts2-front/) | Frontend TS2 (React, Vite, TypeScript). Ver [README](ts2/ts2-front/README.md). |
+| [`ts2/ts2-back/`](ts2/ts2-back/) | Backend TS2 (FastAPI, PostgreSQL, Docker). Ver [README](ts2/ts2-back/README.md). |
+
+---
+
+## 🔌 Portas locais (TS1 e TS2 juntos)
+
+Cada time usa portas fixas para evitar conflito ao rodar as duas aplicações na mesma máquina:
+
+| Serviço | TS1 | TS2 |
+| ------- | --- | --- |
+| Frontend | **5173** | **5174** |
+| Backend (API) | **8000** | **8001** |
+| PostgreSQL (Docker) | **5432** | **5433** |
+
+---
+
+## 🚀 Instalação e execução
+
+### Pré-requisitos gerais
+
+- [Docker Desktop](https://www.docker.com/)
+- [Node.js](https://nodejs.org/) (LTS)
+- [UV](https://github.com/astral-sh/uv) (Python)
+
+### Time 1 (TS1)
+
+```bash
+# Backend
+cd ts1/ts1-back
+uv sync
+cp .env.example .env          # edite com suas credenciais
+docker compose up -d
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
+
+# Frontend (outro terminal)
+cd ts1/ts1-front
+npm install
+cp .env.example .env
+npm run dev
+```
+
+- Front: http://localhost:5173
+- API: http://localhost:8000/docs
+
+Detalhes: [ts1-back/README.md](ts1/ts1-back/README.md) · [ts1-front/README.md](ts1/ts1-front/README.md)
+
+### Time 2 (TS2)
+
+```bash
+# Backend
+cd ts2/ts2-back
+uv sync
+cp .env.example .env          # edite com suas credenciais
+docker compose up -d
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8001
+
+# Frontend (outro terminal)
+cd ts2/ts2-front
+npm install
+cp .env.example .env
+npm run dev
+```
+
+- Front: http://localhost:5174
+- API: http://localhost:8001/docs
+
+Detalhes: [ts2-back/README.md](ts2/ts2-back/README.md) · [ts2-front/README.md](ts2/ts2-front/README.md)
+
+### Ordem recomendada
+
+1. Docker (`docker compose up -d`)
+2. Migrações (`alembic upgrade head`)
+3. Backend (`uvicorn`)
+4. Frontend (`npm run dev`)
 
 ---
 
@@ -60,11 +135,12 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 | Recurso                             | Link                                                                                                                                            |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | Repositório GitHub (organização)    | [github.com/sprbbd2026](https://github.com/sprbbd2026)                                                                                          |
-| Kanban                              | [Project board no GitHub](https://github.com/users/sprbbd2026/projects/6/views/2)                                                               |
-| Burndown Chart                      | [Planilha Google](https://docs.google.com/spreadsheets/d/1Pc5yUxPV-RvyLq4gXpbr9fyPO5WH-2ELpKsUCLFSbcM/edit?pli=1&gid=1744797886#gid=1744797886) |
-| Refinamento técnico (documento)     | [Google Docs](https://docs.google.com/document/d/1FlXOk5sRu6t3USotYFapx73YS7bIFjOx3y7yC-tyBg4/edit?tab=t.9t43qbiffxu6)                          |
+| Kanban TS#02 (Sprints 1–2)          | [Project #6 — KanBan TS#02](https://github.com/users/sprbbd2026/projects/6/views/2)                                                             |
+| Kanban Sprint 3 (TS#03 unificado)   | [Project #10 — KanBan da 3ª Sprint](https://github.com/users/sprbbd2026/projects/10/views/1)                                                    |
+| Convenções GitHub (DoD, labels)     | [CONVENCOES_GITHUB_SPRB.md](../CONVENCOES_GITHUB_SPRB.md) (raiz do repositório local)                                                           |
+| Burndown Chart                      | [Planilha Google](https://docs.google.com/spreadsheets/d/1Y1tiQfzJkMUIHLXRgvcAWCQvrDC-cxpI/edit?usp=sharing&ouid=114433758697320974092&rtpof=true&sd=true) |                  |
 | Pasta Swagger (referência sugerida) | [Google Drive](https://drive.google.com/drive/u/1/folders/1ysrnkCaY6yHw4YALDFMUeFhqJPjkq1a6)                                                    |
-| Template de planilha de testes      | [Google Sheets](https://docs.google.com/spreadsheets/d/1e9oa5HCPT6-N6Obtg8d9KT_kb0JJlWIw/edit?gid=1077019325#gid=1077019325)                    |
+| Template de planilha de testes      | [Google Sheets](https://docs.google.com/spreadsheets/d/1-cdYuYugmJ8Q_RwXGj1u-apw8eb4dOb_A_fr93lj714/edit?usp=sharing)                    |
 
 ### User Stories da Sprint 1
 
@@ -142,9 +218,14 @@ Escopo da sprint conforme planejamento do time (status e responsáveis podem ser
 
 #### 1.2.7 — Gerenciamento de Sessão e Acesso (Scrum Master)
 
+**Issue (TS#02):** [#54 — US 2.2.3 Gerenciamento de Sessão por Dispositivo](https://github.com/sprbbd2026/projeto_sprbbd/issues/54)  
+**Referência TS#01:** [#83 — US119](https://github.com/sprbbd2026/projeto_sprbbd/issues/83)
+
 **História:** _Como_ Scrum Master, _quero_ controlar a sessão do usuário autenticado _para_ manter acesso seguro e rotas protegidas.
 
 **Critérios (resumo):** sessão/token após login; usuário autenticado na sessão; rotas protegidas exigem autenticação; permitir logout.
+
+> No TS#02, a US1.2.7 do planejamento acadêmico está implementada/rastreada pela **US 2.2.3** (#54), que cobre sessão por dispositivo (UUID, login, logout).
 
 ---
 
@@ -207,3 +288,4 @@ Time 1
   Time 2
 - [README — Frontend](ts2/ts2-front/README.md)
 - [README — Backend](ts2/ts2-back/README.md)
+- [Demonstração da US303 — Histórico de Localização](docs/US303_Demonstracao.md)

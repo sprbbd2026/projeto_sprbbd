@@ -1,47 +1,59 @@
-# app/routes/telemetry_routes.py
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 from datetime import datetime
+
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
 from app.db.database import get_db
-from app.db.models import Telemetria
-from app.schemas.telemetry_schema import RotaResponse
+from app.schemas.localizacao_schema import RotaResponse
+from app.schemas.telemetry_schema import TelemetryCreate, TelemetryResponse
+from app.services import localizacao_service
+from app.services.telemetry_service import create_telemetry, get_telemetries
 
-router = APIRouter()
+router = APIRouter(tags=["Telemetria"])
 
-@router.get("/telemetry/{satelite_id}/route", response_model=RotaResponse)
+
+@router.post(
+    "/telemetry",
+    response_model=TelemetryResponse,
+    summary="Registrar telemetria",
+    description="Registra um novo dado de telemetria.",
+)
+def create(telemetry: TelemetryCreate, db: Session = Depends(get_db)):
+    return create_telemetry(db, telemetry)
+
+
+@router.get(
+    "/telemetry",
+    response_model=list[TelemetryResponse],
+    summary="Listar telemetrias",
+    description="Retorna todos os registros de telemetria.",
+)
+def list_telemetry(db: Session = Depends(get_db)):
+    return get_telemetries(db)
+
+
+@router.get(
+    "/telemetry/{satelite_id}/route",
+    response_model=RotaResponse,
+    tags=["Telemetria"],
+    summary="Consultar rota do satélite",
+)
 def obter_rota_satelite(
     satelite_id: str,
     start_time: datetime = Query(..., description="Início do período (ISO 8601)"),
     end_time: datetime = Query(..., description="Fim do período (ISO 8601)"),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    # CA03 - Parâmetros inválidos
-    if start_time >= end_time:
-        raise HTTPException(
-            status_code=400, 
-            detail="O timestamp inicial deve ser anterior ao timestamp final."
-        )
-
-    # Consulta ordenada por timestamp (crescente)
-    pontos = db.query(Telemetria).filter(
-        Telemetria.satelite_id == satelite_id,
-        Telemetria.data_hora >= start_time,
-        Telemetria.data_hora <= end_time,
-        Telemetria.latitude.isnot(None),  # Garante que só pega registros com coordenadas
-        Telemetria.longitude.isnot(None)
-    ).order_by(Telemetria.data_hora.asc()).all()
-
-    # CA02 - Período sem dados (Retorno 404 controlado)
-    if not pontos:
-        raise HTTPException(
-            status_code=404, 
-            detail="Nenhuma localização registrada para este alvo no período informado."
-        )
-
-    # CA01 - Retorna a lista ordenada
-    rota_formatada = [
+    """Delega para historico_localizacao. Filtro por dispositivo fora de escopo."""
+    pontos, gerado = localizacao_service.get_rota(
+        db, satelite_id, data_inicio=start_time, data_fim=end_time
+    )
+    rota = [
         {"latitude": p.latitude, "longitude": p.longitude, "data_hora": p.data_hora}
         for p in pontos
     ]
-
-    return {"satelite_id": satelite_id, "rota": rota_formatada}
+    return {
+        "satelite_id": satelite_id,
+        "rota": rota,
+        "gerado_automaticamente": gerado,
+    }

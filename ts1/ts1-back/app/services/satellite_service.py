@@ -1,14 +1,36 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
-from app.db.models import Satelite
+from app.db.models import Satelite, Constelacao
 from app.schemas.satellite_schema import SatelliteCreateRequest
 
 def get_all_satellites(db: Session, unassigned: bool = False):
     query = db.query(Satelite)
     if unassigned:
         query = query.filter(Satelite.con_id.is_(None))
-    return query.all()
+    
+    # Fazer JOIN manual para trazer nome da constelação
+    results = []
+    for sat in query.all():
+        sat_data = {
+            'sat_id': sat.sat_id,
+            'con_id': sat.con_id,
+            'sat_relogio_offset': sat.sat_relogio_offset,
+            'sat_codigo_prn': sat.sat_codigo_prn,
+            'sat_numero_svn': sat.sat_numero_svn,
+            'sat_status': sat.sat_status,
+            'con_nome': None
+        }
+        
+        # Se tem con_id, busca o nome
+        if sat.con_id:
+            constelacao = db.query(Constelacao).filter(Constelacao.con_id == sat.con_id).first()
+            if constelacao:
+                sat_data['con_nome'] = constelacao.con_nome
+        
+        results.append(sat_data)
+    
+    return results
 
 def create_satellite(db: Session, data: SatelliteCreateRequest) -> Satelite:
     satellite = Satelite(

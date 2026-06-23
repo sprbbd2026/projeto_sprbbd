@@ -15,7 +15,13 @@ from app.dependencies import get_current_user
 router = APIRouter(prefix="/satellites", tags=["Satellites"])
 
 
-@router.post("/register", response_model=SatelliteResponse, status_code=201)
+@router.post(
+    "/register",
+    response_model=SatelliteResponse,
+    status_code=201,
+    summary="Registrar satélite",
+    responses={401: {"description": "Não autenticado"}},
+)
 def register_satellite(
     data: SatelliteCreateRequest,
     db: Session = Depends(get_db),
@@ -24,15 +30,20 @@ def register_satellite(
     return create_satellite(db, data)
 
 
-@router.get("/", response_model=list[SatelliteResponse])
+@router.get(
+    "/",
+    response_model=list[SatelliteResponse],
+    summary="Listar satélites",
+    description="Lista satélites; use `unassigned=true` para apenas os não associados.",
+)
 def list_satellites(unassigned: bool = False, db: Session = Depends(get_db), _=Depends(get_current_user)):
     return get_all_satellites(db, unassigned=unassigned)
 
-@router.get("/{sat_id}", response_model=SatelliteResponse)
+@router.get("/{sat_id}", response_model=SatelliteResponse, summary="Obter satélite por ID")
 def get_satellite_route(sat_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     return get_satellite_by_id(db, sat_id)
 
-@router.put("/update/{sat_id}")
+@router.put("/update/{sat_id}", summary="Atualizar satélite")
 def update_satellite_route(
     sat_id: int,
     data: SatelliteCreateRequest,
@@ -42,7 +53,7 @@ def update_satellite_route(
     return update_satellite_service(db, sat_id, data)
 
 
-@router.delete("/delete/{sat_id}")
+@router.delete("/delete/{sat_id}", summary="Remover satélite")
 def delete_satellite_route(
     sat_id: int,
     db: Session = Depends(get_db),
