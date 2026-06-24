@@ -139,24 +139,144 @@ async def geocode_search(
         if _haversine_distance(reference_lat, reference_lng, r["lat"], r["lng"]) <= max_distance_km
     ]
 
-    new_cache = CacheGeocode(
-        query_hash=query_hash,
-        query_text=normalized[:500],
-        response_json=json.dumps(results),
-    )
-    db.merge(new_cache)
-    db.commit()
+    _upsert_geocode_cache(db, query_hash, normalized[:500], results)
 
     return results
 
 
+def _upsert_geocode_cache(
+    db: Session,
+    query_hash: str,
+    query_text: str,
+    results: list[dict],
+) -> None:
+    payload = json.dumps(results)
+    existing = (
+        db.query(CacheGeocode)
+        .filter(CacheGeocode.query_hash == query_hash)
+        .first()
+    )
+    if existing:
+        existing.query_text = query_text
+        existing.response_json = payload
+        existing.created_at = datetime.now(timezone.utc)
+    else:
+        db.add(
+            CacheGeocode(
+                query_hash=query_hash,
+                query_text=query_text,
+                response_json=payload,
+            )
+        )
+    db.commit()
+
+
+def _upsert_route_cache(
+    db: Session,
+    route_hash: str,
+    waypoints: list[tuple[float, float]],
+    result: dict,
+) -> None:
+    payload = json.dumps(result)
+    existing = (
+        db.query(CacheRota)
+        .filter(CacheRota.route_hash == route_hash)
+        .first()
+    )
+    if existing:
+        existing.origin_lat = waypoints[0][0]
+        existing.origin_lng = waypoints[0][1]
+        existing.destination_lat = waypoints[-1][0]
+        existing.destination_lng = waypoints[-1][1]
+        existing.response_json = payload
+        existing.created_at = datetime.now(timezone.utc)
+    else:
+        db.add(
+            CacheRota(
+                route_hash=route_hash,
+                origin_lat=waypoints[0][0],
+                origin_lng=waypoints[0][1],
+                destination_lat=waypoints[-1][0],
+                destination_lng=waypoints[-1][1],
+                response_json=payload,
+            )
+        )
+    db.commit()
+
+
 # ----------- Roteamento (OSRM) -----------
+
+
+def _format_maneuver_pt(maneuver: dict, street: str) -> str:
+    """Converte manobra OSRM para instrução em português."""
+    mtype = maneuver.get("type", "")
+    modifier = maneuver.get("modifier", "") or ""
+    street_part = f" em {street}" if street else ""
+
+    if mtype == "depart":
+        return f"Siga em frente{street_part}" if not modifier else f"Inicie{street_part}"
+    if mtype == "arrive":
+        return "Você chegou ao destino"
+    if mtype == "turn":
+        mapping = {
+            "left": f"Vire à esquerda{street_part}",
+            "right": f"Vire à direita{street_part}",
+            "slight left": f"Mantenha-se à esquerda{street_part}",
+            "slight right": f"Mantenha-se à direita{street_part}",
+            "sharp left": f"Vire acentuadamente à esquerda{street_part}",
+            "sharp right": f"Vire acentuadamente à direita{street_part}",
+            "uturn": f"Faça retorno{street_part}",
+        }
+        return mapping.get(modifier, f"Vire{street_part}")
+    if mtype in ("continue", "new name"):
+        return f"Continue{street_part}"
+    if mtype == "merge":
+        return f"Entre na via{street_part}"
+    if mtype in ("on ramp", "off ramp"):
+        return f"Pegue a rampa{street_part}"
+    if mtype == "fork":
+        if modifier == "left":
+            return f"Mantenha-se à esquerda na bifurcação{street_part}"
+        if modifier == "right":
+            return f"Mantenha-se à direita na bifurcação{street_part}"
+        return f"Siga na bifurcação{street_part}"
+    if mtype == "roundabout":
+        return f"Na rotatória, siga pela saída{street_part}"
+    if mtype == "rotary":
+        return f"Na rotatória, siga em frente{street_part}"
+    if mtype == "end of road":
+        if modifier == "left":
+            return f"No fim da via, vire à esquerda{street_part}"
+        if modifier == "right":
+            return f"No fim da via, vire à direita{street_part}"
+    return f"Siga em frente{street_part}"
+
+
+def _extract_steps(route: dict) -> list[dict]:
+    steps: list[dict] = []
+    for leg in route.get("legs", []):
+        for step in leg.get("steps", []):
+            maneuver = step.get("maneuver", {})
+            loc = maneuver.get("location", [0.0, 0.0])
+            street = step.get("name") or ""
+            steps.append({
+                "instruction": _format_maneuver_pt(maneuver, street),
+                "maneuver_type": maneuver.get("type", ""),
+                "maneuver_modifier": maneuver.get("modifier"),
+                "distance_m": round(float(step.get("distance", 0))),
+                "duration_s": round(float(step.get("duration", 0))),
+                "lat": float(loc[1]),
+                "lng": float(loc[0]),
+                "street": street,
+            })
+    return steps
 
 
 async def calcular_rota(
     waypoints: list[tuple[float, float]],
     db: Session,
     no_cache: bool = False,
+    include_steps: bool = False,
 ) -> dict:
     """Calcula rota de carro entre waypoints usando OSRM.
 
@@ -170,6 +290,8 @@ async def calcular_rota(
     """
     rounded = [(_round_coord(lat), _round_coord(lng)) for lat, lng in waypoints]
     route_key = ";".join(f"{lat},{lng}" for lat, lng in rounded)
+    if include_steps:
+        route_key += "|steps"
     route_hash = _hash_key(route_key)
 
     if not no_cache:
@@ -196,7 +318,7 @@ async def calcular_rota(
             params={
                 "overview": "full",
                 "geometries": "geojson",
-                "steps": "false",
+                "steps": "true" if include_steps else "false",
             },
             headers={"User-Agent": USER_AGENT},
         )
@@ -210,6 +332,7 @@ async def calcular_rota(
             "distance_km": 0,
             "duration_min": 0,
             "legs": [],
+            "steps": [],
             "error": data.get("message", "Rota não encontrada"),
         }
 
@@ -233,18 +356,9 @@ async def calcular_rota(
         "distance_km": round(route["distance"] / 1000, 2),
         "duration_min": round(route["duration"] / 60, 1),
         "legs": legs,
+        "steps": _extract_steps(route) if include_steps else [],
     }
 
-    # Salva no cache
-    new_cache = CacheRota(
-        route_hash=route_hash,
-        origin_lat=waypoints[0][0],
-        origin_lng=waypoints[0][1],
-        destination_lat=waypoints[-1][0],
-        destination_lng=waypoints[-1][1],
-        response_json=json.dumps(result),
-    )
-    db.merge(new_cache)
-    db.commit()
+    _upsert_route_cache(db, route_hash, waypoints, result)
 
     return result

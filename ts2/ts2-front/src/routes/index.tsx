@@ -11,6 +11,7 @@ import Dashboard from '../pages/Dashboard'
 import HistoricoMapPage from '../pages/MapPage'
 import RotaPage from '../pages/RotaPage'
 import { SimuladorPage } from '../pages/SimuladorPage'
+import NavegacaoPage from '../pages/NavegacaoPage'
 import { Sidebar } from '../components/map/Sidebar'
 
 const router = createBrowserRouter([
@@ -73,6 +74,19 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <UsersDashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/navegacao',
+    element: (
+      <ProtectedRoute>
+        <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
+          <Sidebar isFixed={true} />
+          <main className="flex-1 overflow-hidden relative">
+            <NavegacaoPage />
+          </main>
+        </div>
       </ProtectedRoute>
     ),
   },

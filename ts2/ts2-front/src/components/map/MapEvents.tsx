@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useMap, useMapEvents } from 'react-leaflet';
 import { useMapStore } from '../../store/mapStore';
+import { ITA_DCTA_ORIGIN } from '../../utils/defaultOrigin';
 
 export function MapEvents() {
   const setSelectedCoord = useMapStore((state) => state.setSelectedCoord);
@@ -43,6 +44,11 @@ export function MapEvents() {
     locationfound(e) {
       setTemporaryLocation({ lat: e.latlng.lat, lng: e.latlng.lng });
       map.flyTo(e.latlng, 15, { animate: true });
+    },
+    locationerror() {
+      const fallback = { lat: ITA_DCTA_ORIGIN.lat, lng: ITA_DCTA_ORIGIN.lng };
+      setTemporaryLocation(fallback);
+      map.flyTo([fallback.lat, fallback.lng], 14, { animate: true });
     },
     click(e) {
       if (isAddModalOpen) return;

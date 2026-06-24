@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { X, Navigation, MapPin, ArrowRightLeft, Loader2, Route, LocateFixed } from 'lucide-react';
 import { useMapStore } from '../../store/mapStore';
 import { routingService } from '../../services/routingService';
+import { ITA_DCTA_LABEL, ITA_DCTA_ORIGIN } from '../../utils/defaultOrigin';
+import { requestCurrentPosition } from '../../utils/geolocation';
 
 interface RouteDestination {
   lat: number;
@@ -16,6 +18,8 @@ interface RouteSuggestion {
   lng: number;
   isMarker: boolean;
 }
+
+const DEFAULT_ORIGIN = { lat: ITA_DCTA_ORIGIN.lat, lng: ITA_DCTA_ORIGIN.lng };
 
 export function RoutePanel() {
   const {
@@ -34,15 +38,16 @@ export function RoutePanel() {
   const [destinationInput, setDestinationInput] = useState('');
   const [destinationSuggestions, setDestinationSuggestions] = useState<RouteSuggestion[]>([]);
   const [showDestinationSuggestions, setShowDestinationSuggestions] = useState(false);
-  const [originInput, setOriginInput] = useState('Minha localização');
-  const [originCoord, setOriginCoord] = useState<{ lat: number; lng: number } | null>(null);
+  const [originInput, setOriginInput] = useState(ITA_DCTA_LABEL);
+  const [originCoord, setOriginCoord] = useState<{ lat: number; lng: number }>(DEFAULT_ORIGIN);
   const [originSuggestions, setOriginSuggestions] = useState<RouteSuggestion[]>([]);
   const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
-  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(true);
+  const [isUsingCurrentLocation, setIsUsingCurrentLocation] = useState(false);
+  const [gpsUnavailable, setGpsUnavailable] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const destDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoCalcRef = useRef(false);
 
-  // Helper: search markers locally by text
   const getMarkerMatches = (query: string): RouteSuggestion[] => {
     const q = query.toLowerCase();
     const matched: RouteSuggestion[] = [];
@@ -60,7 +65,12 @@ export function RoutePanel() {
     return matched;
   };
 
-  // Listen for route panel open events
+  const applyDefaultOrigin = () => {
+    setOriginCoord(DEFAULT_ORIGIN);
+    setOriginInput(ITA_DCTA_LABEL);
+    setIsUsingCurrentLocation(false);
+  };
+
   useEffect(() => {
     const handleOpenPanel = (event: Event) => {
       const customEvent = event as CustomEvent<{ destination: { lat: number; lng: number }; destinationLabel: string }>;
@@ -70,44 +80,32 @@ export function RoutePanel() {
         label: customEvent.detail.destinationLabel,
       });
       setDestinationInput(customEvent.detail.destinationLabel);
+      autoCalcRef.current = false;
     };
 
     window.addEventListener('route:open-panel', handleOpenPanel);
     return () => window.removeEventListener('route:open-panel', handleOpenPanel);
   }, []);
 
-  // Get current location on mount
   useEffect(() => {
     if (!isRoutePanelOpen) return;
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setOriginCoord({ lat: position.coords.latitude, lng: position.coords.longitude });
-      },
-      () => {
-        // Fallback SJC
-        setOriginCoord({ lat: -23.1813, lng: -45.8879 });
-      },
-      { enableHighAccuracy: false, timeout: 5000 }
-    );
+    applyDefaultOrigin();
+    setGpsUnavailable(false);
+    autoCalcRef.current = false;
   }, [isRoutePanelOpen]);
 
-  // Auto-calculate when origin is set and panel opens
   useEffect(() => {
-    if (isRoutePanelOpen && originCoord && destination && isUsingCurrentLocation && !activeRoute) {
-      calculateRoute(originCoord, destination, originInput, destination.label);
-    }
-  }, [isRoutePanelOpen, originCoord, destination, isUsingCurrentLocation]);
+    if (!isRoutePanelOpen || !originCoord || !destination || autoCalcRef.current) return;
+    autoCalcRef.current = true;
+    calculateRoute(originCoord, destination, originInput, destination.label);
+  }, [isRoutePanelOpen, originCoord, destination, originInput, calculateRoute]);
 
-  // Search origin suggestions
-  // Search origin suggestions (markers first, then geocode)
   useEffect(() => {
     if (isUsingCurrentLocation || originInput.length < 3) {
       setOriginSuggestions([]);
       return;
     }
 
-    // Immediately show marker matches
     const markerMatches = getMarkerMatches(originInput);
     setOriginSuggestions(markerMatches);
     if (markerMatches.length > 0) setShowOriginSuggestions(true);
@@ -136,14 +134,12 @@ export function RoutePanel() {
     }, 350);
   }, [originInput, isUsingCurrentLocation]);
 
-  // Search destination suggestions (markers first, then geocode)
   useEffect(() => {
     if (!destinationInput || destinationInput.length < 3 || (destination && destinationInput === destination.label)) {
       setDestinationSuggestions([]);
       return;
     }
 
-    // Immediately show marker matches
     const markerMatches = getMarkerMatches(destinationInput);
     setDestinationSuggestions(markerMatches);
     if (markerMatches.length > 0) setShowDestinationSuggestions(true);
@@ -173,12 +169,11 @@ export function RoutePanel() {
   }, [destinationInput]);
 
   const handleSelectDestination = (suggestion: RouteSuggestion) => {
-    setDestination({ lat: suggestion.lat, lng: suggestion.lng, label: suggestion.label });
+    const dest = { lat: suggestion.lat, lng: suggestion.lng, label: suggestion.label };
+    setDestination(dest);
     setDestinationInput(suggestion.label);
     setShowDestinationSuggestions(false);
-
-    const origin = originCoord || { lat: -23.1813, lng: -45.8879 };
-    calculateRoute(origin, { lat: suggestion.lat, lng: suggestion.lng }, originInput, suggestion.label);
+    calculateRoute(originCoord, dest, originInput, suggestion.label);
   };
 
   const handleSelectOrigin = (suggestion: RouteSuggestion) => {
@@ -186,6 +181,7 @@ export function RoutePanel() {
     setOriginInput(suggestion.label);
     setShowOriginSuggestions(false);
     setIsUsingCurrentLocation(false);
+    setGpsUnavailable(false);
 
     if (destination) {
       calculateRoute(
@@ -197,30 +193,26 @@ export function RoutePanel() {
     }
   };
 
-  const handleUseCurrentLocation = () => {
-    setOriginInput('Minha localização');
-    setIsUsingCurrentLocation(true);
-    setShowOriginSuggestions(false);
+  const handleUseCurrentLocation = async () => {
+    setGpsUnavailable(false);
+    const coord = await requestCurrentPosition();
 
-    // Re-busca GPS real e recalcula rota
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coord = { lat: position.coords.latitude, lng: position.coords.longitude };
-        setOriginCoord(coord);
-        if (destination) {
-          calculateRoute(coord, destination, 'Minha localização', destination.label);
-        }
-      },
-      () => {
-        // Fallback SJC
-        const fallback = { lat: -23.1813, lng: -45.8879 };
-        setOriginCoord(fallback);
-        if (destination) {
-          calculateRoute(fallback, destination, 'Minha localização', destination.label);
-        }
-      },
-      { enableHighAccuracy: false, timeout: 5000 }
-    );
+    if (coord) {
+      setOriginCoord(coord);
+      setOriginInput('Minha localização');
+      setIsUsingCurrentLocation(true);
+      setShowOriginSuggestions(false);
+      if (destination) {
+        calculateRoute(coord, destination, 'Minha localização', destination.label);
+      }
+      return;
+    }
+
+    setGpsUnavailable(true);
+    applyDefaultOrigin();
+    if (destination) {
+      calculateRoute(DEFAULT_ORIGIN, destination, ITA_DCTA_LABEL, destination.label);
+    }
   };
 
   const handleSwapLocations = () => {
@@ -234,6 +226,7 @@ export function RoutePanel() {
     setOriginCoord(newOrigin);
     setOriginInput(newOriginLabel);
     setIsUsingCurrentLocation(false);
+    setGpsUnavailable(false);
 
     calculateRoute(newOrigin, newDest, newOriginLabel, newDest.label);
   };
@@ -243,17 +236,17 @@ export function RoutePanel() {
     clearRoute();
     setDestination(null);
     setDestinationInput('');
-    setOriginInput('Minha localização');
-    setIsUsingCurrentLocation(true);
+    applyDefaultOrigin();
+    setGpsUnavailable(false);
     setOriginSuggestions([]);
     setDestinationSuggestions([]);
+    autoCalcRef.current = false;
   };
 
   if (!isRoutePanelOpen) return null;
 
   return (
     <div className="absolute left-4 top-20 md:left-20 md:top-24 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 pointer-events-auto overflow-hidden">
-      {/* Header */}
       <div className="bg-blue-600 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2 text-white">
           <Route size={18} />
@@ -267,9 +260,7 @@ export function RoutePanel() {
         </button>
       </div>
 
-      {/* Route inputs */}
       <div className="p-4 space-y-3">
-        {/* Origin */}
         <div className="relative">
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-200">
             <Navigation size={16} className="text-blue-500 shrink-0" />
@@ -279,6 +270,7 @@ export function RoutePanel() {
               onChange={(e) => {
                 setOriginInput(e.target.value);
                 setIsUsingCurrentLocation(false);
+                setGpsUnavailable(false);
               }}
               onFocus={() => {
                 if (!isUsingCurrentLocation && originSuggestions.length > 0) {
@@ -288,18 +280,27 @@ export function RoutePanel() {
               placeholder="Origem"
               className="flex-1 bg-transparent text-sm text-gray-700 outline-none"
             />
-            {!isUsingCurrentLocation && (
-              <button
-                onClick={handleUseCurrentLocation}
-                className="text-blue-500 hover:text-blue-700 shrink-0 p-1 rounded hover:bg-blue-50 transition-colors"
-                title="Usar minha localização"
-              >
-                <LocateFixed size={16} />
-              </button>
-            )}
+            <button
+              onClick={() => void handleUseCurrentLocation()}
+              className="text-blue-500 hover:text-blue-700 shrink-0 p-1 rounded hover:bg-blue-50 transition-colors"
+              title="Usar minha localização"
+            >
+              <LocateFixed size={16} />
+            </button>
           </div>
 
-          {/* Origin suggestions dropdown */}
+          {!isUsingCurrentLocation && (
+            <p className="mt-1 text-[11px] text-gray-500">
+              Origem padrão: campus do ITA no DCTA. Use o ícone de GPS para tentar sua localização.
+            </p>
+          )}
+
+          {gpsUnavailable && (
+            <p className="mt-1 text-[11px] text-amber-700">
+              Não foi possível obter o GPS. Usando o ITA como origem.
+            </p>
+          )}
+
           {showOriginSuggestions && originSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
               {originSuggestions.map((s, i) => (
@@ -323,7 +324,6 @@ export function RoutePanel() {
           )}
         </div>
 
-        {/* Swap button */}
         <div className="flex justify-center">
           <button
             onClick={handleSwapLocations}
@@ -334,7 +334,6 @@ export function RoutePanel() {
           </button>
         </div>
 
-        {/* Destination */}
         <div className="relative">
           <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2.5 border border-gray-200">
             <MapPin size={16} className="text-red-500 shrink-0" />
@@ -355,7 +354,6 @@ export function RoutePanel() {
             />
           </div>
 
-          {/* Destination suggestions dropdown */}
           {showDestinationSuggestions && destinationSuggestions.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
               {destinationSuggestions.map((s, i) => (
@@ -379,7 +377,6 @@ export function RoutePanel() {
           )}
         </div>
 
-        {/* Route info */}
         {isRouteLoading && (
           <div className="flex items-center justify-center gap-2 py-3 text-sm text-gray-500">
             <Loader2 size={16} className="animate-spin" />

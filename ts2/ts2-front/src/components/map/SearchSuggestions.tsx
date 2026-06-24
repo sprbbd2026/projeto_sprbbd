@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapStore } from '../../store/mapStore';
 import { routingService, type GeocodeResult } from '../../services/routingService';
+import { ITA_DCTA_ORIGIN } from '../../utils/defaultOrigin';
+import { requestCurrentPosition } from '../../utils/geolocation';
 
 interface SearchResult {
   type: 'location' | 'device' | 'street' | 'poi';
@@ -125,24 +127,9 @@ export function SearchSuggestions({ isOpen, query, onSelectLocation }: SearchSug
   };
 
   const requestGeolocation = () => {
-    if (!navigator.geolocation) {
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
-      },
-      () => {
-        // Fallback: usar centro de São José dos Campos como padrão
-        setUserLocation({ lat: -23.1813, lng: -45.8879 });
-      },
-      {
-        enableHighAccuracy: false,
-        timeout: 5000,
-        maximumAge: 60000,
-      },
-    );
+    void requestCurrentPosition().then((coord) => {
+      setUserLocation(coord ?? { lat: ITA_DCTA_ORIGIN.lat, lng: ITA_DCTA_ORIGIN.lng });
+    });
   };
 
   useEffect(() => {
@@ -166,7 +153,10 @@ export function SearchSuggestions({ isOpen, query, onSelectLocation }: SearchSug
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const referenceLocation = userLocation || { lat: -23.1813, lng: -45.8879 };
+        const referenceLocation = userLocation ?? {
+          lat: ITA_DCTA_ORIGIN.lat,
+          lng: ITA_DCTA_ORIGIN.lng,
+        };
         const maxDistanceKm = 500;
         const queryLower = query.toLowerCase();
 
