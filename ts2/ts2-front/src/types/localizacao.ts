@@ -14,3 +14,15 @@ export interface HistoricoLocalizacaoParams {
   data_fim?: string
   limit?: number
 }
+
+export interface RotaCoordenada {
+  latitude: number
+  longitude: number
+  data_hora: string
+}
+
+export interface RotaResponse {
+  satelite_id: string
+  rota: RotaCoordenada[]
+  gerado_automaticamente?: boolean
+}

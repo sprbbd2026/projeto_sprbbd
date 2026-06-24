@@ -1,107 +1,122 @@
 /**
  * MapPage — US303: Visualizar histórico de localização em mapa
- *
- * Critérios de aceite:
- *  CA01 — Renderiza pontos/trilha quando há dados
- *  CA02 — Exibe mapa vazio com mensagem informativa
- *  CA03 — Exibe feedback de erro sem dados inconsistentes
  */
 
 import { useEffect, useState, useCallback } from 'react'
 import { Map, Filter, RefreshCw } from 'lucide-react'
-import { localizacaoService } from '../services/localizacaoService'
-import { fetchSatelites, type SatellitePoint } from '../services/satelliteService'
+import { fetchHistoricoForSatellite } from '../utils/historicoFetch'
+import { loadSatelliteCatalog } from '../services/satelliteService'
 import type { Localizacao } from '../types/localizacao'
 import SatelliteMap from '../components/ui/SatelliteMap'
 import styles from './MapPage.module.css'
 import { DashboardLayout } from '../components/layout/DashboardLayout'
+import {
+  ALL_SATELLITES_LABEL,
+  ALL_SATELLITES_VALUE,
+  colorForSatellite,
+  dateToDayEnd,
+  dateToDayStart,
+  defaultHistoricoEndDate,
+  defaultHistoricoStartDate,
+  isAllSatellites,
+} from '../utils/satelliteConstants'
+import type { SatellitePoint } from '../services/satelliteService'
 
 type FetchStatus = 'idle' | 'loading' | 'success' | 'error'
 type VisualizationMode = 'fixed' | 'coverage'
 
 export default function MapPage() {
-  // ── Estado dos satélites disponíveis ─────────────────────────
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
-  const [sateliteId, setSateliteId] = useState('')
-
-  // ── Filtros de data ───────────────────────────────────────────
-  const [dataInicio, setDataInicio] = useState('')
-  const [dataFim, setDataFim] = useState('')
+  const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
+  const [dataInicio, setDataInicio] = useState(defaultHistoricoStartDate)
+  const [dataFim, setDataFim] = useState(defaultHistoricoEndDate)
   const [visualizacao, setVisualizacao] = useState<VisualizationMode>('fixed')
-
-  // ── Dados do mapa ─────────────────────────────────────────────
   const [pontos, setPontos] = useState<Localizacao[]>([])
   const [status, setStatus] = useState<FetchStatus>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [usandoDemo, setUsandoDemo] = useState(false)
 
-  // ── Carrega lista de satélites ao montar ──────────────────────
   useEffect(() => {
-    fetchSatelites()
-      .then((satellites) => {
-        setSatelites(satellites)
-        if (satellites.length > 0) {
-          setSateliteId(String(satellites[0].sat_id))
-        }
-      })
-      .catch(() => {
-        setSatelites([])
-      })
+    setDataInicio(defaultHistoricoStartDate())
+    setDataFim(defaultHistoricoEndDate())
   }, [])
 
-  // ── Busca histórico ───────────────────────────────────────────
   const fetchHistorico = useCallback(async () => {
     if (!sateliteId.trim()) return
     setStatus('loading')
     setErrorMsg('')
-    setPontos([])
+    setUsandoDemo(false)
 
-    try {
-      const params: Record<string, unknown> = { satelite_id: sateliteId.trim() }
-      if (dataInicio) params.data_inicio = new Date(dataInicio).toISOString()
-      if (dataFim) params.data_fim = new Date(dataFim).toISOString()
+    const limit = 1000
+    const ids = isAllSatellites(sateliteId)
+      ? satelites.map((s) => String(s.sat_id))
+      : [sateliteId.trim()]
 
-      const data = await localizacaoService.getHistoricoTs1(
-        params as unknown as Parameters<typeof localizacaoService.getHistorico>[0]
-      )
-      setPontos(data)
+    if (ids.length === 0) {
+      setPontos([])
       setStatus('success')
-    } catch (err) {
-      console.error(err)
-      setErrorMsg(
-        'Falha ao consultar a API de histórico. Verifique se o backend está disponível.'
-      )
-      setStatus('error')
+      return
     }
-  }, [sateliteId, dataInicio, dataFim])
+
+    const inicio = dateToDayStart(dataInicio)
+    const fim = dateToDayEnd(dataFim)
+
+    const batches = await Promise.all(
+      ids.map((id) => fetchHistoricoForSatellite(id, inicio, fim, limit)),
+    )
+
+    const resultado = batches
+      .flatMap((b) => b.pontos)
+      .sort((a, b) => a.data_hora.localeCompare(b.data_hora))
+
+    setPontos(resultado)
+    setUsandoDemo(batches.some((b) => b.demo))
+    setStatus('success')
+  }, [sateliteId, dataInicio, dataFim, satelites])
+
+  useEffect(() => {
+    void loadSatelliteCatalog().then((lista) => {
+      setSatelites(lista)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (satelites.length > 0 && sateliteId.trim()) void fetchHistorico()
+  }, [sateliteId, satelites, fetchHistorico])
 
   const isLoading = status === 'loading'
+  const multi = isAllSatellites(sateliteId)
+  const uniqueSats = new Set(pontos.map((p) => p.satelite_id)).size
+
+  function nomeSatelite(id: string): string {
+    const sat = satelites.find((s) => String(s.sat_id) === id)
+    if (!sat) return `SAT-${id}`
+    const prn = sat.sat_codigo_prn != null ? `PRN ${sat.sat_codigo_prn}` : `SAT-${sat.sat_id}`
+    return sat.con_nome ? `${prn} · ${sat.con_nome}` : prn
+  }
 
   return (
     <DashboardLayout>
       <main className={styles.page}>
         <div className={styles.inner}>
-          {/* ── Cabeçalho ─────────────────────────────────────────── */}
           <header className={styles.header}>
             <div>
-              <p className={styles.kicker}>SPRB-BD</p>
               <h1 className={styles.title}>
                 <Map size={28} strokeWidth={1.8} />
                 Histórico de Localização
               </h1>
               <p className={styles.subtitle}>
-                Alterne entre a visualização antiga de pontos fixos e a cobertura orbital.
+                Alterne entre pontos fixos e cobertura orbital. Filtro por intervalo de datas.
               </p>
             </div>
           </header>
 
-          {/* ── Filtros ───────────────────────────────────────────── */}
           <section className={styles.filtersCard} aria-label="Filtros de consulta">
             <h2 className={styles.filtersTitle}>
               <Filter size={16} />
               Filtros de Consulta
             </h2>
             <div className={styles.filtersGrid}>
-              {/* Seleção de satélite */}
               <div className={styles.fieldGroup}>
                 <label htmlFor="satelite-select">Satélite</label>
                 <select
@@ -111,44 +126,40 @@ export default function MapPage() {
                   onChange={(e) => setSateliteId(e.target.value)}
                   disabled={satelites.length === 0}
                 >
-                  {satelites.length === 0 ? (
-                    <option value="">Nenhum satélite disponível</option>
-                  ) : (
-                    satelites.map((satellite) => (
-                      <option key={satellite.sat_id} value={String(satellite.sat_id)}>
-                        {`SAT-${satellite.sat_id}`}
-                        {satellite.con_nome ? ` · ${satellite.con_nome}` : ''}
-                      </option>
-                    ))
-                  )}
+                  <option value={ALL_SATELLITES_VALUE}>{ALL_SATELLITES_LABEL}</option>
+                  {satelites.map((satellite) => (
+                    <option key={satellite.sat_id} value={String(satellite.sat_id)}>
+                      {satellite.sat_codigo_prn != null
+                        ? `PRN ${satellite.sat_codigo_prn}`
+                        : `SAT-${satellite.sat_id}`}
+                      {satellite.con_nome ? ` · ${satellite.con_nome}` : ''}
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {/* Data início */}
               <div className={styles.fieldGroup}>
-                <label htmlFor="data-inicio">Data Início</label>
+                <label htmlFor="data-inicio">Data início</label>
                 <input
                   id="data-inicio"
-                  type="datetime-local"
+                  type="date"
                   className={styles.dateInput}
                   value={dataInicio}
                   onChange={(e) => setDataInicio(e.target.value)}
                 />
               </div>
 
-              {/* Data fim */}
               <div className={styles.fieldGroup}>
-                <label htmlFor="data-fim">Data Fim</label>
+                <label htmlFor="data-fim">Data fim</label>
                 <input
                   id="data-fim"
-                  type="datetime-local"
+                  type="date"
                   className={styles.dateInput}
                   value={dataFim}
                   onChange={(e) => setDataFim(e.target.value)}
                 />
               </div>
 
-              {/* Botão consultar */}
               <button
                 id="btn-consultar-historico"
                 className={styles.searchBtn}
@@ -161,7 +172,6 @@ export default function MapPage() {
             </div>
           </section>
 
-          {/* ── Painel do mapa ────────────────────────────────────── */}
           <section className={styles.mapCard} aria-label="Mapa de localização">
             <div className={styles.mapHeader}>
               <h2 className={styles.mapTitle}>
@@ -170,12 +180,19 @@ export default function MapPage() {
               {status === 'success' && pontos.length > 0 && (
                 <span className={`${styles.badge} ${styles.badgeBlue}`}>
                   <Map size={13} />
-                  {pontos.length} ponto{pontos.length !== 1 ? 's' : ''} — {sateliteId}
+                  {pontos.length} ponto{pontos.length !== 1 ? 's' : ''}
+                  {multi ? ` · ${uniqueSats} satélites` : ` · ${sateliteId}`}
+                  {usandoDemo ? ' · demo' : ''}
                 </span>
               )}
             </div>
 
-            {/* CA03 — Erro de API */}
+            {usandoDemo && status === 'success' && (
+              <div className={styles.demoBanner} role="status">
+                Dados de demonstração — órbitas LEO regionais (intervalo de 60 dias).
+              </div>
+            )}
+
             {status === 'error' && (
               <div className={`${styles.stateBox} ${styles.stateBoxError}`} role="alert">
                 <span className={styles.stateIcon}>⚠️</span>
@@ -184,7 +201,6 @@ export default function MapPage() {
               </div>
             )}
 
-            {/* Loading */}
             {status === 'loading' && (
               <div className={`${styles.stateBox} ${styles.stateBoxLoading}`} role="status" aria-live="polite">
                 <div className={styles.spinner} aria-hidden="true" />
@@ -192,41 +208,38 @@ export default function MapPage() {
               </div>
             )}
 
-            {/* CA02 — Sem dados (consulta realizada mas lista vazia) */}
             {status === 'success' && pontos.length === 0 && (
-              <div className={`${styles.stateBox} ${styles.stateBoxEmpty}`} role="status">
-                <span className={styles.stateIcon}>🛰️</span>
-                <p className={styles.stateTitle}>Nenhum ponto encontrado</p>
+              <div className={styles.stateBox} role="status">
+                <p className={styles.stateTitle}>Nenhum ponto no período</p>
                 <p className={styles.stateText}>
-                  Não há registros de localização para <strong>SAT-{sateliteId}</strong> no
-                  período informado.
+                  O banco não possui histórico para os filtros selecionados.
                 </p>
               </div>
             )}
 
-            {/* Idle — instrução inicial */}
-            {status === 'idle' && (
-              <div className={`${styles.stateBox} ${styles.stateBoxEmpty}`}>
-                <span className={styles.stateIcon}>🌍</span>
-                <p className={styles.stateTitle}>Selecione um satélite e consulte</p>
-                <p className={styles.stateText}>
-                  O mapa exibirá os pontos temporais, o satélite e a área de cobertura estimada.
-                </p>
-              </div>
-            )}
-
-            {/* CA01 — Mapa com dados */}
-            {status === 'success' && pontos.length > 0 && (
+            <div className={status === 'loading' ? styles.mapLoadingWrap : undefined}>
               <SatelliteMap
-                pontos={pontos}
-                sateliteId={sateliteId}
+                pontos={status === 'success' ? pontos : []}
+                sateliteId={multi ? ALL_SATELLITES_VALUE : sateliteId || '—'}
                 visualizationMode={visualizacao}
-                onToggleVisualization={() => setVisualizacao((current) => (current === 'fixed' ? 'coverage' : 'fixed'))}
+                onToggleVisualization={() =>
+                  setVisualizacao((current) => (current === 'fixed' ? 'coverage' : 'fixed'))
+                }
               />
+            </div>
+
+            {status === 'success' && pontos.length > 0 && multi && (
+              <div className={styles.legend} aria-label="Legenda por satélite">
+                {Array.from(new Set(pontos.map((p) => p.satelite_id))).map((id, idx) => (
+                  <div key={id} className={styles.legendItem}>
+                    <span className={styles.legendDot} style={{ background: colorForSatellite(id, idx) }} />
+                    SAT-{id}
+                  </div>
+                ))}
+              </div>
             )}
 
-            {/* Legenda */}
-            {status === 'success' && pontos.length > 0 && (
+            {status === 'success' && pontos.length > 0 && !multi && (
               <div className={styles.legend} aria-label="Legenda do mapa">
                 {visualizacao === 'coverage' ? (
                   <>
@@ -237,10 +250,6 @@ export default function MapPage() {
                     <div className={styles.legendItem}>
                       <span className={styles.legendDot} style={{ background: '#0f172a' }} />
                       Satélite
-                    </div>
-                    <div className={styles.legendItem}>
-                      <span className={styles.legendDot} style={{ background: '#60a5fa' }} />
-                      Instante consultado
                     </div>
                   </>
                 ) : (
@@ -255,7 +264,7 @@ export default function MapPage() {
                     </div>
                     <div className={styles.legendItem}>
                       <span className={styles.legendDot} style={{ background: '#3b82f6' }} />
-                      Pontos intermediários
+                      Trilha
                     </div>
                   </>
                 )}
@@ -263,7 +272,6 @@ export default function MapPage() {
             )}
           </section>
 
-          {/* ── Tabela de pontos ──────────────────────────────────── */}
           {status === 'success' && pontos.length > 0 && (
             <section className={styles.tableCard} aria-label="Tabela de pontos">
               <div className={styles.tableCardHeader}>
@@ -277,6 +285,7 @@ export default function MapPage() {
                   <thead>
                     <tr>
                       <th>#</th>
+                      <th>Satélite</th>
                       <th>Data / Hora</th>
                       <th>Latitude</th>
                       <th>Longitude</th>
@@ -286,8 +295,9 @@ export default function MapPage() {
                   </thead>
                   <tbody>
                     {pontos.map((p, i) => (
-                      <tr key={p.id}>
+                      <tr key={`${p.satelite_id}-${p.id}-${i}`}>
                         <td>{i + 1}</td>
+                        <td>{nomeSatelite(p.satelite_id)}</td>
                         <td>{new Date(p.data_hora).toLocaleString('pt-BR')}</td>
                         <td>{p.latitude.toFixed(6)}</td>
                         <td>{p.longitude.toFixed(6)}</td>

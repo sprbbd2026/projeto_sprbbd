@@ -7,12 +7,21 @@ from app.routes.telemetry_routes import router as telemetry_router
 from app.routes.localizacao_routes import router as localizacao_router
 from app.routes.dispositivo_routes import router as dispositivo_router
 from app.routes.routing_routes import router as routing_router
-from app.db.database import engine
+from app.routes.integracao_routes import router as integracao_router
+from app.db.database import SessionLocal, engine
 from app.db import models
 from app.db import cache_models  # noqa: F401 — registra tabelas de cache
+from app.db.seed_demo import seed_if_empty
 
 models.Base.metadata.create_all(bind=engine)
 cache_models.Base.metadata.create_all(bind=engine)
+
+_db = SessionLocal()
+try:
+    if seed_if_empty(_db):
+        print("[SPRB-BD] Histórico orbital inserido (SAT-1 a SAT-5, IGSO figura-8, 10 dias).")
+finally:
+    _db.close()
 
 tags_metadata = [
     {"name": "auth", "description": "Autenticação de usuários e emissão/renovação de tokens JWT."},
@@ -22,6 +31,7 @@ tags_metadata = [
     {"name": "Histórico de Localização", "description": "Histórico, rota e satélites monitorados (US300/US302)."},
     {"name": "Dispositivos", "description": "Dispositivos conectados do usuário autenticado."},
     {"name": "Rotas", "description": "Cálculo de rotas terrestres e geocoding (OSRM/Nominatim)."},
+    {"name": "Integração TS1", "description": "Consultas ao backend TS1 (satélites cadastrados)."},
 ]
 
 app = FastAPI(
@@ -62,3 +72,4 @@ app.include_router(telemetry_router)
 app.include_router(localizacao_router)
 app.include_router(dispositivo_router)
 app.include_router(routing_router)
+app.include_router(integracao_router)

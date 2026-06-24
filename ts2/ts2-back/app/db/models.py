@@ -1,6 +1,3 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
-import enum
-
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -13,6 +10,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
+import enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 

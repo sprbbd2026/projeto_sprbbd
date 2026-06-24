@@ -13,9 +13,6 @@ ts1Api.interceptors.request.use((config) => {
 
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
-    console.log('[ts1Api] Token enviado:', accessToken.substring(0, 20) + '...')
-  } else {
-    console.warn('[ts1Api] Nenhum token disponível no authStore')
   }
 
   return config
@@ -24,15 +21,7 @@ ts1Api.interceptors.request.use((config) => {
 ts1Api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
-      useAuthStore.getState().logout()
-      localStorage.removeItem('ts2-auth-storage')
-
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login'
-      }
-    }
-
+    // Falha no TS1 não deve encerrar a sessão do TS2 (sistemas distintos).
     return Promise.reject(error)
   },
 )

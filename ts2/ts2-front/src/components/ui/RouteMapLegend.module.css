@@ -1,0 +1,85 @@
+.legend {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 600;
+  min-width: 200px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: rgb(15 23 42 / 0.88);
+  border: 1px solid rgb(148 163 184 / 0.25);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.35);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  pointer-events: none;
+}
+
+.legendHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #f8fafc;
+}
+
+.demoTag {
+  margin-left: auto;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgb(245 158 11 / 0.2);
+  border: 1px solid rgb(245 158 11 / 0.45);
+  color: #fcd34d;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #cbd5e1;
+}
+
+.swatch {
+  width: 22px;
+  height: 4px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.swatchSolid {
+  width: 22px;
+  height: 1px;
+  border-radius: 2px;
+  background: #1e3a8a;
+  flex-shrink: 0;
+}
+
+.swatchDashed {
+  width: 22px;
+  height: 0;
+  border-top: 1px dashed #ca8a04;
+  flex-shrink: 0;
+}
+
+.swatchDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 2px solid rgb(255 255 255 / 0.85);
+  flex-shrink: 0;
+}

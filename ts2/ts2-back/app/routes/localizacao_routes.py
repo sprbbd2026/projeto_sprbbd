@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.localizacao_schema import LocalizacaoCreate, LocalizacaoResponse
+from app.schemas.localizacao_schema import LocalizacaoCreate, LocalizacaoResponse, RotaResponse
 from app.services import localizacao_service
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def consultar_historico(
     satelite_id: str = Query(..., description="ID do satélite"),
     data_inicio: Optional[datetime] = Query(None, description="Data/hora inicial (ISO 8601)"),
     data_fim: Optional[datetime] = Query(None, description="Data/hora final (ISO 8601)"),
-    limit: int = Query(200, ge=1, le=1000, description="Número máximo de pontos"),
+    limit: int = Query(1000, ge=1, le=1000, description="Número máximo de pontos"),
     db: Session = Depends(get_db),
 ):
     """
@@ -49,19 +49,27 @@ def consultar_historico(
 
 @router.get(
     "/rota",
-    response_model=list[LocalizacaoResponse],
-    summary="Consultar rota completa (US300)",
+    response_model=RotaResponse,
+    tags=["Histórico de Localização"],
+    summary="Consultar rota do satélite",
 )
 def consultar_rota(
     satelite_id: str = Query(..., description="ID do satélite"),
-    limit: int = Query(200, ge=1, le=1000, description="Número máximo de pontos de rota"),
+    data_inicio: Optional[datetime] = Query(None, description="Data/hora inicial (ISO 8601)"),
+    data_fim: Optional[datetime] = Query(None, description="Data/hora final (ISO 8601)"),
+    limit: int = Query(1000, ge=1, le=1000, description="Número máximo de pontos de rota"),
     db: Session = Depends(get_db),
 ):
     """
-    Retorna a rota completa de um satélite (sequência de pontos ordenados por data_hora).
-    Corresponde à US300 — Consultar Rota.
+    Retorna a rota de um satélite (pontos ordenados por data_hora).
+    Corresponde à US300 — Visualizar Rota.
     """
-    return localizacao_service.get_rota(db, satelite_id, limit)
+    pontos, gerado = localizacao_service.get_rota(db, satelite_id, data_inicio, data_fim, limit)
+    rota = [
+        {"latitude": p.latitude, "longitude": p.longitude, "data_hora": p.data_hora}
+        for p in pontos
+    ]
+    return {"satelite_id": satelite_id, "rota": rota, "gerado_automaticamente": gerado}
 
 
 @router.get(

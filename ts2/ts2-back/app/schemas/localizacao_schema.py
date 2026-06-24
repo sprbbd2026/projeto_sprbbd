@@ -21,3 +21,15 @@ class LocalizacaoResponse(LocalizacaoBase):
 
     class Config:
         from_attributes = True
+
+
+class RotaCoordenada(BaseModel):
+    latitude: float
+    longitude: float
+    data_hora: datetime
+
+
+class RotaResponse(BaseModel):
+    satelite_id: str
+    rota: list[RotaCoordenada]
+    gerado_automaticamente: bool = False
