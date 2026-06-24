@@ -5,9 +5,10 @@ import { routingService, type Coordenada, type RotaResponse } from '../services/
 import { useMapStore } from '../store/mapStore'
 import { ITA_DCTA_LABEL, ITA_DCTA_ORIGIN } from '../utils/defaultOrigin'
 import { requestCurrentPosition } from '../utils/geolocation'
+import { GpsNavigation } from '../components/navigation/GpsNavigation'
 import 'leaflet/dist/leaflet.css'
 
-type Cenario = 'ifood' | 'waze' | 'mercadolivre'
+type Cenario = 'ifood' | 'waze' | 'mercadolivre' | 'navegacao'
 
 interface WazeAlert {
   lat: number
@@ -154,6 +155,7 @@ const cenarios: { id: Cenario; label: string; icon: string }[] = [
   { id: 'ifood', label: 'iFood', icon: '🍕' },
   { id: 'waze', label: 'Waze', icon: '🚗' },
   { id: 'mercadolivre', label: 'Mercado Livre', icon: '📦' },
+  { id: 'navegacao', label: 'GPS', icon: '🧭' },
 ]
 
 // CDs mock para Mercado Livre
@@ -455,7 +457,31 @@ export function SimuladorPage() {
     )
   }
 
-  const mapCenter = userLocation ? [userLocation.lat, userLocation.lng] as [number, number] : [-23.5505, -46.6333] as [number, number]
+  const mapCenter = userLocation ? [userLocation.lat, userLocation.lng] as [number, number] : [ITA_DCTA_ORIGIN.lat, ITA_DCTA_ORIGIN.lng] as [number, number]
+
+  if (cenario === 'navegacao') {
+    return (
+      <div className="flex h-full w-full flex-col">
+        <div className="flex border-b border-gray-200 bg-white">
+          {cenarios.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => { setCenario(c.id); setRota(null); setError(null); setWazeAlerts([]) }}
+              className={`flex-1 px-2 py-3 text-sm font-medium transition-colors ${cenario === c.id
+                ? 'border-b-2 border-blue-500 bg-blue-50 text-blue-700'
+                : 'text-gray-500 hover:bg-gray-50'
+                }`}
+            >
+              {c.icon} {c.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex-1 min-h-0">
+          <GpsNavigation embedded />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-full w-full">

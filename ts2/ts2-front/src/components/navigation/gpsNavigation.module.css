@@ -1,0 +1,366 @@
+.hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.hudInner {
+  pointer-events: auto;
+  margin: 0.75rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.92);
+  color: #fff;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.maneuverIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 0.75rem;
+  background: #2563eb;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.bottomBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.bottomInner {
+  pointer-events: auto;
+  margin: 0.75rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.toolbar {
+  position: relative;
+  z-index: 1200;
+  flex-shrink: 0;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  overflow: visible;
+}
+
+.toolbarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.toolbarTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.toolbarSubtitle {
+  font-size: 0.7rem;
+  color: #6b7280;
+}
+
+.fieldsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  align-items: end;
+  overflow: visible;
+}
+
+.addressField {
+  position: relative;
+  min-width: 0;
+}
+
+.addressFieldOpen {
+  z-index: 1300;
+}
+
+.addressLabel {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.addressInput {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background: #fff;
+}
+
+.addressInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.suggestionsList {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  right: 0;
+  z-index: 1400;
+  max-height: 11rem;
+  overflow: auto;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.18);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.suggestionItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #1f2937;
+  cursor: pointer;
+}
+
+.suggestionItem:hover {
+  background: #eff6ff;
+}
+
+.suggestionItem:not(:last-child) {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.originWrap {
+  display: flex;
+  gap: 0.35rem;
+  align-items: flex-end;
+  min-width: 0;
+  overflow: visible;
+}
+
+.originField {
+  flex: 1;
+  min-width: 0;
+}
+
+.locateBtn {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: 1px;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  color: #2563eb;
+  background: #fff;
+  cursor: pointer;
+}
+
+.locateBtn:hover {
+  background: #eff6ff;
+}
+
+.actionsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.actionBtn {
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.actionBtnMode {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.actionBtnModeActiveGps {
+  background: #2563eb;
+  color: #fff;
+}
+
+.actionBtnModeActiveSim {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.actionBtnPrimary {
+  background: #059669;
+  color: #fff;
+}
+
+.actionBtnPrimary:hover {
+  background: #047857;
+}
+
+.actionBtnCalculate {
+  background: #2563eb;
+  color: #fff;
+}
+
+.actionBtnCalculate:hover {
+  background: #1d4ed8;
+}
+
+.actionBtnDanger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.actionBtnDanger:hover {
+  background: #b91c1c;
+}
+
+.actionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: #334155;
+}
+
+.summaryDest {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.staleBanner {
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.75rem;
+}
+
+.errorBanner {
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.75rem;
+}
+
+.mapArea {
+  flex: 1;
+  position: relative;
+  z-index: 0;
+  min-height: 240px;
+  isolation: isolate;
+}
+
+.root {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+.rootFullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #0f172a;
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  border: none;
+  cursor: pointer;
+}
+
+.iconBtn:hover {
+  background: #f8fafc;
+}
+
+.stopBtn {
+  width: auto;
+  padding-inline: 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.floatingTools {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .fieldsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actionsRow {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .actionBtn {
+    font-size: 0.65rem;
+    padding: 0.45rem 0.25rem;
+  }
+}

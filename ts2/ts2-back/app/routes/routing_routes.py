@@ -21,7 +21,9 @@ async def calculate_route(
 ):
     """Calcula rota de carro entre waypoints via OSRM."""
     waypoints = [(wp.lat, wp.lng) for wp in body.waypoints]
-    result = await calcular_rota(waypoints, db, no_cache=body.no_cache)
+    result = await calcular_rota(
+        waypoints, db, no_cache=body.no_cache, include_steps=body.include_steps
+    )
     return result
 
 

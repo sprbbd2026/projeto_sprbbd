@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Gauge, Satellite, Navigation, Route } from 'lucide-react';
+import { Menu, LogOut, BarChart2, Settings, Users, Map as MapIcon, ChevronLeft, Gauge, Satellite, Navigation, Route, LocateFixed } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { BrazilIcon } from '../icons/BrazilIcon';
@@ -27,6 +27,7 @@ export function Sidebar({ isFixed = false }: SidebarProps) {
     { icon: MapIcon, label: 'Histórico de Localização', path: '/mapa' },
     { icon: Satellite, label: 'Satélites', path: '/satellites' },
     { icon: Navigation, label: 'Simulador de Rotas', path: '/simulador' },
+    { icon: LocateFixed, label: 'Navegação GPS', path: '/navegacao' },
     { icon: BarChart2, label: 'Análise de Pontos', path: '/dashboards/pontos' },
     { icon: Users, label: 'Análise de Usuários', path: '/dashboards/usuarios' },
     { icon: Settings, label: 'Configurações', path: '/settings' },
