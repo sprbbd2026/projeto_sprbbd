@@ -17,6 +17,7 @@ import { DashboardSummaryPanel } from '../components/map/DashboardSummaryPanel';
 import { RoutePanel } from '../components/map/RoutePanel';
 import { RoutePolyline } from '../components/map/RoutePolyline';
 import { usePolling } from '../hooks/usePolling';
+import { MAP_DEFAULT_CENTER } from '../utils/defaultOrigin';
 
 const droppedPinIcon = L.divIcon({
   html: renderToString(
@@ -57,7 +58,7 @@ function TemporaryLocationPin() {
 }
 
 export function MapPage() {
-  const initialPosition: [number, number] = [-23.2081, -45.8828];
+  const initialPosition: [number, number] = MAP_DEFAULT_CENTER;
   const { activeLayer, selectedCoord, fetchLocations, fetchConnectedDevices } = useMapStore();
   const [isDevicesPanelCollapsed, setIsDevicesPanelCollapsed] = useState(false);
 

@@ -3,6 +3,8 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap 
 import L from 'leaflet'
 import { routingService, type Coordenada, type RotaResponse } from '../services/routingService'
 import { useMapStore } from '../store/mapStore'
+import { ITA_DCTA_LABEL, ITA_DCTA_ORIGIN } from '../utils/defaultOrigin'
+import { requestCurrentPosition } from '../utils/geolocation'
 import 'leaflet/dist/leaflet.css'
 
 type Cenario = 'ifood' | 'waze' | 'mercadolivre'
@@ -192,27 +194,17 @@ export function SimuladorPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Geolocation
+  // Geolocation — padrão ITA (DCTA); GPS só quando disponível
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        setUserLocation(loc)
-        setIfoodOrigem(loc)
-        setIfoodOrigemName('Minha localização')
-        setWazeOrigem(loc)
-        setWazeOrigemName('Minha localização')
-      },
-      () => {
-        // fallback para São Paulo centro
-        const fallback = { lat: -23.5505, lng: -46.6333 }
-        setUserLocation(fallback)
-        setIfoodOrigem(fallback)
-        setIfoodOrigemName('São Paulo (fallback)')
-        setWazeOrigem(fallback)
-        setWazeOrigemName('São Paulo (fallback)')
-      },
-    )
+    void requestCurrentPosition().then((coord) => {
+      const origin = coord ?? { lat: ITA_DCTA_ORIGIN.lat, lng: ITA_DCTA_ORIGIN.lng }
+      const label = coord ? 'Minha localização' : ITA_DCTA_LABEL
+      setUserLocation(origin)
+      setIfoodOrigem(origin)
+      setIfoodOrigemName(label)
+      setWazeOrigem(origin)
+      setWazeOrigemName(label)
+    })
   }, [])
 
   // Gera alertas simulados ao longo da rota (Waze)
