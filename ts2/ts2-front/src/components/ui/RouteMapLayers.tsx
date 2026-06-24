@@ -11,19 +11,9 @@ import { colorForSatellite } from '../../utils/satelliteConstants'
 import {
   applyRouteMapView,
   BRAZIL_CENTER,
-  ROUTE_MAP_ZOOM,
   ROUTE_DASH_ARRAY,
-  ROUTE_DASH_WEIGHT,
-  ROUTE_TRAIL_WEIGHT,
 } from '../../utils/mapBasemap'
-
-const DASH_FUTURE = {
-  weight: ROUTE_DASH_WEIGHT,
-  opacity: 0.92,
-  dashArray: ROUTE_DASH_ARRAY,
-  lineCap: 'round' as const,
-  lineJoin: 'round' as const,
-}
+import { useMapPreferencesStore } from '../../store/mapPreferencesStore'
 
 const satelliteIcon = L.divIcon({
   html: renderToString(
@@ -58,6 +48,8 @@ function boundsKey(positions: LatLngTuple[]): string {
 function FitRouteView({ positions }: { positions: LatLngTuple[] }) {
   const map = useMap()
   const lastFit = useRef<string | null>(null)
+  const routeZoom = useMapPreferencesStore((s) => s.routeMapZoom)
+  const routeAutoFit = useMapPreferencesStore((s) => s.routeMapAutoFit)
 
   useEffect(() => {
     const key = boundsKey(positions)
@@ -65,12 +57,12 @@ function FitRouteView({ positions }: { positions: LatLngTuple[] }) {
     lastFit.current = key
 
     if (positions.length === 0) {
-      map.setView(BRAZIL_CENTER, ROUTE_MAP_ZOOM, { animate: false })
+      map.setView(BRAZIL_CENTER, routeZoom, { animate: false })
       return
     }
 
     applyRouteMapView(map, positions as L.LatLngTuple[])
-  }, [map, positions])
+  }, [map, positions, routeZoom, routeAutoFit])
 
   return null
 }
@@ -78,15 +70,15 @@ function FitRouteView({ positions }: { positions: LatLngTuple[] }) {
 function PlaybackRouteLayer({
   points,
   sateliteId,
-  color,
   pointIndex,
   showCoverage,
+  satelliteIndex = 0,
 }: {
   points: RotaCoordenada[]
   sateliteId: string
-  color: string
   pointIndex: number
   showCoverage: boolean
+  satelliteIndex?: number
 }) {
   const allPositions = useMemo(() => toLatLngTuples(points), [points])
   const safeIndex = Math.max(0, Math.min(pointIndex, points.length - 1))
@@ -100,20 +92,47 @@ function PlaybackRouteLayer({
   )
   const current = allPositions[safeIndex]
   const currentPoint = points[safeIndex]
+  const routeTrailWeight = useMapPreferencesStore((s) => s.routeTrailWeight)
+  const routeDashWeight = useMapPreferencesStore((s) => s.routeDashWeight)
+  const colorPrefsKey = useMapPreferencesStore(
+    (s) => `${s.satelliteColorMode}:${s.satelliteCustomColors[sateliteId] ?? ''}`,
+  )
+  const lineColor = useMemo(
+    () => colorForSatellite(sateliteId, satelliteIndex),
+    [sateliteId, satelliteIndex, colorPrefsKey],
+  )
 
+  /** Footprint geodésico completo na posição atual — sem recorte ao Brasil (TS1 clipava e sumia fora do bbox). */
   const footprint = useMemo(() => {
-    if (!showCoverage || !currentPoint) return []
+    if (!showCoverage || !currentPoint) return [] as LatLngTuple[]
     return calcularFootprint(currentPoint.latitude, currentPoint.longitude)
   }, [showCoverage, currentPoint])
 
   return (
     <>
+      {allPositions.length >= 2 && (
+        <Polyline
+          positions={allPositions}
+          pathOptions={{
+            color: lineColor,
+            weight: 1,
+            opacity: 0.28,
+            lineCap: 'round',
+            lineJoin: 'round',
+          }}
+        />
+      )}
+
       {futurePositions.length >= 2 && (
         <Polyline
           positions={futurePositions}
           pathOptions={{
-            ...DASH_FUTURE,
-            color,
+            weight: routeDashWeight,
+            opacity: 0.92,
+            dashArray: ROUTE_DASH_ARRAY,
+            lineCap: 'round',
+            lineJoin: 'round',
+            color: lineColor,
           }}
         />
       )}
@@ -122,8 +141,8 @@ function PlaybackRouteLayer({
         <Polyline
           positions={trailPositions}
           pathOptions={{
-            color,
-            weight: ROUTE_TRAIL_WEIGHT,
+            color: lineColor,
+            weight: routeTrailWeight,
             opacity: 0.92,
             lineCap: 'round',
             lineJoin: 'round',
@@ -135,19 +154,19 @@ function PlaybackRouteLayer({
         <CircleMarker
           center={trailPositions[0]}
           radius={5}
-          pathOptions={{ color: '#fff', fillColor: color, fillOpacity: 1, weight: 2 }}
+          pathOptions={{ color: '#fff', fillColor: lineColor, fillOpacity: 1, weight: 2 }}
         />
       )}
 
-      {showCoverage && footprint.length > 0 && (
+      {showCoverage && footprint.length > 0 && current && (
         <Polygon
           positions={footprint}
           pathOptions={{
-            color: '#38bdf8',
+            color: lineColor,
             weight: 2,
-            opacity: 0.85,
-            fillColor: '#0ea5e9',
-            fillOpacity: 0.18,
+            opacity: 0.9,
+            fillColor: lineColor,
+            fillOpacity: 0.2,
           }}
         />
       )}
@@ -200,7 +219,6 @@ export function RouteMapLayers({
         <PlaybackRouteLayer
           points={points}
           sateliteId={activeSatelliteId}
-          color={colorForSatellite(activeSatelliteId)}
           pointIndex={pointIndex}
           showCoverage={showCoverage}
         />
@@ -220,9 +238,9 @@ export function RouteMapLayers({
             key={id}
             points={points}
             sateliteId={id}
-            color={colorForSatellite(id, idx)}
             pointIndex={safeIndex}
             showCoverage={showCoverage}
+            satelliteIndex={idx}
           />
         )
       })}

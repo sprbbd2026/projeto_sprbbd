@@ -24,7 +24,8 @@ import {
   defaultTodayDate,
   isAllSatellites,
 } from '../utils/satelliteConstants'
-import { BRAZIL_CENTER, MAP_LAND_BORDER_COLOR, MAP_LAND_COLOR, MAP_OCEAN_COLOR, ROUTE_MAP_ZOOM } from '../utils/mapBasemap'
+import { BRAZIL_CENTER } from '../utils/mapBasemap'
+import { useMapPreferencesStore } from '../store/mapPreferencesStore'
 import styles from './RotaPage.module.css'
 import '../components/ui/mapBasemap.module.css'
 
@@ -84,6 +85,13 @@ function buildLegend(
 }
 
 export default function RotaPage() {
+  const oceanColor = useMapPreferencesStore((s) => s.oceanColor)
+  const landColor = useMapPreferencesStore((s) => s.landColor)
+  const landBorderColor = useMapPreferencesStore((s) => s.landBorderColor)
+  const routeMapZoom = useMapPreferencesStore((s) => s.routeMapZoom)
+  const colorPrefsKey = useMapPreferencesStore((s) =>
+    JSON.stringify({ mode: s.satelliteColorMode, colors: s.satelliteCustomColors }),
+  )
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [loadingSatelites, setLoadingSatelites] = useState(true)
   const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
@@ -101,6 +109,7 @@ export default function RotaPage() {
   const lastQueryRef = useRef<string>('')
   const initialLoadDone = useRef(false)
   const [routeLoadId, setRouteLoadId] = useState(0)
+  const [showCoverage, setShowCoverage] = useState(true)
 
   const dataInicio = dateToDayStart(dataDia)
   const dataFim = dateToDayEnd(dataDia)
@@ -242,7 +251,7 @@ export default function RotaPage() {
     if (!hasRoutes) return
     const legend = buildLegend(routePoints, satelliteIds, playback.pointIndex, legendInfo.isDemo)
     setLegendInfo(legend)
-  }, [playback.pointIndex, routePoints, satelliteIds, hasRoutes, legendInfo.isDemo])
+  }, [playback.pointIndex, routePoints, satelliteIds, hasRoutes, legendInfo.isDemo, colorPrefsKey])
 
   const showLegend = routeStatus === 'success' && legendInfo.pointCount > 0
 
@@ -275,7 +284,7 @@ export default function RotaPage() {
                 Rota do satélite
               </h1>
               <p className={styles.subtitle}>
-                Rastro sólido (últimos 10 pontos) · rota restante tracejada · cobertura ativa no play.
+                Rastro sólido (últimos 10 pontos) · rota restante tracejada · cobertura orbital em torno do satélite.
               </p>
             </div>
           </header>
@@ -316,6 +325,16 @@ export default function RotaPage() {
               <RefreshCw size={15} className={isLoading ? styles.spinner : ''} />
               Consultar
             </button>
+
+            <button
+              type="button"
+              className={`${styles.coverageBtn} ${showCoverage ? styles.coverageBtnActive : ''}`}
+              onClick={() => setShowCoverage((v) => !v)}
+              disabled={!hasRoutes}
+              aria-pressed={showCoverage}
+            >
+              {showCoverage ? 'Ocultar cobertura' : 'Ver cobertura'}
+            </button>
           </div>
 
           <section className={styles.mapSection} aria-label="Mapa da rota">
@@ -323,15 +342,15 @@ export default function RotaPage() {
               className={`${styles.mapFrame} sprbDarkMap`}
               style={
                 {
-                  '--map-ocean-color': MAP_OCEAN_COLOR,
-                  '--map-land-color': MAP_LAND_COLOR,
-                  '--map-land-border-color': MAP_LAND_BORDER_COLOR,
+                  '--map-ocean-color': oceanColor,
+                  '--map-land-color': landColor,
+                  '--map-land-border-color': landBorderColor,
                 } as React.CSSProperties
               }
             >
               <MapContainer
                 center={BRAZIL_CENTER}
-                zoom={ROUTE_MAP_ZOOM}
+                zoom={routeMapZoom}
                 minZoom={2}
                 maxZoom={18}
                 worldCopyJump
@@ -349,7 +368,7 @@ export default function RotaPage() {
                     satelliteIds={satelliteIds}
                     activeSatelliteId={isAllSatellites(sateliteId) ? undefined : sateliteId}
                     pointIndex={playback.pointIndex}
-                    showCoverage
+                    showCoverage={showCoverage}
                   />
                 )}
               </MapContainer>

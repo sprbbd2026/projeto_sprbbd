@@ -1,16 +1,20 @@
-import { GeoJSON, useMap } from 'react-leaflet'
 import { useEffect, useState } from 'react'
+import { GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { MAP_ATTRIBUTION, MAP_LAND_BORDER_COLOR, MAP_LAND_BORDER_WEIGHT, MAP_LAND_COLOR } from '../../utils/mapBasemap'
+import { MAP_ATTRIBUTION } from '../../utils/mapBasemap'
 import { applyOceanBackground, loadMapGeoJson } from '../../utils/sprbGeoBasemap'
+import { useMapPreferencesStore } from '../../store/mapPreferencesStore'
 import './mapBasemap.module.css'
 
 function SprbOceanBackground() {
   const map = useMap()
+  const oceanColor = useMapPreferencesStore((s) => s.oceanColor)
+  const landColor = useMapPreferencesStore((s) => s.landColor)
+  const landBorderColor = useMapPreferencesStore((s) => s.landBorderColor)
 
   useEffect(() => {
     applyOceanBackground(map)
-  }, [map])
+  }, [map, oceanColor, landColor, landBorderColor])
 
   return null
 }
@@ -31,6 +35,8 @@ function SprbAttribution() {
 
 export function SprbMapTileLayer() {
   const [data, setData] = useState<GeoJSON.GeoJsonObject | null>(null)
+  const landColor = useMapPreferencesStore((s) => s.landColor)
+  const landBorderColor = useMapPreferencesStore((s) => s.landBorderColor)
 
   useEffect(() => {
     loadMapGeoJson()
@@ -46,19 +52,19 @@ export function SprbMapTileLayer() {
       <SprbAttribution />
       {data ? (
         <GeoJSON
+          key={`${landColor}-${landBorderColor}`}
           data={data}
-          className="sprb-land-layer"
           pathOptions={{
-            fillColor: MAP_LAND_COLOR,
+            fillColor: landColor,
             fillOpacity: 1,
-            color: MAP_LAND_BORDER_COLOR,
-            weight: MAP_LAND_BORDER_WEIGHT,
+            color: landBorderColor,
+            weight: 0.5,
           }}
           style={() => ({
-            fillColor: MAP_LAND_COLOR,
+            fillColor: landColor,
             fillOpacity: 1,
-            color: MAP_LAND_BORDER_COLOR,
-            weight: MAP_LAND_BORDER_WEIGHT,
+            color: landBorderColor,
+            weight: 0.5,
           })}
         />
       ) : null}

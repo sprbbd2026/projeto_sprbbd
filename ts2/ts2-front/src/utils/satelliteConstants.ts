@@ -1,4 +1,5 @@
 import type { SatellitePoint } from '../services/satelliteService'
+import { useMapPreferencesStore } from '../store/mapPreferencesStore'
 
 export const ALL_SATELLITES_VALUE = 'all'
 export const ALL_SATELLITES_LABEL = 'Todos os satélites'
@@ -34,6 +35,13 @@ export function dateToDayEnd(dateStr: string): string {
 }
 
 export function colorForSatellite(sateliteId: string | number, index = 0): string {
+  const { satelliteColorMode, satelliteCustomColors } = useMapPreferencesStore.getState()
+  const key = String(sateliteId)
+
+  if (satelliteColorMode === 'custom' && satelliteCustomColors[key]) {
+    return satelliteCustomColors[key]
+  }
+
   const n = Number(sateliteId)
   if (Number.isFinite(n) && n > 0) {
     return SATELLITE_COLORS[(n - 1) % SATELLITE_COLORS.length]

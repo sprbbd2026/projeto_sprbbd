@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, LargeBinary
+from sqlalchemy import Column, Index, Integer, String, Float, DateTime, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime, timezone
@@ -55,6 +55,9 @@ class Satelite(Base):
 
 class Telemetria(Base):
     __tablename__ = "telemetria"
+    __table_args__ = (
+        Index("ix_telemetria_sat_timestamp", "sat_id", "tlm_timestamp"),
+    )
 
     id_telemetria = Column("tlm_id", Integer, primary_key=True, index=True)
     id_satelite = Column("sat_id", Integer, ForeignKey("satelite.sat_id"), nullable=True)

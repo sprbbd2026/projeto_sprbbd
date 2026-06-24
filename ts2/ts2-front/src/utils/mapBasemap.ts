@@ -1,36 +1,22 @@
 /** Basemap compartilhado — Histórico e Rota (oceano configurável, terra cinza, sem rótulos). */
 
 import L from 'leaflet'
+import { DEFAULT_MAP_PREFERENCES, useMapPreferencesStore } from '../store/mapPreferencesStore'
 
 export const BRAZIL_CENTER: [number, number] = [-14.2, -51.9]
 
-/** Cor do oceano (fundo do mapa — áreas sem polígono de terra). */
-export const MAP_OCEAN_COLOR = '#2a2a2a'
-
-/** Cor dos continentes/países (camada GeoJSON). */
-export const MAP_LAND_COLOR = '#cccccc'
-
-export const MAP_LAND_BORDER_COLOR = '#ffffff'
+export const MAP_OCEAN_COLOR = DEFAULT_MAP_PREFERENCES.oceanColor
+export const MAP_LAND_COLOR = DEFAULT_MAP_PREFERENCES.landColor
+export const MAP_LAND_BORDER_COLOR = DEFAULT_MAP_PREFERENCES.landBorderColor
 export const MAP_LAND_BORDER_WEIGHT = 0.5
 
 export const MAP_GEOJSON_URL = '/world-countries.geo.json'
-
 export const MAP_ATTRIBUTION = '&copy; Natural Earth'
 
-/** Zoom fixo — aba Histórico (pontos fixos e cobertura). */
-export const HISTORICO_MAP_ZOOM = 3
-
-/** Zoom fixo — aba Rota. */
-export const ROUTE_MAP_ZOOM = 3
-
-/**
- * true = ajusta center/zoom aos dados (fitBounds).
- * false = mantém BRAZIL_CENTER + HISTORICO_MAP_ZOOM ao filtrar ou alternar cobertura.
- */
-export const HISTORICO_MAP_AUTO_FIT = false
-
-/** true = enquadra rota nos dados; false = mantém ROUTE_MAP_ZOOM fixo. */
-export const ROUTE_MAP_AUTO_FIT = false
+export const HISTORICO_MAP_ZOOM = DEFAULT_MAP_PREFERENCES.historicoMapZoom
+export const ROUTE_MAP_ZOOM = DEFAULT_MAP_PREFERENCES.routeMapZoom
+export const HISTORICO_MAP_AUTO_FIT = DEFAULT_MAP_PREFERENCES.historicoMapAutoFit
+export const ROUTE_MAP_AUTO_FIT = DEFAULT_MAP_PREFERENCES.routeMapAutoFit
 
 /** @deprecated Preferir HISTORICO_MAP_ZOOM */
 export const BRAZIL_ZOOM = HISTORICO_MAP_ZOOM
@@ -50,26 +36,64 @@ export const MAP_TILE_OPTIONS = {
   subdomains: 'abcd' as const,
 }
 
-/** fitBounds — Histórico */
 export const MAP_FIT_MAX_ZOOM_MULTI = 9
 export const MAP_FIT_MAX_ZOOM_SINGLE = 11
-
-/** fitBounds — Rota */
 export const ROUTE_FIT_MAX_ZOOM = 14
 
-/** Espessura das linhas de rota/trilha */
-export const ROUTE_TRAIL_WEIGHT = 1
-export const ROUTE_DASH_WEIGHT = 1
+export const ROUTE_TRAIL_WEIGHT = DEFAULT_MAP_PREFERENCES.routeTrailWeight
+export const ROUTE_DASH_WEIGHT = DEFAULT_MAP_PREFERENCES.routeDashWeight
 export const ROUTE_DASH_ARRAY = '10 8'
 
-/** Espessura — Histórico (modo pontos fixos) */
 export const HISTORICO_LINE_WEIGHT_MULTI = 1
 export const HISTORICO_LINE_WEIGHT_SINGLE = 1
 
-/** Aplica zoom/center do Histórico conforme HISTORICO_MAP_AUTO_FIT. */
+function prefs() {
+  return useMapPreferencesStore.getState()
+}
+
+export function getMapOceanColor(): string {
+  return prefs().oceanColor
+}
+
+export function getMapLandColor(): string {
+  return prefs().landColor
+}
+
+export function getMapLandBorderColor(): string {
+  return prefs().landBorderColor
+}
+
+export function getHistoricoMapZoom(): number {
+  return prefs().historicoMapZoom
+}
+
+export function getRouteMapZoom(): number {
+  return prefs().routeMapZoom
+}
+
+export function getHistoricoMapAutoFit(): boolean {
+  return prefs().historicoMapAutoFit
+}
+
+export function getRouteMapAutoFit(): boolean {
+  return prefs().routeMapAutoFit
+}
+
+export function getRouteTrailWeight(): number {
+  return prefs().routeTrailWeight
+}
+
+export function getRouteDashWeight(): number {
+  return prefs().routeDashWeight
+}
+
+/** Aplica zoom/center do Histórico conforme preferências. */
 export function applyHistoricoMapView(map: L.Map, latlngs: L.LatLngTuple[], multi: boolean): void {
-  if (!HISTORICO_MAP_AUTO_FIT || latlngs.length === 0) {
-    map.setView(BRAZIL_CENTER, HISTORICO_MAP_ZOOM, { animate: false })
+  const autoFit = getHistoricoMapAutoFit()
+  const zoom = getHistoricoMapZoom()
+
+  if (!autoFit || latlngs.length === 0) {
+    map.setView(BRAZIL_CENTER, zoom, { animate: false })
     return
   }
 
@@ -80,10 +104,13 @@ export function applyHistoricoMapView(map: L.Map, latlngs: L.LatLngTuple[], mult
   })
 }
 
-/** Aplica zoom/center da Rota conforme ROUTE_MAP_AUTO_FIT. */
+/** Aplica zoom/center da Rota conforme preferências. */
 export function applyRouteMapView(map: L.Map, latlngs: L.LatLngTuple[]): void {
-  if (!ROUTE_MAP_AUTO_FIT || latlngs.length === 0) {
-    map.setView(BRAZIL_CENTER, ROUTE_MAP_ZOOM, { animate: false })
+  const autoFit = getRouteMapAutoFit()
+  const zoom = getRouteMapZoom()
+
+  if (!autoFit || latlngs.length === 0) {
+    map.setView(BRAZIL_CENTER, zoom, { animate: false })
     return
   }
 
