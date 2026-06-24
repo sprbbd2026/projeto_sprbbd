@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 import Login from '../pages/Login'
 import { MapPage } from '../pages/Map.Page'
@@ -8,7 +8,6 @@ import { UsersDashboard } from '../pages/UsersDashboard'
 import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import Dashboard from '../pages/Dashboard'
-import { DashboardPage } from '../pages/Dashboard.Page'
 import HistoricoMapPage from '../pages/MapPage'
 import RotaPage from '../pages/RotaPage'
 import { SimuladorPage } from '../pages/SimuladorPage'
@@ -25,11 +24,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <DashboardPage />
-      </ProtectedRoute>
-    ),
+    element: <Navigate to="/" replace />,
   },
   {
     path: '/telemetry',
