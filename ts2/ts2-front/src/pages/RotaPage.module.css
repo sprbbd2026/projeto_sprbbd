@@ -136,6 +136,37 @@
   transform: none;
 }
 
+.coverageBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-bottom);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.coverageBtn:hover:not(:disabled) {
+  background: var(--surface);
+  border-color: #2563eb;
+}
+
+.coverageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.coverageBtnActive {
+  border-color: #0ea5e9;
+  background: rgb(14 165 233 / 0.12);
+  color: #0369a1;
+}
+
 .mapSection {
   position: relative;
   flex: 1;

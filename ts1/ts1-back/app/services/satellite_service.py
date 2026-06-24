@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 
 from app.db.models import Satelite, Constelacao
 from app.schemas.satellite_schema import SatelliteCreateRequest
+from app.services.efemeride_service import ensure_efemeride_for_satellite
 
 def get_all_satellites(db: Session, unassigned: bool = False):
     query = db.query(Satelite)
@@ -41,6 +42,8 @@ def create_satellite(db: Session, data: SatelliteCreateRequest) -> Satelite:
         sat_status=data.sat_status,
     )
     db.add(satellite)
+    db.flush()
+    ensure_efemeride_for_satellite(db, satellite)
     db.commit()
     db.refresh(satellite)
     return satellite

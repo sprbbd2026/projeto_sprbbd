@@ -5,7 +5,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Map, Filter, RefreshCw } from 'lucide-react'
 import { fetchHistoricoForSatellite } from '../utils/historicoFetch'
-import { loadSatelliteCatalog } from '../services/satelliteService'
+import { loadSatelliteCatalog, type SatellitePoint } from '../services/satelliteService'
 import type { Localizacao } from '../types/localizacao'
 import SatelliteMap from '../components/ui/SatelliteMap'
 import styles from './MapPage.module.css'
@@ -20,12 +20,15 @@ import {
   defaultHistoricoStartDate,
   isAllSatellites,
 } from '../utils/satelliteConstants'
-import type { SatellitePoint } from '../services/satelliteService'
+import { useMapPreferencesStore } from '../store/mapPreferencesStore'
 
 type FetchStatus = 'idle' | 'loading' | 'success' | 'error'
 type VisualizationMode = 'fixed' | 'coverage'
 
 export default function MapPage() {
+  const colorPrefsKey = useMapPreferencesStore((s) =>
+    JSON.stringify({ mode: s.satelliteColorMode, colors: s.satelliteCustomColors }),
+  )
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
   const [dataInicio, setDataInicio] = useState(defaultHistoricoStartDate)
@@ -231,7 +234,7 @@ export default function MapPage() {
             {status === 'success' && pontos.length > 0 && multi && (
               <div className={styles.legend} aria-label="Legenda por satélite">
                 {Array.from(new Set(pontos.map((p) => p.satelite_id))).map((id, idx) => (
-                  <div key={id} className={styles.legendItem}>
+                  <div key={`${id}-${colorPrefsKey}`} className={styles.legendItem}>
                     <span className={styles.legendDot} style={{ background: colorForSatellite(id, idx) }} />
                     SAT-{id}
                   </div>

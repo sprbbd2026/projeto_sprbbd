@@ -13,6 +13,7 @@ import { SelectedPointCard } from '../components/map/SelectedPointCard';
 import { AddLocationModal } from '../components/map/AddLocationModal';
 import { MapMarkers } from '../components/map/MapMarkers';
 import { ConnectedDevicesPanel } from '../components/map/ConnectedDevicesPanel';
+import { DashboardSummaryPanel } from '../components/map/DashboardSummaryPanel';
 import { RoutePanel } from '../components/map/RoutePanel';
 import { RoutePolyline } from '../components/map/RoutePolyline';
 import { usePolling } from '../hooks/usePolling';
@@ -112,6 +113,7 @@ export function MapPage() {
       </MapContainer>
 
       {/* Floating Overlays */}
+      <DashboardSummaryPanel />
       <ConnectedDevicesPanel
         collapsed={isDevicesPanelCollapsed}
         onToggle={() => setIsDevicesPanelCollapsed((current) => !current)}

@@ -16,15 +16,13 @@ import { colorForSatellite } from '../../utils/satelliteConstants'
 import {
   applyHistoricoMapView,
   BRAZIL_CENTER,
-  HISTORICO_MAP_ZOOM,
+  getHistoricoMapZoom,
   HISTORICO_LINE_WEIGHT_MULTI,
   HISTORICO_LINE_WEIGHT_SINGLE,
   MAP_ATTRIBUTION,
-  MAP_LAND_BORDER_COLOR,
-  MAP_LAND_COLOR,
-  MAP_OCEAN_COLOR,
 } from '../../utils/mapBasemap'
-import { attachSprbGeoBasemap } from '../../utils/sprbGeoBasemap'
+import { attachSprbGeoBasemap, applyOceanBackground, updateLandGeoJsonStyle } from '../../utils/sprbGeoBasemap'
+import { useMapPreferencesStore } from '../../store/mapPreferencesStore'
 import styles from './SatelliteMap.module.css'
 import './mapBasemap.module.css'
 
@@ -59,7 +57,8 @@ const satelliteIcon = L.divIcon({
   popupAnchor: [0, -14],
 })
 
-function collectFootprints(pontos: Localizacao[]): LatLngTuple[][] {
+/** Footprints geodésicos completos em cada ponto do histórico (sem recorte ao Brasil da API TS1). */
+function collectLocalFootprints(pontos: Localizacao[]): LatLngTuple[][] {
   return pontos.map((p) => calcularFootprint(p.latitude, p.longitude, p.altitude_km))
 }
 
@@ -193,14 +192,23 @@ export default function SatelliteMap({
   visualizationMode,
   onToggleVisualization,
   defaultCenter = BRAZIL_CENTER,
-  defaultZoom = HISTORICO_MAP_ZOOM,
+  defaultZoom = getHistoricoMapZoom(),
 }: SatelliteMapProps) {
   const mapRef = useRef<L.Map | null>(null)
+  const landLayerRef = useRef<L.GeoJSON | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
   const coverageCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const footprintsRef = useRef<LatLngTuple[][]>([])
   const redrawCoverageRef = useRef<(() => void) | null>(null)
+  const oceanColor = useMapPreferencesStore((s) => s.oceanColor)
+  const landColor = useMapPreferencesStore((s) => s.landColor)
+  const landBorderColor = useMapPreferencesStore((s) => s.landBorderColor)
+  const historicoZoom = useMapPreferencesStore((s) => s.historicoMapZoom)
+  const historicoAutoFit = useMapPreferencesStore((s) => s.historicoMapAutoFit)
+  const colorPrefsKey = useMapPreferencesStore((s) =>
+    JSON.stringify({ mode: s.satelliteColorMode, colors: s.satelliteCustomColors }),
+  )
 
   // Inicializa o mapa uma única vez
   useEffect(() => {
@@ -215,9 +223,13 @@ export default function SatelliteMap({
 
     L.control.attribution({ prefix: false }).addAttribution(MAP_ATTRIBUTION).addTo(map)
 
-    void attachSprbGeoBasemap(map).catch((error: unknown) => {
-      console.error('Erro ao carregar basemap GeoJSON:', error)
-    })
+    void attachSprbGeoBasemap(map)
+      .then((layer) => {
+        landLayerRef.current = layer
+      })
+      .catch((error: unknown) => {
+        console.error('Erro ao carregar basemap GeoJSON:', error)
+      })
 
     map.createPane('coveragePane')
     const coveragePane = map.getPane('coveragePane')
@@ -255,6 +267,13 @@ export default function SatelliteMap({
     }
   }, [defaultCenter, defaultZoom])
 
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    applyOceanBackground(map)
+    if (landLayerRef.current) updateLandGeoJsonStyle(landLayerRef.current)
+  }, [oceanColor, landColor, landBorderColor])
+
   // Atualiza camada visual conforme o modo selecionado
   useEffect(() => {
     const map = mapRef.current
@@ -264,10 +283,10 @@ export default function SatelliteMap({
     requestAnimationFrame(() => map.invalidateSize())
 
     group.clearLayers()
-    footprintsRef.current = []
-    redrawCoverageRef.current?.()
 
     if (pontos.length === 0) {
+      footprintsRef.current = []
+      redrawCoverageRef.current?.()
       map.setView(defaultCenter, defaultZoom)
       return
     }
@@ -279,18 +298,17 @@ export default function SatelliteMap({
     addRoutePolylines(group, groups, multi)
 
     if (visualizationMode === 'fixed') {
+      footprintsRef.current = []
+      redrawCoverageRef.current?.()
       addFixedModeMarkers(group, groups, multi)
     } else {
-      for (const [, satPontos] of groups) {
-        footprintsRef.current.push(...collectFootprints(satPontos))
-      }
-
+      footprintsRef.current = collectLocalFootprints(pontos)
       addCoverageModeMarkers(group, groups)
       redrawCoverageRef.current?.()
     }
 
     applyHistoricoMapView(map, allLatLngs as L.LatLngTuple[], multi)
-  }, [pontos, sateliteId, visualizationMode, defaultCenter, defaultZoom])
+  }, [pontos, sateliteId, visualizationMode, defaultCenter, defaultZoom, historicoZoom, historicoAutoFit, colorPrefsKey])
 
   return (
     <div style={{ position: 'relative' }}>
@@ -320,9 +338,9 @@ export default function SatelliteMap({
         className={`${styles.mapContainer} sprbDarkMap`}
         style={
           {
-            '--map-ocean-color': MAP_OCEAN_COLOR,
-            '--map-land-color': MAP_LAND_COLOR,
-            '--map-land-border-color': MAP_LAND_BORDER_COLOR,
+            '--map-ocean-color': oceanColor,
+            '--map-land-color': landColor,
+            '--map-land-border-color': landBorderColor,
           } as React.CSSProperties
         }
       />

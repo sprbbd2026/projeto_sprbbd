@@ -282,14 +282,25 @@ def cobertura_constelacao(db: Session, con_id: int) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _propagar_posicao(efe: "Efemeride") -> tuple[float, float, float, Polygon]:
+def _propagar_posicao(efe: "Efemeride") -> tuple[float, float, float, Polygon] | None:
     """Propaga a órbita e devolve (lat, lng, alt, footprint_geodesico_completo).
 
     O footprint retornado NÃO é recortado no Brasil: representa a área real
     coberta pelo satélite no solo. É usado pela descoberta de qual satélite
     atende uma região (US308 - Cenário 3).
     """
-    params = json.loads(efe.efe_params_keplerian)
+    if not efe.efe_params_keplerian:
+        return None
+
+    try:
+        params = json.loads(efe.efe_params_keplerian)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning(
+            "JSON invalido em efe_params_keplerian para efe_id=%s sat_id=%s",
+            efe.efe_id,
+            efe.sat_id,
+        )
+        return None
 
     # Simula efeméride recebida há poucos minutos
     delta_t_s = random.uniform(2 * 60, 8 * 60)
@@ -342,7 +353,11 @@ def satelites_que_atendem_regiao(db: Session, lat: float, lng: float) -> list[di
         if not efe:
             continue
 
-        s_lat, s_lng, s_alt, footprint = _propagar_posicao(efe)
+        propagado = _propagar_posicao(efe)
+        if propagado is None:
+            continue
+
+        s_lat, s_lng, s_alt, footprint = propagado
         if footprint.is_empty or not footprint.intersects(ponto):
             continue
 
