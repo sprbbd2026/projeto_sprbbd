@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
@@ -5,6 +7,7 @@ from app.db.database import get_db
 from app.dependencies import get_current_user
 from app.schemas.cobertura_schema import (
     CoberturaGeoJsonFeatureCollection,
+    CoberturaPosicoesResponse,
     CoberturaRegiaoResponse,
     RegiaoInfo,
 )
@@ -12,7 +15,9 @@ from app.services.cobertura_service import (
     cobertura_constelacao,
     cobertura_por_regiao,
     cobertura_satelite,
+    listar_posicoes_operacionais,
     listar_regioes,
+    _normalizar_instante,
 )
 
 router = APIRouter(prefix="/cobertura", tags=["Cobertura"])
@@ -104,7 +109,37 @@ def get_cobertura_por_regiao(
     ),
     lat: float | None = Query(None, description="Latitude da região monitorada."),
     lng: float | None = Query(None, description="Longitude da região monitorada."),
+    instante: datetime | None = Query(
+        None,
+        description="Instante da consulta (ISO 8601). Usa órbita IGSO alinhada ao TS2.",
+    ),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    return cobertura_por_regiao(db, regiao=regiao, lat=lat, lng=lng)
+    return cobertura_por_regiao(db, regiao=regiao, lat=lat, lng=lng, instante=instante)
+
+
+@router.get(
+    "/posicoes",
+    response_model=CoberturaPosicoesResponse,
+    summary="Posições orbitais dos satélites no instante",
+    description=(
+        "Retorna a posição propagada (órbita IGSO — mesmo modelo das rotas do TS2) "
+        "de cada satélite operacional no instante informado."
+    ),
+)
+def get_posicoes_cobertura(
+    instante: datetime | None = Query(
+        None,
+        description="Instante da consulta (ISO 8601). Padrão: agora (UTC).",
+    ),
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    ref = _normalizar_instante(instante)
+    satelites = listar_posicoes_operacionais(db, ref)
+    return {
+        "instante": ref.isoformat(),
+        "fonte_posicao": "orbita_igso_ts2",
+        "satelites": satelites,
+    }

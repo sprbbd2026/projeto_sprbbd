@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 
 from app.db.models import Satelite, Efemeride
+from app.services.orbit_igso import posicao_em as posicao_igso_em
 
 # Constantes orbitais
 GM = 398600.4418  # km³/s²
@@ -327,13 +328,61 @@ def listar_regioes() -> list[dict]:
     return [{"id": chave, **dados} for chave, dados in REGIOES_BRASIL.items()]
 
 
-def satelites_que_atendem_regiao(db: Session, lat: float, lng: float) -> list[dict]:
-    """Retorna os satélites operacionais cujo footprint cobre o ponto (lat, lng).
+def _normalizar_instante(instante: datetime | None) -> datetime:
+    if instante is None:
+        return datetime.now(timezone.utc)
+    if instante.tzinfo is None:
+        return instante.replace(tzinfo=timezone.utc)
+    return instante.astimezone(timezone.utc)
 
-    Propaga cada satélite operacional com efeméride e testa se o ponto
-    consultado está dentro da área de cobertura no solo.
-    """
+
+def _posicao_e_footprint_igso(
+    sat_id: int, instante: datetime
+) -> tuple[float, float, float, Polygon] | None:
+    lat, lng, alt = posicao_igso_em(sat_id, instante)
+    footprint_coords = _calcular_footprint(lat, lng, alt)
+    return lat, lng, alt, Polygon(footprint_coords)
+
+
+def listar_posicoes_operacionais(db: Session, instante: datetime | None = None) -> list[dict]:
+    """Posições IGSO de todos os satélites operacionais no instante (alinhado ao TS2)."""
+    ref = _normalizar_instante(instante)
+    satelites = (
+        db.query(Satelite)
+        .filter(Satelite.sat_status == "operacional")
+        .order_by(Satelite.sat_id)
+        .all()
+    )
+    resultado: list[dict] = []
+    for sat in satelites:
+        propagado = _posicao_e_footprint_igso(sat.sat_id, ref)
+        if propagado is None:
+            continue
+        lat, lng, alt, _ = propagado
+        resultado.append({
+            "sat_id": sat.sat_id,
+            "con_id": sat.con_id,
+            "sat_status": sat.sat_status,
+            "posicao": {
+                "lat": round(lat, 4),
+                "lng": round(lng, 4),
+                "alt_km": round(alt, 1),
+            },
+        })
+    return resultado
+
+
+def satelites_que_atendem_regiao(
+    db: Session,
+    lat: float,
+    lng: float,
+    instante: datetime | None = None,
+    *,
+    usar_orbita_igso: bool = False,
+) -> list[dict]:
+    """Retorna os satélites operacionais cujo footprint cobre o ponto (lat, lng)."""
     ponto = Point(lng, lat)
+    ref = _normalizar_instante(instante)
 
     satelites = (
         db.query(Satelite)
@@ -344,20 +393,25 @@ def satelites_que_atendem_regiao(db: Session, lat: float, lng: float) -> list[di
 
     cobrindo: list[dict] = []
     for sat in satelites:
-        efe = (
-            db.query(Efemeride)
-            .filter(Efemeride.sat_id == sat.sat_id)
-            .order_by(Efemeride.efe_timestamp_ref.desc())
-            .first()
-        )
-        if not efe:
-            continue
+        if usar_orbita_igso or instante is not None:
+            propagado = _posicao_e_footprint_igso(sat.sat_id, ref)
+            if propagado is None:
+                continue
+            s_lat, s_lng, s_alt, footprint = propagado
+        else:
+            efe = (
+                db.query(Efemeride)
+                .filter(Efemeride.sat_id == sat.sat_id)
+                .order_by(Efemeride.efe_timestamp_ref.desc())
+                .first()
+            )
+            if not efe:
+                continue
+            propagado = _propagar_posicao(efe)
+            if propagado is None:
+                continue
+            s_lat, s_lng, s_alt, footprint = propagado
 
-        propagado = _propagar_posicao(efe)
-        if propagado is None:
-            continue
-
-        s_lat, s_lng, s_alt, footprint = propagado
         if footprint.is_empty or not footprint.intersects(ponto):
             continue
 
@@ -380,6 +434,7 @@ def cobertura_por_regiao(
     regiao: str | None = None,
     lat: float | None = None,
     lng: float | None = None,
+    instante: datetime | None = None,
 ) -> dict:
     """US308 — identifica o(s) satélite(s) que atende(m) uma região monitorada.
 
@@ -412,9 +467,13 @@ def cobertura_por_regiao(
             detail="Informe 'regiao' (nome) ou 'lat' e 'lng'.",
         )
 
-    satelites = satelites_que_atendem_regiao(db, lat, lng)
+    ref = _normalizar_instante(instante)
+    usar_igso = instante is not None
+    satelites = satelites_que_atendem_regiao(db, lat, lng, ref, usar_orbita_igso=usar_igso)
 
     return {
+        "instante": ref.isoformat(),
+        "fonte_posicao": "orbita_igso_ts2" if usar_igso else "efemeride",
         "regiao": regiao_info,
         "ponto": {"lat": lat, "lng": lng},
         "coberta": len(satelites) > 0,

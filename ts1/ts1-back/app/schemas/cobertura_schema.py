@@ -29,10 +29,18 @@ class PontoConsulta(BaseModel):
 
 
 class CoberturaRegiaoResponse(BaseModel):
+    instante: Optional[str] = None
+    fonte_posicao: Optional[str] = None
     regiao: Optional[RegiaoInfo] = None
     ponto: PontoConsulta
     coberta: bool
     total: int
+    satelites: list[SateliteCobertura]
+
+
+class CoberturaPosicoesResponse(BaseModel):
+    instante: str
+    fonte_posicao: str = "orbita_igso_ts2"
     satelites: list[SateliteCobertura]
 
 
