@@ -22,3 +22,30 @@ services:
     envVars:
       - key: VITE_API_URL
         sync: false
+
+  - type: web
+    name: ts2-back
+    runtime: python
+    rootDir: ts2/ts2-back
+    buildCommand: pip install uv && uv sync
+    startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    paths:
+      - ts2/ts2-back/**
+      - render.yaml
+
+  - type: web
+    name: ts2-front
+    runtime: static
+    rootDir: ts2/ts2-front
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    paths:
+      - ts2/ts2-front/**
+      - render.yaml
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_TS1_API_URL
+        sync: false

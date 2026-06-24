@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react'
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { routingService, type Coordenada, type RotaResponse, type GeocodeResult } from '../services/routingService'
+import { routingService, type Coordenada, type RotaResponse } from '../services/routingService'
+import { useMapStore } from '../store/mapStore'
 import 'leaflet/dist/leaflet.css'
 
 type Cenario = 'ifood' | 'waze' | 'mercadolivre'
@@ -44,6 +45,20 @@ function MapClickHandler({ onClick }: { onClick: (latlng: L.LatLng) => void }) {
   return null
 }
 
+// ---- Componente que ajusta o zoom pra mostrar a rota toda ----
+function FitRouteBounds({ geometry }: { geometry: [number, number][] | null }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!geometry || geometry.length === 0) return
+
+    const bounds = L.latLngBounds(geometry.map(([lat, lng]) => [lat, lng] as [number, number]))
+    map.fitBounds(bounds, { padding: [50, 50], animate: true })
+  }, [geometry, map])
+
+  return null
+}
+
 // ---- Componente de busca com autocomplete ----
 function SearchInput({
   placeholder,
@@ -56,7 +71,7 @@ function SearchInput({
   value?: string
   onChangeText: (text: string) => void
 }) {
-  const [results, setResults] = useState<GeocodeResult[]>([])
+  const [results, setResults] = useState<{ label: string; sublabel?: string; lat: number; lng: number; isMarker: boolean }[]>([])
   const [showResults, setShowResults] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
@@ -68,13 +83,32 @@ function SearchInput({
       setShowResults(false)
       return
     }
+
+    // Busca imediata nos marcadores salvos
+    const { locations } = useMapStore.getState()
+    const q = text.toLowerCase()
+    const markerMatches = locations
+      .filter((loc) => loc.name.toLowerCase().includes(q))
+      .slice(0, 5)
+      .map((loc) => ({ label: loc.name, sublabel: loc.category, lat: loc.lat, lng: loc.lng, isMarker: true }))
+
+    setResults(markerMatches)
+    if (markerMatches.length > 0) setShowResults(true)
+
     debounceRef.current = setTimeout(async () => {
       try {
         const res = await routingService.geocode(text)
-        setResults(res)
+        const geocodeResults = res.slice(0, 5).map((r) => ({
+          label: r.display_name.split(',')[0],
+          sublabel: r.display_name.split(',').slice(1, 3).join(',').trim(),
+          lat: r.lat,
+          lng: r.lng,
+          isMarker: false,
+        }))
+        setResults([...markerMatches, ...geocodeResults])
         setShowResults(true)
       } catch {
-        setResults([])
+        setResults(markerMatches)
       }
     }, 400)
   }
@@ -95,14 +129,16 @@ function SearchInput({
           {results.map((r, i) => (
             <li
               key={i}
-              className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50"
+              className="cursor-pointer px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2"
               onMouseDown={() => {
-                onSelect({ lat: r.lat, lng: r.lng }, r.display_name)
-                onChangeText(r.display_name.slice(0, 60))
+                onSelect({ lat: r.lat, lng: r.lng }, r.label)
+                onChangeText(r.label)
                 setShowResults(false)
               }}
             >
-              {r.display_name}
+              {r.isMarker && <span className="text-red-500 text-xs">📍</span>}
+              <span className="truncate">{r.label}</span>
+              {r.sublabel && <span className="text-xs text-gray-400 truncate ml-auto">{r.sublabel}</span>}
             </li>
           ))}
         </ul>
@@ -284,8 +320,17 @@ export function SimuladorPage() {
     if (!rota || !rota.geometry.length) return []
 
     if (cenario === 'ifood' && rota.legs.length === 2 && ifoodRestaurante) {
-      // Divide a geometria em 2 trechos
-      const midIdx = Math.floor(rota.geometry.length * (rota.legs[0].distance_km / rota.distance_km))
+      // Encontra o ponto da geometria mais próximo do restaurante para dividir
+      let minDist = Infinity
+      let midIdx = 0
+      for (let i = 0; i < rota.geometry.length; i++) {
+        const [lat, lng] = rota.geometry[i]
+        const dist = Math.pow(lat - ifoodRestaurante.lat, 2) + Math.pow(lng - ifoodRestaurante.lng, 2)
+        if (dist < minDist) {
+          minDist = dist
+          midIdx = i
+        }
+      }
       const seg1 = rota.geometry.slice(0, midIdx + 1) as [number, number][]
       const seg2 = rota.geometry.slice(midIdx) as [number, number][]
       return [
@@ -513,6 +558,7 @@ export function SimuladorPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
           <MapClickHandler onClick={handleMapClick} />
+          <FitRouteBounds geometry={rota?.geometry ?? null} />
 
           {/* Polylines */}
           {getPolylineSegments().map((seg, i) => (

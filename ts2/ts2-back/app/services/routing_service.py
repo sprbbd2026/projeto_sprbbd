@@ -30,13 +30,59 @@ def _round_coord(val: float, decimals: int = 4) -> float:
     return round(val, decimals)
 
 
+def _haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """Calcula distância em km entre dois pontos usando Haversine."""
+    import math
+    
+    to_rad = lambda deg: deg * math.pi / 180
+    earth_radius_km = 6371
+    
+    d_lat = to_rad(lat2 - lat1)
+    d_lng = to_rad(lng2 - lng1)
+    lat1_rad = to_rad(lat1)
+    lat2_rad = to_rad(lat2)
+    
+    a = (
+        math.sin(d_lat / 2) ** 2 +
+        math.sin(d_lng / 2) ** 2 * math.cos(lat1_rad) * math.cos(lat2_rad)
+    )
+    c = 2 * math.asin(math.sqrt(a))
+    return earth_radius_km * c
+
+
 # ----------- Geocoding (Nominatim) -----------
 
 
-async def geocode_search(query: str, db: Session, no_cache: bool = False) -> list[dict]:
-    """Busca endereço por texto. Retorna lista de resultados com lat/lng/display_name."""
+async def geocode_search(
+    query: str,
+    db: Session,
+    no_cache: bool = False,
+    lat: float | None = None,
+    lng: float | None = None,
+    max_distance_km: float = 500.0,
+) -> list[dict]:
+    """Busca endereço por texto com viewbox geográfico + filtro Haversine.
+    
+    Usa viewbox+bounded=1 do Nominatim para restringir resultados à região,
+    e depois aplica filtro Haversine como safety net.
+    """
+    # Referência: usa coordenadas passadas ou fallback SJC
+    reference_lat = lat if lat is not None else -23.1813
+    reference_lng = lng if lng is not None else -45.8879
+
+    # Calcula viewbox a partir do raio (graus aprox.)
+    import math
+    lat_delta = max_distance_km / 111.0
+    lng_delta = max_distance_km / (111.0 * math.cos(math.radians(reference_lat)))
+    viewbox = (
+        f"{reference_lng - lng_delta},{reference_lat - lat_delta},"
+        f"{reference_lng + lng_delta},{reference_lat + lat_delta}"
+    )
+
+    # Cache key inclui localização (resultados diferem por região)
     normalized = query.strip().lower()
-    query_hash = _hash_key(normalized)
+    cache_key_str = f"{normalized}|{_round_coord(reference_lat, 1)}|{_round_coord(reference_lng, 1)}"
+    query_hash = _hash_key(cache_key_str)
 
     if not no_cache:
         cached = (
@@ -52,19 +98,29 @@ async def geocode_search(query: str, db: Session, no_cache: bool = False) -> lis
                 db.delete(cached)
                 db.commit()
 
-    async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
-        resp = await client.get(
-            f"{NOMINATIM_BASE_URL}/search",
-            params={
-                "q": query,
-                "format": "json",
-                "limit": 5,
-                "countrycodes": "br",
-                "addressdetails": 1,
-            },
-            headers={"User-Agent": USER_AGENT},
-        )
-        resp.raise_for_status()
+    try:
+        async with httpx.AsyncClient(timeout=HTTP_TIMEOUT) as client:
+            resp = await client.get(
+                f"{NOMINATIM_BASE_URL}/search",
+                params={
+                    "q": query,
+                    "format": "json",
+                    "limit": 50,
+                    "countrycodes": "br",
+                    "addressdetails": 1,
+                    "viewbox": viewbox,
+                    "bounded": 1,
+                },
+                headers={"User-Agent": USER_AGENT},
+            )
+            resp.raise_for_status()
+            raw_data = resp.json()
+    except (httpx.HTTPStatusError, httpx.RequestError) as e:
+        logger.error(f"Nominatim error: {e}")
+        return []
+    except Exception as e:
+        logger.error(f"Nominatim unexpected error: {e}")
+        return []
 
     results = [
         {
@@ -74,7 +130,13 @@ async def geocode_search(query: str, db: Session, no_cache: bool = False) -> lis
             "type": item.get("type", ""),
             "address": item.get("address", {}),
         }
-        for item in resp.json()
+        for item in raw_data
+    ]
+
+    # Filtro Haversine como safety net (viewbox é retangular, queremos circular)
+    results = [
+        r for r in results
+        if _haversine_distance(reference_lat, reference_lng, r["lat"], r["lng"]) <= max_distance_km
     ]
 
     new_cache = CacheGeocode(

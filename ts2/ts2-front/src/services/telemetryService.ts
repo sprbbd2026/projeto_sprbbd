@@ -1,4 +1,4 @@
-import { api } from './api'
+import { ts1Api } from './ts1Api'
 
 export interface Telemetry {
   id: number
@@ -9,7 +9,9 @@ export interface Telemetry {
   data_hora: string
 }
 
-export async function fetchTelemetry(): Promise<Telemetry[]> {
-  const { data } = await api.get<Telemetry[]>('/telemetry')
+export async function fetchTelemetry(satId: number): Promise<Telemetry[]> {
+  const { data } = await ts1Api.get<Telemetry[]>('/telemetria/dashboard', {
+    params: { sat_id: satId },
+  })
   return data
 }

@@ -2,7 +2,6 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from '../components/auth/ProtectedRoute'
 import Login from '../pages/Login'
 import { MapPage } from '../pages/Map.Page'
-import { DashboardPage } from '../pages/Dashboard.Page'
 import { PointsDashboard } from '../pages/PointsDashboard'
 import { PointsSatellites } from '../pages/PointsSatellite'
 import { UsersDashboard } from '../pages/UsersDashboard'
@@ -20,14 +19,6 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <MapPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: '/dashboard',
-    element: (
-      <ProtectedRoute>
-        <DashboardPage />
       </ProtectedRoute>
     ),
   },
