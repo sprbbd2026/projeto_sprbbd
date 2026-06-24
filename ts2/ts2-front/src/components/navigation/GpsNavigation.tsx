@@ -86,6 +86,29 @@ function MapFollower({
   return null
 }
 
+function FitRouteBounds({
+  geometry,
+  fitKey,
+  enabled,
+}: {
+  geometry: [number, number][] | null
+  fitKey: number
+  enabled: boolean
+}) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!enabled || !geometry || geometry.length === 0 || fitKey === 0) return
+
+    const bounds = L.latLngBounds(
+      geometry.map(([lat, lng]) => [lat, lng] as [number, number]),
+    )
+    map.fitBounds(bounds, { padding: [56, 56], animate: true })
+  }, [enabled, fitKey, geometry, map])
+
+  return null
+}
+
 function AddressField({
   label,
   value,
@@ -195,6 +218,7 @@ export function GpsNavigation({ embedded: _embedded = false }: GpsNavigationProp
   const [position, setPosition] = useState<Coordenada | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
   const [useLiveGpsOrigin, setUseLiveGpsOrigin] = useState(false)
+  const [routeFitKey, setRouteFitKey] = useState(0)
   const [routeSnapshot, setRouteSnapshot] = useState<{
     origin: Coordenada
     destination: Coordenada
@@ -314,6 +338,7 @@ export function GpsNavigation({ embedded: _embedded = false }: GpsNavigationProp
       setRoute(result)
       setRouteSnapshot({ origin: { ...origin }, destination: { ...destination } })
       setPosition({ ...origin })
+      setRouteFitKey((key) => key + 1)
     } catch (err: unknown) {
       setError(getRequestErrorMessage(err))
     } finally {
@@ -535,6 +560,11 @@ export function GpsNavigation({ embedded: _embedded = false }: GpsNavigationProp
             attribution='&copy; OpenStreetMap'
           />
           <MapFollower position={position} navigating={navigating} />
+          <FitRouteBounds
+            geometry={route?.geometry ?? null}
+            fitKey={routeFitKey}
+            enabled={!navigating}
+          />
 
           {route && !route.error && (
             <Polyline
