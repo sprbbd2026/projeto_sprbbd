@@ -36,8 +36,21 @@ tags_metadata = [
     {"name": "Satellites", "description": "CRUD de satélites."},
     {"name": "Constellations", "description": "CRUD de constelações."},
     {"name": "Constelacoes", "description": "Listagem de constelações (endpoint legado em PT)."},
-    {"name": "Cobertura", "description": "Cobertura por satélite, constelação e região (US308)."},
-    {"name": "Dashboard", "description": "Indicadores consolidados do painel."},
+    {
+        "name": "Cobertura",
+        "description": (
+            "Geometrias de cobertura orbital por satélite (US307) e consulta "
+            "por região/coordenada (US308). Endpoint principal US307: "
+            "`GET /cobertura/satelite/{sat_id}`."
+        ),
+    },
+    {
+        "name": "Dashboard",
+        "description": (
+            "Indicadores consolidados do painel operacional (US304). "
+            "Endpoint principal: `GET /dashboard/summary`."
+        ),
+    },
 ]
 
 app = FastAPI(
