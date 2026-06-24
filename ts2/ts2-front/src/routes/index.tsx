@@ -8,6 +8,7 @@ import { UsersDashboard } from '../pages/UsersDashboard'
 import { SettingsPage } from '../pages/SettingsPage'
 import { UnauthorizedPage } from '../pages/UnauthorizedPage'
 import Dashboard from '../pages/Dashboard'
+import { DashboardPage } from '../pages/Dashboard.Page'
 import HistoricoMapPage from '../pages/MapPage'
 import RotaPage from '../pages/RotaPage'
 import { SimuladorPage } from '../pages/SimuladorPage'
@@ -19,6 +20,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <MapPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/dashboard',
+    element: (
+      <ProtectedRoute>
+        <DashboardPage />
       </ProtectedRoute>
     ),
   },
