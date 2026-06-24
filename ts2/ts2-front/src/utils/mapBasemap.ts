@@ -1,8 +1,21 @@
-/** Basemap compartilhado — Histórico e Rota (mar #000, terra #ccc, sem rótulos). */
+/** Basemap compartilhado — Histórico e Rota (oceano configurável, terra cinza, sem rótulos). */
 
 import L from 'leaflet'
 
 export const BRAZIL_CENTER: [number, number] = [-14.2, -51.9]
+
+/** Cor do oceano (fundo do mapa — áreas sem polígono de terra). */
+export const MAP_OCEAN_COLOR = '#2a2a2a'
+
+/** Cor dos continentes/países (camada GeoJSON). */
+export const MAP_LAND_COLOR = '#cccccc'
+
+export const MAP_LAND_BORDER_COLOR = '#ffffff'
+export const MAP_LAND_BORDER_WEIGHT = 0.5
+
+export const MAP_GEOJSON_URL = '/world-countries.geo.json'
+
+export const MAP_ATTRIBUTION = '&copy; Natural Earth'
 
 /** Zoom fixo — aba Histórico (pontos fixos e cobertura). */
 export const HISTORICO_MAP_ZOOM = 3
@@ -28,8 +41,8 @@ export const ROUTE_INITIAL_ZOOM = ROUTE_MAP_ZOOM
 export const MAP_TILE_URL =
   'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png'
 
-export const MAP_TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+/** @deprecated Basemap usa GeoJSON; mantido apenas para referência. */
+export const MAP_TILE_ATTRIBUTION = MAP_ATTRIBUTION
 
 export const MAP_TILE_OPTIONS = {
   attribution: MAP_TILE_ATTRIBUTION,

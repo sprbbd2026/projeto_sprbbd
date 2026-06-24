@@ -1,12 +1,17 @@
-/* Basemap SPRB — oceano #000, continentes ~#ccc (ajuste fino no filter) */
-:global(.sprbDarkMap .leaflet-tile-pane) {
-  filter: invert(1) hue-rotate(195deg) brightness(0.98) contrast(1.08) saturate(0.06);
-}
-
-:global(.sprbDarkMap) {
-  background: #000;
-}
-
+/* Basemap SPRB — oceano = fundo (--map-ocean-color); terra = GeoJSON (MAP_LAND_COLOR) */
+:global(.sprbDarkMap),
+:global(.sprbDarkMap.leaflet-container),
 :global(.sprbDarkMap .leaflet-container) {
-  background: #000;
+  background-color: var(--map-ocean-color, #2a2a2a) !important;
+}
+
+:global(.sprbDarkMap .leaflet-pane) {
+  background: transparent;
+}
+
+:global(.sprbDarkMap .sprb-land-layer path) {
+  fill: var(--map-land-color, #797979);
+  fill-opacity: 1;
+  stroke: var(--map-land-border-color, #949494);
+  stroke-width: 0.5px;
 }

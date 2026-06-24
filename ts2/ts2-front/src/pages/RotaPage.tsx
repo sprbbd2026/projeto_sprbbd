@@ -24,7 +24,7 @@ import {
   defaultTodayDate,
   isAllSatellites,
 } from '../utils/satelliteConstants'
-import { BRAZIL_CENTER, ROUTE_MAP_ZOOM } from '../utils/mapBasemap'
+import { BRAZIL_CENTER, MAP_LAND_BORDER_COLOR, MAP_LAND_COLOR, MAP_OCEAN_COLOR, ROUTE_MAP_ZOOM } from '../utils/mapBasemap'
 import styles from './RotaPage.module.css'
 import '../components/ui/mapBasemap.module.css'
 
@@ -319,13 +319,23 @@ export default function RotaPage() {
           </div>
 
           <section className={styles.mapSection} aria-label="Mapa da rota">
-            <div className={`${styles.mapFrame} sprbDarkMap`}>
+            <div
+              className={`${styles.mapFrame} sprbDarkMap`}
+              style={
+                {
+                  '--map-ocean-color': MAP_OCEAN_COLOR,
+                  '--map-land-color': MAP_LAND_COLOR,
+                  '--map-land-border-color': MAP_LAND_BORDER_COLOR,
+                } as React.CSSProperties
+              }
+            >
               <MapContainer
                 center={BRAZIL_CENTER}
                 zoom={ROUTE_MAP_ZOOM}
                 minZoom={2}
                 maxZoom={18}
                 worldCopyJump
+                attributionControl={false}
                 style={{ height: '100%', width: '100%' }}
                 scrollWheelZoom
                 className={styles.leafletMap}

@@ -160,13 +160,13 @@
 
 .leafletMap {
   z-index: 1;
-  background: #0c1222;
+  background-color: var(--map-ocean-color, #2a2a2a) !important;
   height: 100%;
 }
 
 .leafletMap :global(.leaflet-container) {
   font-family: inherit;
-  background: #0c1222;
+  background-color: var(--map-ocean-color, #2a2a2a) !important;
   height: 100% !important;
 }
 

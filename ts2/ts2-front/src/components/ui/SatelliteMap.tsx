@@ -19,9 +19,12 @@ import {
   HISTORICO_MAP_ZOOM,
   HISTORICO_LINE_WEIGHT_MULTI,
   HISTORICO_LINE_WEIGHT_SINGLE,
-  MAP_TILE_ATTRIBUTION,
-  MAP_TILE_URL,
+  MAP_ATTRIBUTION,
+  MAP_LAND_BORDER_COLOR,
+  MAP_LAND_COLOR,
+  MAP_OCEAN_COLOR,
 } from '../../utils/mapBasemap'
+import { attachSprbGeoBasemap } from '../../utils/sprbGeoBasemap'
 import styles from './SatelliteMap.module.css'
 import './mapBasemap.module.css'
 
@@ -207,13 +210,14 @@ export default function SatelliteMap({
       center: defaultCenter,
       zoom: defaultZoom,
       zoomControl: true,
+      attributionControl: false,
     })
 
-    L.tileLayer(MAP_TILE_URL, {
-      attribution: MAP_TILE_ATTRIBUTION,
-      maxZoom: 19,
-      subdomains: 'abcd',
-    }).addTo(map)
+    L.control.attribution({ prefix: false }).addAttribution(MAP_ATTRIBUTION).addTo(map)
+
+    void attachSprbGeoBasemap(map).catch((error: unknown) => {
+      console.error('Erro ao carregar basemap GeoJSON:', error)
+    })
 
     map.createPane('coveragePane')
     const coveragePane = map.getPane('coveragePane')
@@ -311,7 +315,17 @@ export default function SatelliteMap({
       >
         {visualizationMode === 'fixed' ? 'Ver cobertura' : 'Ver pontos fixos'}
       </button>
-      <div ref={containerRef} className={`${styles.mapContainer} sprbDarkMap`} />
+      <div
+        ref={containerRef}
+        className={`${styles.mapContainer} sprbDarkMap`}
+        style={
+          {
+            '--map-ocean-color': MAP_OCEAN_COLOR,
+            '--map-land-color': MAP_LAND_COLOR,
+            '--map-land-border-color': MAP_LAND_BORDER_COLOR,
+          } as React.CSSProperties
+        }
+      />
     </div>
   )
 }
