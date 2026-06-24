@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timedelta, timezone
+from types import SimpleNamespace
 from typing import Optional
 
 from fastapi import HTTPException
@@ -7,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.db import models
-from app.db.orbit_demo import generate_orbit_points
+from app.db.orbit_demo import DEMO_INTERVAL_MINUTES, generate_orbit_points
 from app.schemas.localizacao_schema import LocalizacaoCreate
 
 logging.basicConfig(level=logging.INFO)
@@ -147,6 +148,31 @@ def _subsample_pontos(pontos: list, max_points: int) -> list:
     return [pontos[int(round(i * step))] for i in range(max_points)]
 
 
+def _generate_rota_pontos(
+    satelite_id: str,
+    inicio: datetime,
+    fim: datetime,
+) -> list:
+    """Propaga órbita IGSO para o período pedido (fallback quando o banco está vazio)."""
+    interval = timedelta(minutes=DEMO_INTERVAL_MINUTES)
+    total_sec = max((fim - inicio).total_seconds(), interval.total_seconds())
+    num_points = int(total_sec / interval.total_seconds()) + 1
+    num_points = max(min(num_points, 5000), 2)
+
+    raw = generate_orbit_points(satelite_id, inicio, num_points=num_points)
+    return [
+        SimpleNamespace(
+            latitude=lat,
+            longitude=lng,
+            altitude_km=alt,
+            velocidade_kmh=vel,
+            data_hora=momento,
+        )
+        for lat, lng, alt, vel, momento in raw
+        if inicio <= momento <= fim
+    ]
+
+
 def get_rota(
     db: Session,
     satelite_id: str,
@@ -160,8 +186,13 @@ def get_rota(
             detail="O timestamp inicial deve ser anterior ao timestamp final.",
         )
 
+    inicio, fim = _default_period(data_inicio, data_fim)
     pontos = get_historico_localizacao(db, satelite_id, data_inicio, data_fim, limit=5000)
-    pontos = _subsample_pontos(pontos, limit)
+    gerado = False
+
+    if not pontos:
+        pontos = _generate_rota_pontos(satelite_id, inicio, fim)
+        gerado = bool(pontos)
 
     if not pontos:
         raise HTTPException(
@@ -169,7 +200,8 @@ def get_rota(
             detail="Nenhuma localização registrada para este alvo no período informado.",
         )
 
-    return pontos, False
+    pontos = _subsample_pontos(pontos, limit)
+    return pontos, gerado
 
 
 def list_satelites(db: Session):

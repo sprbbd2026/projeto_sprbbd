@@ -1,4 +1,4 @@
-"""Seed demo — 5 satélites IGSO regionais (figura-8), dia corrente."""
+"""Seed demo — SAT-1 a SAT-5, trilha IGSO (figura-8), últimos 10 dias."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -36,7 +36,7 @@ def _seed_all(db: Session) -> bool:
             db.add(
                 models.Telemetria(
                     satelite_id=sat_num,
-                    cpu_percentual=35.0 + j * 1.5 + int(sat_num) * 3,
+                    cpu_percentual=35.0 + j * 1.5,
                     temperatura_celsius=21.5 + j * 0.25,
                     status="operacional",
                     data_hora=now - timedelta(hours=j * 7),

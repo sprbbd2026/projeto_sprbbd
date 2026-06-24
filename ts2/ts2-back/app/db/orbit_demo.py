@@ -1,16 +1,15 @@
 """
-Trilha IGSO regional — órbita inclinada geossíncrona (figura-8).
+Trilha IGSO regional — padrão QZSS (figura-8 assimétrica sobre o Brasil).
 
-Referências:
-- QZSS (Japão): IGSO, i≈43°, e≈0,075, período sidéreo (~23h56m), trilha em figura-8
-  assimétrica com permanência prolongada sobre a região alvo.
-- CelesTrak / geossíncrona inclinada: inclinação + excentricidade → analema (figura-8)
-  no ponto subsatélite; amplitude latitudinal ≈ inclinação.
+Modelo: órbita inclinada geossíncrona (IGSO), como o QZSS japonês:
+  - a ≈ 42.176 km, e ≈ 0,07–0,10, i ≈ 43°, ω ≈ 90° (permanência no hemisfério sul)
+  - Trilha em figura-8 assimétrica (laço sul maior que o laço norte)
+  - Cada satélite com elementos ligeiramente distintos (planos deslocados ~1°–2°)
+  - Propagação kepleriana → ponto subsatélite (lat/lng/alt/vel)
 """
 
 from __future__ import annotations
 
-import hashlib
 import math
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -18,46 +17,84 @@ from zoneinfo import ZoneInfo
 
 TZ_BR = ZoneInfo("America/Sao_Paulo")
 
-# Constantes físicas (Terra WGS84 simplificada)
 MU_EARTH_KM3_S2 = 398_600.4418
 R_EARTH_KM = 6_378.137
 OMEGA_EARTH_RAD_S = 7.292_115_0e-5
 SIDEREAL_DAY_SEC = 86_164.0905
 
-DEMO_DAYS = 1
+DEMO_DAYS = 10
 DEMO_INTERVAL_MINUTES = 30
-DEMO_POINTS_PER_SAT = 24 * 2  # 48 pontos (00:00 … 23:30)
+DEMO_POINTS_PER_SAT = DEMO_DAYS * 24 * 2  # 480 pontos (10 dias × 48/dia)
 
-# IGSO tipo QZSS — ajustado para permanência sobre o hemisfério sul (Brasil)
-A_SEMI_KM = (MU_EARTH_KM3_S2 * (SIDEREAL_DAY_SEC / (2 * math.pi)) ** 2) ** (1 / 3)
-ECCENTRICITY = 0.078
-INCLINATION_DEG = 33.0
-ARG_PERIGEE_DEG = 90.0  # apogeu no hemisfério sul → maior permanência sobre o Brasil
+A_SEMI_KM = 42_176.0  # semi-eixo maior geossíncrono (QZSS)
 
 
 @dataclass(frozen=True)
 class SatelliteOrbit:
     sat_id: str
-    lon_center_deg: float
-    raan_deg: float
-    M0_deg: float
     region: str
+    eccentricity: float
+    inclination_deg: float
+    raan_deg: float
+    arg_perigee_deg: float
+    M0_deg: float
+    phase_offset_sec: float  # fase inicial pseudo-aleatória na figura-8
 
 
-def _phase_offset_deg(sat_id: str) -> float:
-    """Fase inicial pseudo-aleatória (reprodutível) — ponto de partida na figura-8."""
-    h = hashlib.md5(f"igso-br-{sat_id}".encode()).hexdigest()
-    return int(h[:8], 16) / 0xFFFFFFFF * 360.0
-
-
-# Cinco slots longitudinais sobre o Brasil (RAAN calibrado para trilha figura-8 local)
-SATELLITE_ORBITS: dict[str, SatelliteOrbit] = {
-    "1": SatelliteOrbit("1", -65.0, 100.0, _phase_offset_deg("1"), "Amazônia"),
-    "2": SatelliteOrbit("2", -40.0, 248.0, _phase_offset_deg("2"), "Nordeste"),
-    "3": SatelliteOrbit("3", -55.0, 22.0, _phase_offset_deg("3"), "Centro-Oeste"),
-    "4": SatelliteOrbit("4", -47.0, 244.0, _phase_offset_deg("4"), "Sudeste"),
-    "5": SatelliteOrbit("5", -52.0, 340.0, _phase_offset_deg("5"), "Sul"),
+# Posição inicial na figura-8 (fração do período sidéreo) — espalhados pelo laço
+# 1=topo, 2=base, 3=meio-esquerda, 4=meio-direita, 5=cruzamento
+FIGURE8_PHASE: dict[str, float] = {
+    "1": 0.125,
+    "2": 0.625,
+    "3": 0.375,
+    "4": 0.875,
+    "5": 0.500,
 }
+
+# Pequeno deslocamento de plano orbital (entrelaçamento estilo QZSS)
+RAAN_JITTER: dict[str, float] = {
+    "1": -3.0,
+    "2": -1.5,
+    "3": 0.0,
+    "4": 1.5,
+    "5": 3.0,
+}
+
+BASE_ECCENTRICITY = 0.078
+BASE_INCLINATION = 43.0
+BASE_RAAN = 225.0
+BASE_ARG_PERIGEE = 90.0
+
+
+def _phase_offset_sec(sat_id: str) -> float:
+    frac = FIGURE8_PHASE.get(sat_id, 0.0)
+    return frac * SIDEREAL_DAY_SEC
+
+
+def _build_orbits() -> dict[str, SatelliteOrbit]:
+    regions = {
+        "1": "Amazônia",
+        "2": "Nordeste",
+        "3": "Centro-Oeste",
+        "4": "Sudeste",
+        "5": "Sul",
+    }
+    orbits: dict[str, SatelliteOrbit] = {}
+    for sid, region in regions.items():
+        orbits[sid] = SatelliteOrbit(
+            sat_id=sid,
+            region=region,
+            eccentricity=BASE_ECCENTRICITY,
+            inclination_deg=BASE_INCLINATION,
+            raan_deg=BASE_RAAN + RAAN_JITTER.get(sid, 0.0),
+            arg_perigee_deg=BASE_ARG_PERIGEE,
+            M0_deg=0.0,
+            phase_offset_sec=_phase_offset_sec(sid),
+        )
+    return orbits
+
+
+SATELLITE_ORBITS: dict[str, SatelliteOrbit] = _build_orbits()
 
 
 def _orbit_config(satelite_id: str) -> SatelliteOrbit:
@@ -95,30 +132,36 @@ def _solve_kepler(M: float, e: float, tol: float = 1e-10) -> float:
     return E
 
 
-def _eci_state(a: float, e: float, inc: float, raan: float, argp: float, M: float) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
-    """Posição e velocidade ECI (km, km/s) via elementos keplerianos."""
+def _eci_state(
+    a: float,
+    e: float,
+    inc: float,
+    raan: float,
+    argp: float,
+    M: float,
+) -> tuple[tuple[float, float, float], tuple[float, float, float]]:
     E = _solve_kepler(M, e)
-    nu = 2.0 * math.atan2(math.sqrt(1.0 + e) * math.sin(E / 2.0), math.sqrt(1.0 - e) * math.cos(E / 2.0))
+    nu = 2.0 * math.atan2(
+        math.sqrt(1.0 + e) * math.sin(E / 2.0),
+        math.sqrt(1.0 - e) * math.cos(E / 2.0),
+    )
     r_norm = a * (1.0 - e * math.cos(E))
 
     x_p = r_norm * math.cos(nu)
     y_p = r_norm * math.sin(nu)
-    z_p = 0.0
 
     h = math.sqrt(MU_EARTH_KM3_S2 * a * (1.0 - e * e))
     vx_p = -(MU_EARTH_KM3_S2 / h) * math.sin(nu)
     vy_p = (MU_EARTH_KM3_S2 / h) * (e + math.cos(nu))
-    vz_p = 0.0
 
     q = _mat3_mul(_rot_z(-raan), _mat3_mul(_rot_x(-inc), _rot_z(-argp)))
-    r = _mat3_vec(q, (x_p, y_p, z_p))
-    v = _mat3_vec(q, (vx_p, vy_p, vz_p))
+    r = _mat3_vec(q, (x_p, y_p, 0.0))
+    v = _mat3_vec(q, (vx_p, vy_p, 0.0))
     return r, v
 
 
 def _eci_to_ecef(r_eci: tuple[float, float, float], t_sec: float) -> tuple[float, float, float]:
-    theta = OMEGA_EARTH_RAD_S * t_sec
-    return _mat3_vec(_rot_z(theta), r_eci)
+    return _mat3_vec(_rot_z(OMEGA_EARTH_RAD_S * t_sec), r_eci)
 
 
 def _ecef_to_geodetic(r: tuple[float, float, float]) -> tuple[float, float, float]:
@@ -137,27 +180,21 @@ def _haversine_km(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     return 2 * R_EARTH_KM * math.asin(min(1.0, math.sqrt(a)))
 
 
-def _subsatellite_at(
-    cfg: SatelliteOrbit,
-    t_sec: float,
-) -> tuple[float, float, float, float]:
-    """Retorna lat, lng, alt_km, vel_kmh no instante t (segundos desde epoch)."""
+def _subsatellite_at(cfg: SatelliteOrbit, t_sec: float) -> tuple[float, float, float, float]:
     n = 2.0 * math.pi / SIDEREAL_DAY_SEC
-    inc = math.radians(INCLINATION_DEG)
+    inc = math.radians(cfg.inclination_deg)
     raan = math.radians(cfg.raan_deg)
-    argp = math.radians(ARG_PERIGEE_DEG)
+    argp = math.radians(cfg.arg_perigee_deg)
     M = math.radians(cfg.M0_deg) + n * t_sec
 
-    r_eci, v_eci = _eci_state(A_SEMI_KM, ECCENTRICITY, inc, raan, argp, M)
-    r_ecef = _eci_to_ecef(r_eci, t_sec)
-    lat, lon, alt = _ecef_to_geodetic(r_ecef)
+    r_eci, _ = _eci_state(A_SEMI_KM, cfg.eccentricity, inc, raan, argp, M)
+    lat, lon, alt = _ecef_to_geodetic(_eci_to_ecef(r_eci, t_sec))
 
-    # Velocidade aparente do ponto subsatélite (km/h)
     dt = 30.0
-    r2_eci, _ = _eci_state(A_SEMI_KM, ECCENTRICITY, inc, raan, argp, M + n * dt)
+    M2 = M + n * dt
+    r2_eci, _ = _eci_state(A_SEMI_KM, cfg.eccentricity, inc, raan, argp, M2)
     lat2, lon2, _ = _ecef_to_geodetic(_eci_to_ecef(r2_eci, t_sec + dt))
-    dist_km = _haversine_km(lat, lon, lat2, lon2)
-    vel_kmh = dist_km / (dt / 3600.0)
+    vel_kmh = _haversine_km(lat, lon, lat2, lon2) / (dt / 3600.0)
 
     return lat, lon, alt, vel_kmh
 
@@ -177,11 +214,12 @@ def generate_orbit_points(
 
     epoch = start
     interval = timedelta(minutes=DEMO_INTERVAL_MINUTES)
+    t0 = cfg.phase_offset_sec
 
     out: list[tuple[float, float, float, float, datetime]] = []
     for i in range(num_points):
         momento = start + interval * i
-        t_sec = (momento - epoch).total_seconds()
+        t_sec = t0 + (momento - epoch).total_seconds()
         lat, lon, alt, vel = _subsatellite_at(cfg, t_sec)
         out.append((round(lat, 6), round(lon, 6), round(alt, 1), round(vel, 1), momento))
 
@@ -189,13 +227,13 @@ def generate_orbit_points(
 
 
 def default_demo_window(now: datetime | None = None) -> tuple[datetime, datetime]:
-    """Início e fim do dia corrente (horário de Brasília), em UTC."""
+    """10 dias incluindo hoje (00:00 → 23:30, horário de Brasília), em UTC."""
     ref = now or datetime.now(TZ_BR)
     if ref.tzinfo is None:
         ref = ref.replace(tzinfo=TZ_BR)
     else:
         ref = ref.astimezone(TZ_BR)
 
-    inicio = ref.replace(hour=0, minute=0, second=0, microsecond=0)
-    fim = inicio + timedelta(hours=23, minutes=30)
+    fim = ref.replace(hour=23, minute=30, second=0, microsecond=0)
+    inicio = ref.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=DEMO_DAYS - 1)
     return inicio.astimezone(timezone.utc), fim.astimezone(timezone.utc)

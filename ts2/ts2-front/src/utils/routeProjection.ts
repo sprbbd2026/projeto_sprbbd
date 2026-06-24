@@ -2,7 +2,31 @@ import type { RotaCoordenada } from '../types/localizacao'
 
 export type LatLngTuple = [number, number]
 
-/** Projeção simples da órbita a partir dos últimos pontos (demonstração). */
+export const TRAIL_POINT_COUNT = 10
+
+export function toLatLngTuples(points: RotaCoordenada[]): LatLngTuple[] {
+  return points.map((p) => [p.latitude, p.longitude])
+}
+
+/** Últimos N pontos percorridos (inclui posição atual). */
+export function trailRoute(points: RotaCoordenada[], currentIndex: number, maxTrail = TRAIL_POINT_COUNT): LatLngTuple[] {
+  if (points.length === 0) return []
+  const idx = Math.max(0, Math.min(currentIndex, points.length - 1))
+  const start = Math.max(0, idx - maxTrail + 1)
+  return toLatLngTuples(points.slice(start, idx + 1))
+}
+
+/** Pontos restantes da rota real (a partir da posição atual). */
+export function remainingRoute(points: RotaCoordenada[], currentIndex: number): LatLngTuple[] {
+  if (points.length === 0) return []
+  const idx = Math.max(0, Math.min(currentIndex, points.length - 1))
+  if (idx >= points.length - 1) return []
+  const current: LatLngTuple = [points[idx].latitude, points[idx].longitude]
+  const rest = toLatLngTuples(points.slice(idx + 1))
+  return [current, ...rest]
+}
+
+/** @deprecated use remainingRoute — projeção sintética (não usada na rota). */
 export function projectFutureRoute(
   points: RotaCoordenada[],
   futureSteps = 14,
@@ -27,8 +51,4 @@ export function projectFutureRoute(
   }
 
   return future
-}
-
-export function toLatLngTuples(points: RotaCoordenada[]): LatLngTuple[] {
-  return points.map((p) => [p.latitude, p.longitude])
 }

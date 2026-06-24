@@ -1,4 +1,4 @@
-"""Reseed — 5 satélites IGSO regionais, trilha figura-8, dia corrente (30 min)."""
+"""Reseed — SAT-1 a SAT-5, IGSO figura-8, últimos 10 dias (30 min)."""
 import logging
 import sys
 from pathlib import Path
@@ -21,8 +21,8 @@ try:
     after = db.query(func.count(models.HistoricoLocalizacao.id)).scalar()
     inicio, fim = default_demo_window()
     print(
-        f"Histórico: {before} -> {after} | {len(SATELLITE_IDS)} satélites | "
-        f"{DEMO_DAYS} dia | {DEMO_POINTS_PER_SAT} pts/sat | intervalo {DEMO_INTERVAL_MINUTES:.0f} min"
+        f"Histórico: {before} -> {after} | {len(SATELLITE_IDS)} satélite(s) | "
+        f"{DEMO_DAYS} dias | {DEMO_POINTS_PER_SAT} pts/sat | intervalo {DEMO_INTERVAL_MINUTES:.0f} min"
     )
     print(f"  Janela: {inicio.isoformat()} -> {fim.isoformat()}")
     for sat in SATELLITE_IDS:

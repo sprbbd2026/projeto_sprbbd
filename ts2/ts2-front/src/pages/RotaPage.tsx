@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Globe2, RefreshCw, Route } from 'lucide-react'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -9,23 +9,24 @@ import { RouteMapLegend } from '../components/ui/RouteMapLegend'
 import { RouteMapLayers } from '../components/ui/RouteMapLayers'
 import { RoutePlaybackBar } from '../components/ui/RoutePlaybackBar'
 import { SatelliteSearchSelect } from '../components/ui/SatelliteSearchSelect'
+import { SprbMapTileLayer } from '../components/ui/SprbMapTileLayer'
 import { useRoutePlayback } from '../hooks/useRoutePlayback'
 import { loadRouteBundle, clearRouteCache } from '../services/rotaRouteLoader'
 import { loadSatelliteCatalog, type SatellitePoint } from '../services/satelliteService'
 import type { RotaCoordenada } from '../types/localizacao'
 import type { RouteLegendSatellite, RouteStatus } from '../types/route'
-import { projectFutureRoute } from '../utils/routeProjection'
+import { remainingRoute } from '../utils/routeProjection'
 import {
   ALL_SATELLITES_VALUE,
   colorForSatellite,
-  defaultTodayEnd,
-  defaultTodayStart,
+  dateToDayEnd,
+  dateToDayStart,
+  defaultTodayDate,
   isAllSatellites,
 } from '../utils/satelliteConstants'
+import { BRAZIL_CENTER, ROUTE_MAP_ZOOM } from '../utils/mapBasemap'
 import styles from './RotaPage.module.css'
-
-const BRAZIL_CENTER: [number, number] = [-14.2, -51.9]
-const FUTURE_STEPS = 8
+import '../components/ui/mapBasemap.module.css'
 
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -59,6 +60,7 @@ function labelSatelite(sat: SatellitePoint): string {
 function buildLegend(
   routes: Record<string, RotaCoordenada[]>,
   satelliteIds: string[],
+  pointIndex: number,
   isDemo: boolean,
 ): { pointCount: number; futureCount: number; isDemo: boolean; satellites: RouteLegendSatellite[] } {
   let pointCount = 0
@@ -69,7 +71,7 @@ function buildLegend(
     const pts = routes[id]
     if (!pts?.length) return
     pointCount += pts.length
-    futureCount += projectFutureRoute(pts, FUTURE_STEPS).length
+    futureCount += remainingRoute(pts, pointIndex).length
     satellites.push({
       id,
       label: `SAT-${id}`,
@@ -84,9 +86,8 @@ function buildLegend(
 export default function RotaPage() {
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [loadingSatelites, setLoadingSatelites] = useState(true)
-  const [sateliteId, setSateliteId] = useState('1')
-  const [dataInicio, setDataInicio] = useState(defaultTodayStart)
-  const [dataFim, setDataFim] = useState(defaultTodayEnd)
+  const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
+  const [dataDia, setDataDia] = useState(defaultTodayDate)
   const [routeStatus, setRouteStatus] = useState<RouteStatus>('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [routePoints, setRoutePoints] = useState<Record<string, RotaCoordenada[]>>({})
@@ -101,6 +102,9 @@ export default function RotaPage() {
   const initialLoadDone = useRef(false)
   const [routeLoadId, setRouteLoadId] = useState(0)
 
+  const dataInicio = dateToDayStart(dataDia)
+  const dataFim = dateToDayEnd(dataDia)
+
   const satelliteIds = useMemo(
     () =>
       isAllSatellites(sateliteId)
@@ -114,14 +118,9 @@ export default function RotaPage() {
   const loadRoutes = useCallback(
     async (force = false, idsOverride?: string[]) => {
       const ids = idsOverride ?? satelliteIds
-      if (!ids.length) return
-      if (new Date(dataInicio) >= new Date(dataFim)) {
-        setRouteStatus('error')
-        setStatusMessage('O início deve ser anterior ao fim.')
-        return
-      }
+      if (!ids.length || !dataDia) return
 
-      const querySignature = `${ids.join(',')}|${dataInicio}|${dataFim}`
+      const querySignature = `${ids.join(',')}|${dataDia}`
       if (!force && !idsOverride && querySignature === lastQueryRef.current) {
         return
       }
@@ -152,19 +151,21 @@ export default function RotaPage() {
             : ids[0]
           : sateliteId
         const cacheHint = bundle.fromCache ? ' · cache' : ''
-        const intervalHint = ' · até 1000 pts'
 
         setRoutePoints((prev) => {
           const next = { ...prev, ...merged }
-          const legend = buildLegend(next, ids, anyDemo)
+          const legend = buildLegend(next, ids, 0, anyDemo)
           setLegendInfo(legend)
           setRouteStatus('success')
+          const totalPts = Object.values(merged).reduce((s, p) => s + p.length, 0)
           setStatusMessage(
-            `${legend.pointCount} pontos${intervalHint}${cacheHint}${
-              isAllSatellites(displayId)
-                ? ` · ${ids.length} satélites`
-                : ` · SAT-${displayId}`
-            }`,
+            totalPts > 0
+              ? `${totalPts} pontos · ${dataDia}${cacheHint}${
+                  isAllSatellites(displayId)
+                    ? ` · ${ids.length} satélites`
+                    : ` · SAT-${displayId}`
+                }`
+              : 'Nenhum ponto neste dia.',
           )
           return next
         })
@@ -178,7 +179,7 @@ export default function RotaPage() {
         setStatusMessage('Não foi possível carregar as rotas.')
       }
     },
-    [satelliteIds, dataInicio, dataFim, sateliteId],
+    [satelliteIds, dataDia, dataInicio, dataFim, sateliteId],
   )
 
   function handleSateliteChange(id: string) {
@@ -191,20 +192,10 @@ export default function RotaPage() {
       return
     }
 
-    const legend = buildLegend(routePoints, ids, legendInfo.isDemo)
+    const legend = buildLegend(routePoints, ids, 0, legendInfo.isDemo)
     setLegendInfo(legend)
     setRouteStatus('success')
-    setStatusMessage(
-      `${legend.pointCount} pontos · até 1000 pts · ${
-        isAllSatellites(id) ? `${ids.length} satélites` : `SAT-${id}`
-      } (memória)`,
-    )
   }
-
-  useEffect(() => {
-    setDataInicio(defaultTodayStart())
-    setDataFim(defaultTodayEnd())
-  }, [])
 
   useEffect(() => {
     void (async () => {
@@ -216,10 +207,14 @@ export default function RotaPage() {
   }, [])
 
   useEffect(() => {
-    if (loadingSatelites || !satelites.length || initialLoadDone.current) return
-    initialLoadDone.current = true
+    if (loadingSatelites || !satelites.length) return
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true
+    } else {
+      lastQueryRef.current = ''
+    }
     void loadRoutes(false)
-  }, [loadingSatelites, satelites, loadRoutes])
+  }, [dataDia, loadingSatelites, satelites, loadRoutes])
 
   const sateliteAtual = satelites.find((s) => String(s.sat_id) === sateliteId)
   const sateliteLabel = isAllSatellites(sateliteId)
@@ -228,21 +223,28 @@ export default function RotaPage() {
       ? labelSatelite(sateliteAtual)
       : `SAT-${sateliteId}`
   const isLoading = routeStatus === 'loading'
-  const showLegend = routeStatus === 'success' && legendInfo.pointCount > 0
-  const hasRoutes = Object.keys(routePoints).length > 0
+  const hasRoutes = satelliteIds.some((id) => (routePoints[id]?.length ?? 0) > 0)
   const playbackPointCount = useMemo(() => {
     if (!hasRoutes) return 0
     const lengths = satelliteIds.map((id) => routePoints[id]?.length ?? 0)
     return Math.max(...lengths, 0)
   }, [hasRoutes, satelliteIds, routePoints])
-  const playbackKey = `${satelliteIds.join(',')}|${dataInicio}|${dataFim}|${routeLoadId}`
+  const playbackKey = `${satelliteIds.join(',')}|${dataDia}|${routeLoadId}`
   const playback = useRoutePlayback(playbackPointCount, playbackKey, true)
-  const referenceId = isAllSatellites(sateliteId) ? satelliteIds[0] : sateliteId
+  const referenceId = satelliteIds[0]
   const referencePoints = referenceId ? routePoints[referenceId] ?? [] : []
   const currentTimeLabel =
     referencePoints[playback.pointIndex]?.data_hora != null
       ? new Date(referencePoints[playback.pointIndex].data_hora).toLocaleString('pt-BR')
       : ''
+
+  useEffect(() => {
+    if (!hasRoutes) return
+    const legend = buildLegend(routePoints, satelliteIds, playback.pointIndex, legendInfo.isDemo)
+    setLegendInfo(legend)
+  }, [playback.pointIndex, routePoints, satelliteIds, hasRoutes, legendInfo.isDemo])
+
+  const showLegend = routeStatus === 'success' && legendInfo.pointCount > 0
 
   function handleConsultar() {
     if (!sateliteId.trim()) {
@@ -253,6 +255,11 @@ export default function RotaPage() {
     void loadRoutes(true)
   }
 
+  function handleDiaChange(value: string) {
+    setDataDia(value)
+    lastQueryRef.current = ''
+  }
+
   return (
     <DashboardLayout>
       <main className={styles.page}>
@@ -261,15 +268,14 @@ export default function RotaPage() {
             <div>
               <p className={styles.kicker}>
                 <Globe2 size={14} />
-                Visão orbital · IGSO regional · figura-8 · dia corrente · 30 min
+                Visão orbital · IGSO regional · figura-8 · 1 dia · todos os satélites
               </p>
               <h1 className={styles.title}>
                 <Route size={26} strokeWidth={1.8} />
                 Rota do satélite
               </h1>
               <p className={styles.subtitle}>
-                Todos os satélites carregam ao abrir; play percorre a rota em loop com cobertura
-                ativa.
+                Rastro sólido (últimos 10 pontos) · rota restante tracejada · cobertura ativa no play.
               </p>
             </div>
           </header>
@@ -292,22 +298,12 @@ export default function RotaPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor="rota-inicio">Início</label>
+              <label htmlFor="rota-dia">Dia</label>
               <input
-                id="rota-inicio"
-                type="datetime-local"
-                value={dataInicio}
-                onChange={(e) => setDataInicio(e.target.value)}
-              />
-            </div>
-
-            <div className={styles.field}>
-              <label htmlFor="rota-fim">Fim</label>
-              <input
-                id="rota-fim"
-                type="datetime-local"
-                value={dataFim}
-                onChange={(e) => setDataFim(e.target.value)}
+                id="rota-dia"
+                type="date"
+                value={dataDia}
+                onChange={(e) => handleDiaChange(e.target.value)}
               />
             </div>
 
@@ -323,10 +319,10 @@ export default function RotaPage() {
           </div>
 
           <section className={styles.mapSection} aria-label="Mapa da rota">
-            <div className={styles.mapFrame}>
+            <div className={`${styles.mapFrame} sprbDarkMap`}>
               <MapContainer
                 center={BRAZIL_CENTER}
-                zoom={5}
+                zoom={ROUTE_MAP_ZOOM}
                 minZoom={2}
                 maxZoom={18}
                 worldCopyJump
@@ -334,10 +330,7 @@ export default function RotaPage() {
                 scrollWheelZoom
                 className={styles.leafletMap}
               >
-                <TileLayer
-                  attribution='&copy; <a href="https://carto.com/">CARTO</a> · OSM'
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                />
+                <SprbMapTileLayer />
                 <MapResize />
                 {hasRoutes && (
                   <RouteMapLayers
@@ -378,8 +371,8 @@ export default function RotaPage() {
               role="status"
               aria-live="polite"
             >
-              {routeStatus === 'loading' && 'Carregando rotas (1 requisição por satélite)…'}
-              {routeStatus === 'idle' && 'Selecione o satélite e clique em Consultar.'}
+              {routeStatus === 'loading' && 'Carregando rotas…'}
+              {routeStatus === 'idle' && 'Carregando…'}
               {(routeStatus === 'success' ||
                 routeStatus === 'empty' ||
                 routeStatus === 'error') &&

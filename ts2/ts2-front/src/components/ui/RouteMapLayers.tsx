@@ -5,13 +5,25 @@ import L from 'leaflet'
 import { renderToString } from 'react-dom/server'
 import { Satellite } from 'lucide-react'
 import type { RotaCoordenada } from '../../types/localizacao'
-import { projectFutureRoute, toLatLngTuples } from '../../utils/routeProjection'
+import { remainingRoute, toLatLngTuples, trailRoute, TRAIL_POINT_COUNT } from '../../utils/routeProjection'
 import { calcularFootprint } from '../../utils/satelliteFootprint'
 import { colorForSatellite } from '../../utils/satelliteConstants'
+import {
+  applyRouteMapView,
+  BRAZIL_CENTER,
+  ROUTE_MAP_ZOOM,
+  ROUTE_DASH_ARRAY,
+  ROUTE_DASH_WEIGHT,
+  ROUTE_TRAIL_WEIGHT,
+} from '../../utils/mapBasemap'
 
-const BRAZIL_CENTER: LatLngTuple = [-14.2, -51.9]
-const BRAZIL_ZOOM = 5
-const FUTURE_STEPS = 8
+const DASH_FUTURE = {
+  weight: ROUTE_DASH_WEIGHT,
+  opacity: 0.92,
+  dashArray: ROUTE_DASH_ARRAY,
+  lineCap: 'round' as const,
+  lineJoin: 'round' as const,
+}
 
 const satelliteIcon = L.divIcon({
   html: renderToString(
@@ -43,34 +55,22 @@ function boundsKey(positions: LatLngTuple[]): string {
   return `${positions.length}:${a[0].toFixed(2)},${a[1].toFixed(2)}:${z[0].toFixed(2)},${z[1].toFixed(2)}`
 }
 
-function FitRouteView({
-  pastPositions,
-  futurePositions,
-}: {
-  pastPositions: LatLngTuple[]
-  futurePositions: LatLngTuple[]
-}) {
+function FitRouteView({ positions }: { positions: LatLngTuple[] }) {
   const map = useMap()
   const lastFit = useRef<string | null>(null)
 
   useEffect(() => {
-    const key = boundsKey([...pastPositions, ...futurePositions])
+    const key = boundsKey(positions)
     if (lastFit.current === key) return
     lastFit.current = key
 
-    const all = [...pastPositions, ...futurePositions]
-    if (all.length === 0) {
-      map.setView(BRAZIL_CENTER, BRAZIL_ZOOM)
+    if (positions.length === 0) {
+      map.setView(BRAZIL_CENTER, ROUTE_MAP_ZOOM, { animate: false })
       return
     }
 
-    const bounds = L.latLngBounds(all).pad(0.15)
-    map.fitBounds(bounds, {
-      padding: [48, 48],
-      maxZoom: 12,
-      animate: false,
-    })
-  }, [map, pastPositions, futurePositions])
+    applyRouteMapView(map, positions as L.LatLngTuple[])
+  }, [map, positions])
 
   return null
 }
@@ -81,29 +81,25 @@ function PlaybackRouteLayer({
   color,
   pointIndex,
   showCoverage,
-  compact = false,
 }: {
   points: RotaCoordenada[]
   sateliteId: string
   color: string
   pointIndex: number
   showCoverage: boolean
-  compact?: boolean
 }) {
-  const pastPositions = useMemo(() => toLatLngTuples(points), [points])
-  const futurePositions = useMemo(
-    () => (compact ? [] : projectFutureRoute(points, FUTURE_STEPS)),
-    [points, compact],
-  )
+  const allPositions = useMemo(() => toLatLngTuples(points), [points])
   const safeIndex = Math.max(0, Math.min(pointIndex, points.length - 1))
   const trailPositions = useMemo(
-    () => pastPositions.slice(0, safeIndex + 1),
-    [pastPositions, safeIndex],
+    () => trailRoute(points, safeIndex, TRAIL_POINT_COUNT),
+    [points, safeIndex],
   )
-  const current = pastPositions[safeIndex]
+  const futurePositions = useMemo(
+    () => remainingRoute(points, safeIndex),
+    [points, safeIndex],
+  )
+  const current = allPositions[safeIndex]
   const currentPoint = points[safeIndex]
-  const start = pastPositions[0]
-  const end = pastPositions[pastPositions.length - 1]
 
   const footprint = useMemo(() => {
     if (!showCoverage || !currentPoint) return []
@@ -112,44 +108,33 @@ function PlaybackRouteLayer({
 
   return (
     <>
-      {!compact && (
-        <FitRouteView pastPositions={pastPositions} futurePositions={futurePositions} />
-      )}
-
-      {!compact && futurePositions.length > 0 && (
+      {futurePositions.length >= 2 && (
         <Polyline
           positions={futurePositions}
           pathOptions={{
-            color: '#f59e0b',
-            weight: 2,
-            opacity: 0.65,
-            dashArray: '6 8',
-            lineCap: 'round',
+            ...DASH_FUTURE,
+            color,
           }}
         />
       )}
 
-      <Polyline
-        positions={pastPositions}
-        pathOptions={{
-          color: compact ? color : '#94a3b8',
-          weight: compact ? 2 : 1.5,
-          opacity: compact ? 0.35 : 0.25,
-          dashArray: compact ? '4 6' : '4 8',
-        }}
-      />
-
       {trailPositions.length >= 2 && (
         <Polyline
           positions={trailPositions}
-          pathOptions={{ color, weight: compact ? 4 : 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }}
+          pathOptions={{
+            color,
+            weight: ROUTE_TRAIL_WEIGHT,
+            opacity: 0.92,
+            lineCap: 'round',
+            lineJoin: 'round',
+          }}
         />
       )}
 
       {trailPositions.length === 1 && (
         <CircleMarker
           center={trailPositions[0]}
-          radius={compact ? 4 : 5}
+          radius={5}
           pathOptions={{ color: '#fff', fillColor: color, fillOpacity: 1, weight: 2 }}
         />
       )}
@@ -162,24 +147,8 @@ function PlaybackRouteLayer({
             weight: 2,
             opacity: 0.85,
             fillColor: '#0ea5e9',
-            fillOpacity: compact ? 0.14 : 0.22,
+            fillOpacity: 0.18,
           }}
-        />
-      )}
-
-      {!compact && start && safeIndex > 0 && (
-        <CircleMarker
-          center={start}
-          radius={5}
-          pathOptions={{ color: '#fff', fillColor: '#22c55e', fillOpacity: 1, weight: 2 }}
-        />
-      )}
-
-      {!compact && end && end !== start && safeIndex === pastPositions.length - 1 && (
-        <CircleMarker
-          center={end}
-          radius={4}
-          pathOptions={{ color: '#fff', fillColor: '#ef4444', fillOpacity: 0.9, weight: 2 }}
         />
       )}
 
@@ -213,19 +182,11 @@ export function RouteMapLayers({
   pointIndex = 0,
   showCoverage = true,
 }: RouteMapLayersProps) {
-  const allPast = useMemo(
+  const allPositions = useMemo(
     () =>
       satelliteIds.flatMap((id) => {
         const pts = routes[id]
         return pts ? toLatLngTuples(pts) : []
-      }),
-    [routes, satelliteIds],
-  )
-  const allFuture = useMemo(
-    () =>
-      satelliteIds.flatMap((id) => {
-        const pts = routes[id]
-        return pts ? projectFutureRoute(pts, FUTURE_STEPS) : []
       }),
     [routes, satelliteIds],
   )
@@ -234,19 +195,22 @@ export function RouteMapLayers({
     const points = routes[activeSatelliteId]
     if (!points?.length) return null
     return (
-      <PlaybackRouteLayer
-        points={points}
-        sateliteId={activeSatelliteId}
-        color={colorForSatellite(activeSatelliteId)}
-        pointIndex={pointIndex}
-        showCoverage={showCoverage}
-      />
+      <>
+        <FitRouteView positions={allPositions} />
+        <PlaybackRouteLayer
+          points={points}
+          sateliteId={activeSatelliteId}
+          color={colorForSatellite(activeSatelliteId)}
+          pointIndex={pointIndex}
+          showCoverage={showCoverage}
+        />
+      </>
     )
   }
 
   return (
     <>
-      <FitRouteView pastPositions={allPast} futurePositions={allFuture} />
+      <FitRouteView positions={allPositions} />
       {satelliteIds.map((id, idx) => {
         const points = routes[id]
         if (!points?.length) return null
@@ -259,7 +223,6 @@ export function RouteMapLayers({
             color={colorForSatellite(id, idx)}
             pointIndex={safeIndex}
             showCoverage={showCoverage}
-            compact
           />
         )
       })}

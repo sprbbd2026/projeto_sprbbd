@@ -4,20 +4,33 @@ export const ALL_SATELLITES_VALUE = 'all'
 export const ALL_SATELLITES_LABEL = 'Todos os satélites'
 
 export const SATELLITE_COLORS = [
-  '#3b82f6',
-  '#22c55e',
-  '#f59e0b',
-  '#a855f7',
-  '#ec4899',
-  '#14b8a6',
-  '#ef4444',
-  '#6366f1',
+  '#1e3a8a', // navy
+  '#9f1239', // vinho
+  '#ca8a04', // amarelo-ouro escuro
+  '#0f766e', // teal escuro
+  '#6b21a8', // roxo
+  '#b45309', // âmbar
+  '#7c2d12', // terracota
+  '#312e81', // índigo
 ] as const
 
-/** Formato `datetime-local` (horário local do navegador). */
-function toDatetimeLocal(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+function pad(n: number): string {
+  return String(n).padStart(2, '0')
+}
+
+/** Formato `YYYY-MM-DD`. */
+export function toDateInput(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/** Converte data (YYYY-MM-DD) → início do dia para API (datetime-local). */
+export function dateToDayStart(dateStr: string): string {
+  return `${dateStr}T00:00`
+}
+
+/** Converte data (YYYY-MM-DD) → fim do dia para API (datetime-local). */
+export function dateToDayEnd(dateStr: string): string {
+  return `${dateStr}T23:59`
 }
 
 export function colorForSatellite(sateliteId: string | number, index = 0): string {
@@ -32,41 +45,41 @@ export function isAllSatellites(value: string): boolean {
   return value === ALL_SATELLITES_VALUE
 }
 
-/** Rota: início do dia corrente (00:00 local). */
+/** Rota: dia corrente (YYYY-MM-DD). */
+export function defaultTodayDate(): string {
+  return toDateInput(new Date())
+}
+
+/** Histórico: início (10 dias atrás, incluindo hoje). */
+export function defaultHistoricoStartDate(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 9)
+  return toDateInput(d)
+}
+
+/** Histórico: fim (hoje). */
+export function defaultHistoricoEndDate(): string {
+  return toDateInput(new Date())
+}
+
+/** @deprecated use defaultTodayDate + dateToDayStart/End */
 export function defaultTodayStart(): string {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return toDatetimeLocal(d)
+  return dateToDayStart(defaultTodayDate())
 }
 
-/** Rota: fim do dia corrente (23:59 local). */
+/** @deprecated use defaultTodayDate + dateToDayStart/End */
 export function defaultTodayEnd(): string {
-  const d = new Date()
-  d.setHours(23, 59, 0, 0)
-  return toDatetimeLocal(d)
+  return dateToDayEnd(defaultTodayDate())
 }
 
-/** Histórico: 10 dias antes do início de hoje. */
+/** @deprecated use defaultHistoricoStartDate */
 export function defaultHistoricoStart(): string {
-  const d = new Date()
-  d.setDate(d.getDate() - 10)
-  d.setHours(0, 0, 0, 0)
-  return toDatetimeLocal(d)
+  return dateToDayStart(defaultHistoricoStartDate())
 }
 
-/** Histórico: fim de hoje. */
+/** @deprecated use defaultHistoricoEndDate */
 export function defaultHistoricoEnd(): string {
-  return defaultTodayEnd()
-}
-
-/** @deprecated use defaultHistoricoStart */
-export function defaultWeekStart(): string {
-  return defaultHistoricoStart()
-}
-
-/** @deprecated use defaultHistoricoEnd */
-export function defaultWeekEnd(): string {
-  return defaultHistoricoEnd()
+  return dateToDayEnd(defaultHistoricoEndDate())
 }
 
 export function dedupeSatellites(list: SatellitePoint[]): SatellitePoint[] {

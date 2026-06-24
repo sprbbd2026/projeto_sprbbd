@@ -9,9 +9,21 @@ import 'leaflet/dist/leaflet.css'
 import { renderToString } from 'react-dom/server'
 import { Satellite } from 'lucide-react'
 import type { Localizacao } from '../../types/localizacao'
+import type { LatLngTuple } from '../../utils/routeProjection'
 import { calcularFootprint } from '../../utils/satelliteFootprint'
+import { drawCoverageMask } from '../../utils/coverageCanvas'
 import { colorForSatellite } from '../../utils/satelliteConstants'
+import {
+  applyHistoricoMapView,
+  BRAZIL_CENTER,
+  HISTORICO_MAP_ZOOM,
+  HISTORICO_LINE_WEIGHT_MULTI,
+  HISTORICO_LINE_WEIGHT_SINGLE,
+  MAP_TILE_ATTRIBUTION,
+  MAP_TILE_URL,
+} from '../../utils/mapBasemap'
 import styles from './SatelliteMap.module.css'
+import './mapBasemap.module.css'
 
 // Corrige o ícone padrão do Leaflet com Vite/Webpack
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
@@ -21,8 +33,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-const COVERAGE_FILL = '#60a5fa'
-const COVERAGE_MAX_FOOTPRINTS = 90
 
 const satelliteIcon = L.divIcon({
   html: renderToString(
@@ -46,10 +56,8 @@ const satelliteIcon = L.divIcon({
   popupAnchor: [0, -14],
 })
 
-function subsamplePontos(pontos: Localizacao[], max: number): Localizacao[] {
-  if (pontos.length <= max) return pontos
-  const step = (pontos.length - 1) / (max - 1)
-  return Array.from({ length: max }, (_, i) => pontos[Math.round(i * step)])
+function collectFootprints(pontos: Localizacao[]): LatLngTuple[][] {
+  return pontos.map((p) => calcularFootprint(p.latitude, p.longitude, p.altitude_km))
 }
 
 interface SatelliteMapProps {
@@ -98,18 +106,98 @@ const endIcon = new L.Icon({
   shadowSize: [41, 41],
 })
 
+function addRoutePolylines(
+  group: L.LayerGroup,
+  groups: Map<string, Localizacao[]>,
+  multi: boolean,
+): void {
+  let idx = 0
+  for (const [satId, satPontos] of groups) {
+    const color = colorForSatellite(satId, idx)
+    idx += 1
+    const latlngs = satPontos.map((p) => [p.latitude, p.longitude] as L.LatLngTuple)
+
+    L.polyline(latlngs, {
+      color,
+      weight: multi ? HISTORICO_LINE_WEIGHT_MULTI : HISTORICO_LINE_WEIGHT_SINGLE,
+      opacity: 0.9,
+    }).addTo(group)
+  }
+}
+
+function addFixedModeMarkers(group: L.LayerGroup, groups: Map<string, Localizacao[]>, multi: boolean): void {
+  let idx = 0
+  for (const [satId, satPontos] of groups) {
+    const color = colorForSatellite(satId, idx)
+    idx += 1
+
+    if (!multi) {
+      satPontos.forEach((p, i) => {
+        const isFirst = i === 0
+        const isLast = i === satPontos.length - 1
+        const marker = L.marker([p.latitude, p.longitude], {
+          icon: isFirst ? startIcon : isLast ? endIcon : L.icon({
+            iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+            shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            iconSize: [15, 24],
+            iconAnchor: [7, 24],
+            popupAnchor: [1, -20],
+            shadowSize: [24, 24],
+          }),
+        })
+        const dataHora = new Date(p.data_hora).toLocaleString('pt-BR')
+        marker.bindPopup(
+          `<strong>Satélite ${satId}</strong><br/>Lat: ${p.latitude.toFixed(5)}, Lon: ${p.longitude.toFixed(5)}<br/><em>${dataHora}</em>`,
+        )
+        marker.addTo(group)
+      })
+    } else if (satPontos.length > 0) {
+      const last = satPontos[satPontos.length - 1]
+      L.circleMarker([last.latitude, last.longitude], {
+        radius: 6,
+        color: '#fff',
+        fillColor: color,
+        fillOpacity: 1,
+        weight: 2,
+      })
+        .bindPopup(`<strong>SAT-${satId}</strong> · posição mais recente`)
+        .addTo(group)
+    }
+  }
+}
+
+function addCoverageModeMarkers(group: L.LayerGroup, groups: Map<string, Localizacao[]>): void {
+  for (const [satId, satPontos] of groups) {
+    const ultimo = satPontos[satPontos.length - 1]
+    if (!ultimo) continue
+
+    const marker = L.marker([ultimo.latitude, ultimo.longitude], {
+      icon: satelliteIcon,
+    })
+    const dataHora = new Date(ultimo.data_hora).toLocaleString('pt-BR')
+    marker.bindPopup(
+      `<strong>Satélite ${satId}</strong><br/>
+       Lat: ${ultimo.latitude.toFixed(5)}, Lon: ${ultimo.longitude.toFixed(5)}<br/>
+       <em>${dataHora}</em>`,
+    )
+    marker.addTo(group)
+  }
+}
+
 export default function SatelliteMap({
   pontos,
   sateliteId,
   visualizationMode,
   onToggleVisualization,
-  defaultCenter = [-15.78, -47.93],
-  defaultZoom = 5,
+  defaultCenter = BRAZIL_CENTER,
+  defaultZoom = HISTORICO_MAP_ZOOM,
 }: SatelliteMapProps) {
   const mapRef = useRef<L.Map | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const layerGroupRef = useRef<L.LayerGroup | null>(null)
-  const coverageGroupRef = useRef<L.LayerGroup | null>(null)
+  const coverageCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const footprintsRef = useRef<LatLngTuple[][]>([])
+  const redrawCoverageRef = useRef<(() => void) | null>(null)
 
   // Inicializa o mapa uma única vez
   useEffect(() => {
@@ -121,29 +209,45 @@ export default function SatelliteMap({
       zoomControl: true,
     })
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    L.tileLayer(MAP_TILE_URL, {
+      attribution: MAP_TILE_ATTRIBUTION,
       maxZoom: 19,
+      subdomains: 'abcd',
     }).addTo(map)
 
     map.createPane('coveragePane')
     const coveragePane = map.getPane('coveragePane')
     if (coveragePane) {
       coveragePane.style.zIndex = '350'
-      coveragePane.style.mixBlendMode = 'lighten'
       coveragePane.style.pointerEvents = 'none'
     }
 
+    const coverageCanvas = L.DomUtil.create('canvas', 'leaflet-coverage-canvas') as HTMLCanvasElement
+    coverageCanvas.style.pointerEvents = 'none'
+    map.getPane('coveragePane')?.appendChild(coverageCanvas)
+    coverageCanvasRef.current = coverageCanvas
+
+    const redrawCoverage = () => {
+      const currentMap = mapRef.current
+      const canvas = coverageCanvasRef.current
+      if (!currentMap || !canvas) return
+      drawCoverageMask(currentMap, canvas, footprintsRef.current)
+    }
+    redrawCoverageRef.current = redrawCoverage
+
     layerGroupRef.current = L.layerGroup().addTo(map)
-    coverageGroupRef.current = L.layerGroup({ pane: 'coveragePane' }).addTo(map)
     mapRef.current = map
+
+    map.on('moveend zoomend zoom resize viewreset', redrawCoverage)
 
     requestAnimationFrame(() => map.invalidateSize())
 
     return () => {
+      map.off('moveend zoomend zoom resize viewreset', redrawCoverage)
       map.remove()
       mapRef.current = null
+      coverageCanvasRef.current = null
+      redrawCoverageRef.current = null
     }
   }, [defaultCenter, defaultZoom])
 
@@ -151,13 +255,13 @@ export default function SatelliteMap({
   useEffect(() => {
     const map = mapRef.current
     const group = layerGroupRef.current
-    const coverageGroup = coverageGroupRef.current
-    if (!map || !group || !coverageGroup) return
+    if (!map || !group) return
 
     requestAnimationFrame(() => map.invalidateSize())
 
     group.clearLayers()
-    coverageGroup.clearLayers()
+    footprintsRef.current = []
+    redrawCoverageRef.current?.()
 
     if (pontos.length === 0) {
       map.setView(defaultCenter, defaultZoom)
@@ -168,94 +272,20 @@ export default function SatelliteMap({
     const multi = groups.size > 1
     const allLatLngs: L.LatLngTuple[] = pontos.map((p) => [p.latitude, p.longitude])
 
+    addRoutePolylines(group, groups, multi)
+
     if (visualizationMode === 'fixed') {
-      let idx = 0
-      for (const [satId, satPontos] of groups) {
-        const color = colorForSatellite(satId, idx)
-        idx += 1
-        const latlngs = satPontos.map((p) => [p.latitude, p.longitude] as L.LatLngTuple)
-
-        L.polyline(latlngs, {
-          color,
-          weight: multi ? 4 : 3,
-          opacity: 0.88,
-        }).addTo(group)
-
-        if (!multi) {
-          satPontos.forEach((p, i) => {
-            const isFirst = i === 0
-            const isLast = i === satPontos.length - 1
-            const marker = L.marker([p.latitude, p.longitude], {
-              icon: isFirst ? startIcon : isLast ? endIcon : L.icon({
-                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                iconSize: [15, 24],
-                iconAnchor: [7, 24],
-                popupAnchor: [1, -20],
-                shadowSize: [24, 24],
-              }),
-            })
-            const dataHora = new Date(p.data_hora).toLocaleString('pt-BR')
-            marker.bindPopup(
-              `<strong>Satélite ${satId}</strong><br/>Lat: ${p.latitude.toFixed(5)}, Lon: ${p.longitude.toFixed(5)}<br/><em>${dataHora}</em>`,
-            )
-            marker.addTo(group)
-          })
-        } else if (satPontos.length > 0) {
-          const last = satPontos[satPontos.length - 1]
-          L.circleMarker([last.latitude, last.longitude], {
-            radius: 6,
-            color: '#fff',
-            fillColor: color,
-            fillOpacity: 1,
-            weight: 2,
-          })
-            .bindPopup(`<strong>SAT-${satId}</strong> · posição mais recente`)
-            .addTo(group)
-        }
+      addFixedModeMarkers(group, groups, multi)
+    } else {
+      for (const [, satPontos] of groups) {
+        footprintsRef.current.push(...collectFootprints(satPontos))
       }
 
-      map.fitBounds(L.latLngBounds(allLatLngs), { padding: [40, 40], maxZoom: multi ? 5 : 10 })
-      return
+      addCoverageModeMarkers(group, groups)
+      redrawCoverageRef.current?.()
     }
 
-    for (const [satId, satPontos] of groups) {
-      const amostra = subsamplePontos(satPontos, COVERAGE_MAX_FOOTPRINTS)
-
-      amostra.forEach((p) => {
-        const footprint = calcularFootprint(p.latitude, p.longitude, p.altitude_km)
-
-        L.polygon(footprint, {
-          pane: 'coveragePane',
-          stroke: false,
-          weight: 0,
-          color: 'transparent',
-          fillColor: COVERAGE_FILL,
-          fillOpacity: 0.28,
-          interactive: false,
-        }).addTo(coverageGroup)
-      })
-
-      const ultimo = satPontos[satPontos.length - 1]
-      if (ultimo) {
-        const marker = L.marker([ultimo.latitude, ultimo.longitude], {
-          icon: satelliteIcon,
-        })
-        const dataHora = new Date(ultimo.data_hora).toLocaleString('pt-BR')
-        marker.bindPopup(
-          `<strong>Satélite ${satId}</strong><br/>
-           Lat: ${ultimo.latitude.toFixed(5)}, Lon: ${ultimo.longitude.toFixed(5)}<br/>
-           <em>${dataHora}</em>`,
-        )
-        marker.addTo(group)
-      }
-    }
-
-    const footprintBounds = pontos.flatMap((p) =>
-      calcularFootprint(p.latitude, p.longitude, p.altitude_km),
-    )
-    const bounds = L.latLngBounds([...allLatLngs, ...footprintBounds])
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: multi ? 5 : 10 })
+    applyHistoricoMapView(map, allLatLngs as L.LatLngTuple[], multi)
   }, [pontos, sateliteId, visualizationMode, defaultCenter, defaultZoom])
 
   return (
@@ -281,7 +311,7 @@ export default function SatelliteMap({
       >
         {visualizationMode === 'fixed' ? 'Ver cobertura' : 'Ver pontos fixos'}
       </button>
-      <div ref={containerRef} className={styles.mapContainer} />
+      <div ref={containerRef} className={`${styles.mapContainer} sprbDarkMap`} />
     </div>
   )
 }

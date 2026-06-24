@@ -14,8 +14,10 @@ import {
   ALL_SATELLITES_LABEL,
   ALL_SATELLITES_VALUE,
   colorForSatellite,
-  defaultHistoricoEnd,
-  defaultHistoricoStart,
+  dateToDayEnd,
+  dateToDayStart,
+  defaultHistoricoEndDate,
+  defaultHistoricoStartDate,
   isAllSatellites,
 } from '../utils/satelliteConstants'
 import type { SatellitePoint } from '../services/satelliteService'
@@ -26,8 +28,8 @@ type VisualizationMode = 'fixed' | 'coverage'
 export default function MapPage() {
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
-  const [dataInicio, setDataInicio] = useState(defaultHistoricoStart)
-  const [dataFim, setDataFim] = useState(defaultHistoricoEnd)
+  const [dataInicio, setDataInicio] = useState(defaultHistoricoStartDate)
+  const [dataFim, setDataFim] = useState(defaultHistoricoEndDate)
   const [visualizacao, setVisualizacao] = useState<VisualizationMode>('fixed')
   const [pontos, setPontos] = useState<Localizacao[]>([])
   const [status, setStatus] = useState<FetchStatus>('idle')
@@ -35,14 +37,8 @@ export default function MapPage() {
   const [usandoDemo, setUsandoDemo] = useState(false)
 
   useEffect(() => {
-    setDataInicio(defaultHistoricoStart())
-    setDataFim(defaultHistoricoEnd())
-  }, [])
-
-  useEffect(() => {
-    void loadSatelliteCatalog().then((lista) => {
-      setSatelites(lista)
-    })
+    setDataInicio(defaultHistoricoStartDate())
+    setDataFim(defaultHistoricoEndDate())
   }, [])
 
   const fetchHistorico = useCallback(async () => {
@@ -62,8 +58,11 @@ export default function MapPage() {
       return
     }
 
+    const inicio = dateToDayStart(dataInicio)
+    const fim = dateToDayEnd(dataFim)
+
     const batches = await Promise.all(
-      ids.map((id) => fetchHistoricoForSatellite(id, dataInicio, dataFim, limit)),
+      ids.map((id) => fetchHistoricoForSatellite(id, inicio, fim, limit)),
     )
 
     const resultado = batches
@@ -74,6 +73,12 @@ export default function MapPage() {
     setUsandoDemo(batches.some((b) => b.demo))
     setStatus('success')
   }, [sateliteId, dataInicio, dataFim, satelites])
+
+  useEffect(() => {
+    void loadSatelliteCatalog().then((lista) => {
+      setSatelites(lista)
+    })
+  }, [])
 
   useEffect(() => {
     if (satelites.length > 0 && sateliteId.trim()) void fetchHistorico()
@@ -101,7 +106,7 @@ export default function MapPage() {
                 Histórico de Localização
               </h1>
               <p className={styles.subtitle}>
-                Alterne entre pontos fixos e cobertura orbital. Período padrão: últimos 10 dias até hoje.
+                Alterne entre pontos fixos e cobertura orbital. Filtro por intervalo de datas.
               </p>
             </div>
           </header>
@@ -134,10 +139,10 @@ export default function MapPage() {
               </div>
 
               <div className={styles.fieldGroup}>
-                <label htmlFor="data-inicio">Data Início</label>
+                <label htmlFor="data-inicio">Data início</label>
                 <input
                   id="data-inicio"
-                  type="datetime-local"
+                  type="date"
                   className={styles.dateInput}
                   value={dataInicio}
                   onChange={(e) => setDataInicio(e.target.value)}
@@ -145,10 +150,10 @@ export default function MapPage() {
               </div>
 
               <div className={styles.fieldGroup}>
-                <label htmlFor="data-fim">Data Fim</label>
+                <label htmlFor="data-fim">Data fim</label>
                 <input
                   id="data-fim"
-                  type="datetime-local"
+                  type="date"
                   className={styles.dateInput}
                   value={dataFim}
                   onChange={(e) => setDataFim(e.target.value)}

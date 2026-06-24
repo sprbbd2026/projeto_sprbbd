@@ -1,5 +1,6 @@
 import { Satellite } from 'lucide-react'
 import type { RouteLegendSatellite } from '../../types/route'
+import { TRAIL_POINT_COUNT } from '../../utils/routeProjection'
 import styles from './RouteMapLegend.module.css'
 
 interface RouteMapLegendProps {
@@ -36,31 +37,27 @@ export function RouteMapLegend({
             </li>
           ))}
           <li>
+            <span className={styles.swatchSolid} />
+            Rastro ({TRAIL_POINT_COUNT} pts)
+          </li>
+          <li>
             <span className={styles.swatchDashed} />
-            Trajetória projetada ({futureCount} pts)
+            Rota restante ({futureCount} pts)
           </li>
         </ul>
       ) : (
         <ul className={styles.list}>
           <li>
-            <span className={styles.swatch} style={{ background: '#3b82f6' }} />
-            Trilha percorrida ({pointCount} pts)
+            <span className={styles.swatchSolid} />
+            Rastro sólido (últimos {TRAIL_POINT_COUNT} pts)
           </li>
           <li>
             <span className={styles.swatchDashed} />
-            Trajetória projetada ({futureCount} pts)
+            Rota restante tracejada ({futureCount} pts)
           </li>
           <li>
-            <span className={styles.swatchDot} style={{ background: '#22c55e' }} />
-            Início da rota
-          </li>
-          <li>
-            <span className={styles.swatchDot} style={{ background: '#f97316' }} />
-            Posição atual
-          </li>
-          <li>
-            <span className={styles.swatchDot} style={{ background: '#ef4444' }} />
-            Fim do período
+            <span className={styles.swatchDot} style={{ background: '#2563eb' }} />
+            Posição atual ({pointCount} pts no dia)
           </li>
         </ul>
       )}

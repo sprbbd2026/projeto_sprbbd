@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-function stepMsFor(pointCount: number): number {
-  if (pointCount <= 0) return 120
-  return Math.max(35, Math.min(100, Math.round(90_000 / pointCount)))
-}
+/** Intervalo entre pontos no play da aba Rota (ms). */
+const PLAYBACK_STEP_MS = 500
 
 export function useRoutePlayback(pointCount: number, resetKey = '', autoPlay = true) {
   const [pointIndex, setPointIndex] = useState(0)
@@ -17,10 +15,9 @@ export function useRoutePlayback(pointCount: number, resetKey = '', autoPlay = t
   useEffect(() => {
     if (!playing || pointCount < 2) return
 
-    const interval = stepMsFor(pointCount)
     const timer = window.setInterval(() => {
       setPointIndex((current) => (current >= pointCount - 1 ? 0 : current + 1))
-    }, interval)
+    }, PLAYBACK_STEP_MS)
 
     return () => window.clearInterval(timer)
   }, [playing, pointCount])

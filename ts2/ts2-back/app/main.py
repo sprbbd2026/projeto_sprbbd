@@ -19,7 +19,7 @@ cache_models.Base.metadata.create_all(bind=engine)
 _db = SessionLocal()
 try:
     if seed_if_empty(_db):
-        print("[SPRB-BD] Histórico orbital inserido (5 satélites IGSO regionais, figura-8, dia corrente).")
+        print("[SPRB-BD] Histórico orbital inserido (SAT-1 a SAT-5, IGSO figura-8, 10 dias).")
 finally:
     _db.close()
 
