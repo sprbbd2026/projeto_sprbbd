@@ -34,9 +34,9 @@ def register_satellite(
     "/",
     response_model=list[SatelliteResponse],
     summary="Listar satélites",
-    description="Lista satélites; use `unassigned=true` para apenas os não associados.",
+    description="Lista satélites cadastrados (leitura pública para integração com TS2).",
 )
-def list_satellites(unassigned: bool = False, db: Session = Depends(get_db), _=Depends(get_current_user)):
+def list_satellites(unassigned: bool = False, db: Session = Depends(get_db)):
     return get_all_satellites(db, unassigned=unassigned)
 
 @router.get("/{sat_id}", response_model=SatelliteResponse, summary="Obter satélite por ID")

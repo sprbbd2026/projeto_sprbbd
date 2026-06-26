@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from app.db.database import SessionLocal
 from app.db.models import Satelite, Telemetria
+from app.services.efemeride_service import ensure_efemerides_for_operational_satellites
 
 INTERVAL_SECONDS = 30
 
@@ -28,6 +29,8 @@ async def run():
     while True:
         db = SessionLocal()
         try:
+            ensure_efemerides_for_operational_satellites(db)
+
             satelites = db.query(Satelite).filter(Satelite.sat_status == "operacional").all()
 
             if not satelites:

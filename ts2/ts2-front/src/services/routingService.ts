@@ -10,11 +10,23 @@ export interface LegInfo {
   duration_min: number
 }
 
+export interface NavigationStep {
+  instruction: string
+  maneuver_type: string
+  maneuver_modifier?: string | null
+  distance_m: number
+  duration_s: number
+  lat: number
+  lng: number
+  street: string
+}
+
 export interface RotaResponse {
   geometry: [number, number][]
   distance_km: number
   duration_min: number
   legs: LegInfo[]
+  steps?: NavigationStep[]
   error?: string
 }
 
@@ -31,10 +43,15 @@ export interface GeocodeResponse {
 }
 
 export const routingService = {
-  async calcularRota(waypoints: Coordenada[], noCache = false): Promise<RotaResponse> {
+  async calcularRota(
+    waypoints: Coordenada[],
+    options: { noCache?: boolean; includeSteps?: boolean } = {},
+  ): Promise<RotaResponse> {
+    const { noCache = false, includeSteps = false } = options
     const { data } = await api.post<RotaResponse>('/rotas/calcular', {
       waypoints,
       no_cache: noCache,
+      include_steps: includeSteps,
     })
     return data
   },

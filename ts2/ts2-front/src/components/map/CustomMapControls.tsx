@@ -1,5 +1,6 @@
 import { useMap } from 'react-leaflet';
 import { Plus, Minus, LocateFixed } from 'lucide-react';
+import { ITA_DCTA_ORIGIN } from '../../utils/defaultOrigin';
 
 export function CustomMapControls() {
   const map = useMap();
@@ -13,8 +14,10 @@ export function CustomMapControls() {
   };
 
   const handleLocate = () => {
-    map.locate().on('locationfound', function (e) {
+    map.locate({ setView: false, maxZoom: 15 }).on('locationfound', (e) => {
       map.flyTo(e.latlng, map.getZoom());
+    }).on('locationerror', () => {
+      map.flyTo([ITA_DCTA_ORIGIN.lat, ITA_DCTA_ORIGIN.lng], 14);
     });
   };
 

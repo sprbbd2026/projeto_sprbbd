@@ -9,7 +9,22 @@ import 'leaflet/dist/leaflet.css'
 import { renderToString } from 'react-dom/server'
 import { Satellite } from 'lucide-react'
 import type { Localizacao } from '../../types/localizacao'
+import type { LatLngTuple } from '../../utils/routeProjection'
+import { calcularFootprint } from '../../utils/satelliteFootprint'
+import { drawCoverageMask } from '../../utils/coverageCanvas'
+import { colorForSatellite } from '../../utils/satelliteConstants'
+import {
+  applyHistoricoMapView,
+  BRAZIL_CENTER,
+  getHistoricoMapZoom,
+  HISTORICO_LINE_WEIGHT_MULTI,
+  HISTORICO_LINE_WEIGHT_SINGLE,
+  MAP_ATTRIBUTION,
+} from '../../utils/mapBasemap'
+import { attachSprbGeoBasemap, applyOceanBackground, updateLandGeoJsonStyle } from '../../utils/sprbGeoBasemap'
+import { useMapPreferencesStore } from '../../store/mapPreferencesStore'
 import styles from './SatelliteMap.module.css'
+import './mapBasemap.module.css'
 
 // Corrige o ícone padrão do Leaflet com Vite/Webpack
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl
@@ -19,7 +34,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
-const ANGULO_ELEVACAO_MIN = (5 * Math.PI) / 180
 
 const satelliteIcon = L.divIcon({
   html: renderToString(
@@ -43,31 +57,9 @@ const satelliteIcon = L.divIcon({
   popupAnchor: [0, -14],
 })
 
-function calcularFootprint(lat: number, lng: number, altKm?: number) {
-  const R = 6371
-  const altura = altKm ?? 512
-  const rho = Math.acos(R / (R + altura)) - ANGULO_ELEVACAO_MIN
-  const pontos: L.LatLngTuple[] = []
-
-  for (let k = 0; k <= 48; k++) {
-    const az = (k * 2 * Math.PI) / 48
-    const latR = (lat * Math.PI) / 180
-    const lngR = (lng * Math.PI) / 180
-
-    const latP = Math.asin(
-      Math.sin(latR) * Math.cos(rho) +
-      Math.cos(latR) * Math.sin(rho) * Math.cos(az)
-    )
-
-    const lngP = lngR + Math.atan2(
-      Math.sin(az) * Math.sin(rho) * Math.cos(latR),
-      Math.cos(rho) - Math.sin(latR) * Math.sin(latP)
-    )
-
-    pontos.push([(latP * 180) / Math.PI, (lngP * 180) / Math.PI])
-  }
-
-  return pontos
+/** Footprints geodésicos completos em cada ponto do histórico (sem recorte ao Brasil da API TS1). */
+function collectLocalFootprints(pontos: Localizacao[]): LatLngTuple[][] {
+  return pontos.map((p) => calcularFootprint(p.latitude, p.longitude, p.altitude_km))
 }
 
 interface SatelliteMapProps {
@@ -75,6 +67,25 @@ interface SatelliteMapProps {
   sateliteId: string
   visualizationMode: 'fixed' | 'coverage'
   onToggleVisualization: () => void
+  defaultCenter?: [number, number]
+  defaultZoom?: number
+}
+
+function groupBySatellite(pontos: Localizacao[]): Map<string, Localizacao[]> {
+  const groups = new Map<string, Localizacao[]>()
+  for (const p of pontos) {
+    const key = p.satelite_id
+    const list = groups.get(key) ?? []
+    list.push(p)
+    groups.set(key, list)
+  }
+  for (const [key, list] of groups) {
+    groups.set(
+      key,
+      [...list].sort((a, b) => a.data_hora.localeCompare(b.data_hora)),
+    )
+  }
+  return groups
 }
 
 // Ícone personalizado para o ponto inicial (verde)
@@ -97,59 +108,35 @@ const endIcon = new L.Icon({
   shadowSize: [41, 41],
 })
 
-export default function SatelliteMap({ pontos, sateliteId, visualizationMode, onToggleVisualization }: SatelliteMapProps) {
-  const mapRef = useRef<L.Map | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const layerGroupRef = useRef<L.LayerGroup | null>(null)
+function addRoutePolylines(
+  group: L.LayerGroup,
+  groups: Map<string, Localizacao[]>,
+  multi: boolean,
+): void {
+  let idx = 0
+  for (const [satId, satPontos] of groups) {
+    const color = colorForSatellite(satId, idx)
+    idx += 1
+    const latlngs = satPontos.map((p) => [p.latitude, p.longitude] as L.LatLngTuple)
 
-  // Inicializa o mapa uma única vez
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return
+    L.polyline(latlngs, {
+      color,
+      weight: multi ? HISTORICO_LINE_WEIGHT_MULTI : HISTORICO_LINE_WEIGHT_SINGLE,
+      opacity: 0.9,
+    }).addTo(group)
+  }
+}
 
-    const map = L.map(containerRef.current, {
-      center: [0, 0],
-      zoom: 2,
-      zoomControl: true,
-    })
+function addFixedModeMarkers(group: L.LayerGroup, groups: Map<string, Localizacao[]>, multi: boolean): void {
+  let idx = 0
+  for (const [satId, satPontos] of groups) {
+    const color = colorForSatellite(satId, idx)
+    idx += 1
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-    }).addTo(map)
-
-    layerGroupRef.current = L.layerGroup().addTo(map)
-    mapRef.current = map
-
-    return () => {
-      map.remove()
-      mapRef.current = null
-    }
-  }, [])
-
-  // Atualiza camada visual conforme o modo selecionado
-  useEffect(() => {
-    const map = mapRef.current
-    const group = layerGroupRef.current
-    if (!map || !group) return
-
-    group.clearLayers()
-
-    if (pontos.length === 0) return
-
-    const latlngs: L.LatLngTuple[] = pontos.map((p) => [p.latitude, p.longitude])
-
-    if (visualizationMode === 'fixed') {
-      L.polyline(latlngs, {
-        color: '#3b82f6',
-        weight: 3,
-        opacity: 0.85,
-      }).addTo(group)
-
-      pontos.forEach((p, i) => {
+    if (!multi) {
+      satPontos.forEach((p, i) => {
         const isFirst = i === 0
-        const isLast = i === pontos.length - 1
-
+        const isLast = i === satPontos.length - 1
         const marker = L.marker([p.latitude, p.longitude], {
           icon: isFirst ? startIcon : isLast ? endIcon : L.icon({
             iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -160,61 +147,168 @@ export default function SatelliteMap({ pontos, sateliteId, visualizationMode, on
             shadowSize: [24, 24],
           }),
         })
-
         const dataHora = new Date(p.data_hora).toLocaleString('pt-BR')
-        const altitude = p.altitude_km != null ? `<br/>Altitude: ${p.altitude_km.toFixed(1)} km` : ''
-        const velocidade = p.velocidade_kmh != null ? `<br/>Velocidade: ${p.velocidade_kmh.toFixed(1)} km/h` : ''
-
         marker.bindPopup(
-          `<strong>Satélite ${sateliteId}</strong><br/>
-           Lat: ${p.latitude.toFixed(5)}, Lon: ${p.longitude.toFixed(5)}
-           ${altitude}${velocidade}<br/>
-           <em>${dataHora}</em>`
+          `<strong>Satélite ${satId}</strong><br/>Lat: ${p.latitude.toFixed(5)}, Lon: ${p.longitude.toFixed(5)}<br/><em>${dataHora}</em>`,
         )
         marker.addTo(group)
       })
+    } else if (satPontos.length > 0) {
+      const last = satPontos[satPontos.length - 1]
+      L.circleMarker([last.latitude, last.longitude], {
+        radius: 6,
+        color: '#fff',
+        fillColor: color,
+        fillOpacity: 1,
+        weight: 2,
+      })
+        .bindPopup(`<strong>SAT-${satId}</strong> · posição mais recente`)
+        .addTo(group)
+    }
+  }
+}
 
-      const bounds = L.latLngBounds(latlngs)
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 })
+function addCoverageModeMarkers(group: L.LayerGroup, groups: Map<string, Localizacao[]>): void {
+  for (const [satId, satPontos] of groups) {
+    const ultimo = satPontos[satPontos.length - 1]
+    if (!ultimo) continue
+
+    const marker = L.marker([ultimo.latitude, ultimo.longitude], {
+      icon: satelliteIcon,
+    })
+    const dataHora = new Date(ultimo.data_hora).toLocaleString('pt-BR')
+    marker.bindPopup(
+      `<strong>Satélite ${satId}</strong><br/>
+       Lat: ${ultimo.latitude.toFixed(5)}, Lon: ${ultimo.longitude.toFixed(5)}<br/>
+       <em>${dataHora}</em>`,
+    )
+    marker.addTo(group)
+  }
+}
+
+export default function SatelliteMap({
+  pontos,
+  sateliteId,
+  visualizationMode,
+  onToggleVisualization,
+  defaultCenter = BRAZIL_CENTER,
+  defaultZoom = getHistoricoMapZoom(),
+}: SatelliteMapProps) {
+  const mapRef = useRef<L.Map | null>(null)
+  const landLayerRef = useRef<L.GeoJSON | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const layerGroupRef = useRef<L.LayerGroup | null>(null)
+  const coverageCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const footprintsRef = useRef<LatLngTuple[][]>([])
+  const redrawCoverageRef = useRef<(() => void) | null>(null)
+  const oceanColor = useMapPreferencesStore((s) => s.oceanColor)
+  const landColor = useMapPreferencesStore((s) => s.landColor)
+  const landBorderColor = useMapPreferencesStore((s) => s.landBorderColor)
+  const historicoZoom = useMapPreferencesStore((s) => s.historicoMapZoom)
+  const historicoAutoFit = useMapPreferencesStore((s) => s.historicoMapAutoFit)
+  const colorPrefsKey = useMapPreferencesStore((s) =>
+    JSON.stringify({ mode: s.satelliteColorMode, colors: s.satelliteCustomColors }),
+  )
+
+  // Inicializa o mapa uma única vez
+  useEffect(() => {
+    if (!containerRef.current || mapRef.current) return
+
+    const map = L.map(containerRef.current, {
+      center: defaultCenter,
+      zoom: defaultZoom,
+      zoomControl: true,
+      attributionControl: false,
+    })
+
+    L.control.attribution({ prefix: false }).addAttribution(MAP_ATTRIBUTION).addTo(map)
+
+    void attachSprbGeoBasemap(map)
+      .then((layer) => {
+        landLayerRef.current = layer
+      })
+      .catch((error: unknown) => {
+        console.error('Erro ao carregar basemap GeoJSON:', error)
+      })
+
+    map.createPane('coveragePane')
+    const coveragePane = map.getPane('coveragePane')
+    if (coveragePane) {
+      coveragePane.style.zIndex = '350'
+      coveragePane.style.pointerEvents = 'none'
+    }
+
+    const coverageCanvas = L.DomUtil.create('canvas', 'leaflet-coverage-canvas') as HTMLCanvasElement
+    coverageCanvas.style.pointerEvents = 'none'
+    map.getPane('coveragePane')?.appendChild(coverageCanvas)
+    coverageCanvasRef.current = coverageCanvas
+
+    const redrawCoverage = () => {
+      const currentMap = mapRef.current
+      const canvas = coverageCanvasRef.current
+      if (!currentMap || !canvas) return
+      drawCoverageMask(currentMap, canvas, footprintsRef.current)
+    }
+    redrawCoverageRef.current = redrawCoverage
+
+    layerGroupRef.current = L.layerGroup().addTo(map)
+    mapRef.current = map
+
+    map.on('moveend zoomend zoom resize viewreset', redrawCoverage)
+
+    requestAnimationFrame(() => map.invalidateSize())
+
+    return () => {
+      map.off('moveend zoomend zoom resize viewreset', redrawCoverage)
+      map.remove()
+      mapRef.current = null
+      coverageCanvasRef.current = null
+      redrawCoverageRef.current = null
+    }
+  }, [defaultCenter, defaultZoom])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    applyOceanBackground(map)
+    if (landLayerRef.current) updateLandGeoJsonStyle(landLayerRef.current)
+  }, [oceanColor, landColor, landBorderColor])
+
+  // Atualiza camada visual conforme o modo selecionado
+  useEffect(() => {
+    const map = mapRef.current
+    const group = layerGroupRef.current
+    if (!map || !group) return
+
+    requestAnimationFrame(() => map.invalidateSize())
+
+    group.clearLayers()
+
+    if (pontos.length === 0) {
+      footprintsRef.current = []
+      redrawCoverageRef.current?.()
+      map.setView(defaultCenter, defaultZoom)
       return
     }
 
-    pontos.forEach((p, i) => {
-      const footprint = calcularFootprint(p.latitude, p.longitude, p.altitude_km)
-      const isFirst = i === 0
-      const isLast = i === pontos.length - 1
-      const alpha = isLast ? 0.32 : isFirst ? 0.18 : 0.12
+    const groups = groupBySatellite(pontos)
+    const multi = groups.size > 1
+    const allLatLngs: L.LatLngTuple[] = pontos.map((p) => [p.latitude, p.longitude])
 
-      L.polygon(footprint, {
-        color: '#2563eb',
-        weight: 1.5,
-        opacity: 0.85,
-        fillColor: '#60a5fa',
-        fillOpacity: alpha,
-      }).addTo(group)
+    addRoutePolylines(group, groups, multi)
 
-      const marker = L.marker([p.latitude, p.longitude], {
-        icon: satelliteIcon,
-      })
+    if (visualizationMode === 'fixed') {
+      footprintsRef.current = []
+      redrawCoverageRef.current?.()
+      addFixedModeMarkers(group, groups, multi)
+    } else {
+      footprintsRef.current = collectLocalFootprints(pontos)
+      addCoverageModeMarkers(group, groups)
+      redrawCoverageRef.current?.()
+    }
 
-      const dataHora = new Date(p.data_hora).toLocaleString('pt-BR')
-      const altitude = p.altitude_km != null ? `<br/>Altitude: ${p.altitude_km.toFixed(1)} km` : ''
-      const velocidade = p.velocidade_kmh != null ? `<br/>Velocidade: ${p.velocidade_kmh.toFixed(1)} km/h` : ''
-
-      marker.bindPopup(
-        `<strong>Satélite ${sateliteId}</strong><br/>
-         Lat: ${p.latitude.toFixed(5)}, Lon: ${p.longitude.toFixed(5)}
-         ${altitude}${velocidade}<br/>
-         <em>${dataHora}</em>`
-      )
-      marker.addTo(group)
-    })
-
-    // Ajusta zoom para cobrir todos os footprints e pontos
-    const footprintBounds = pontos.flatMap((p) => calcularFootprint(p.latitude, p.longitude, p.altitude_km))
-    const bounds = L.latLngBounds([...latlngs, ...footprintBounds])
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 })
-  }, [pontos, sateliteId, visualizationMode])
+    applyHistoricoMapView(map, allLatLngs as L.LatLngTuple[], multi)
+  }, [pontos, sateliteId, visualizationMode, defaultCenter, defaultZoom, historicoZoom, historicoAutoFit, colorPrefsKey])
 
   return (
     <div style={{ position: 'relative' }}>
@@ -239,7 +333,17 @@ export default function SatelliteMap({ pontos, sateliteId, visualizationMode, on
       >
         {visualizationMode === 'fixed' ? 'Ver cobertura' : 'Ver pontos fixos'}
       </button>
-      <div ref={containerRef} className={styles.mapContainer} />
+      <div
+        ref={containerRef}
+        className={`${styles.mapContainer} sprbDarkMap`}
+        style={
+          {
+            '--map-ocean-color': oceanColor,
+            '--map-land-color': landColor,
+            '--map-land-border-color': landBorderColor,
+          } as React.CSSProperties
+        }
+      />
     </div>
   )
 }

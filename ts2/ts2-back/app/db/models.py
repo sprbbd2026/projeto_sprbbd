@@ -1,6 +1,3 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime
-import enum
-
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -10,9 +7,11 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
 )
+import enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -169,11 +168,23 @@ class Telemetria(Base):
 
 class HistoricoLocalizacao(Base):
     __tablename__ = "HISTORICO_LOCALIZACAO"
+    __table_args__ = (
+        Index(
+            "ix_HISTORICO_LOCALIZACAO_sat_data_hora",
+            "hlc_satelite_id",
+            "hlc_data_hora",
+        ),
+    )
 
     id = Column("hlc_id", Integer, primary_key=True, index=True)
-    satelite_id = Column("hlc_satelite_id", String, nullable=False, index=True)
+    satelite_id = Column("hlc_satelite_id", String, nullable=False)
     latitude = Column("hlc_latitude", Float, nullable=False)
     longitude = Column("hlc_longitude", Float, nullable=False)
     altitude_km = Column("hlc_altitude_km", Float, nullable=True)
     velocidade_kmh = Column("hlc_velocidade_kmh", Float, nullable=True)
-    data_hora = Column("hlc_data_hora", DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
+    data_hora = Column(
+        "hlc_data_hora",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
