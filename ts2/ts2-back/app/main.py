@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import os
 from app.routes.auth_routes import router as auth_router
 from app.routes.local_routes import router as local_router
 from app.routes.user_routes import router as user_router
@@ -12,6 +13,25 @@ from app.db.database import SessionLocal, engine
 from app.db import models
 from app.db import cache_models  # noqa: F401 — registra tabelas de cache
 from app.db.seed_demo import seed_if_empty
+
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+
+def get_allowed_origins() -> list[str]:
+    configured_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    custom_origins = [
+        origin.strip().rstrip("/")
+        for origin in configured_origins.split(",")
+        if origin.strip()
+    ]
+
+    return [*DEFAULT_ALLOWED_ORIGINS, *custom_origins]
+
 
 models.Base.metadata.create_all(bind=engine)
 cache_models.Base.metadata.create_all(bind=engine)
@@ -48,14 +68,7 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# Configurar CORS (mesma origem de ts1-back)
-ALLOWED_ORIGINS = [
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://projeto-sprbbd-ts2-front.onrender.com",
-]
+ALLOWED_ORIGINS = get_allowed_origins()
 
 app.add_middleware(
     CORSMiddleware,

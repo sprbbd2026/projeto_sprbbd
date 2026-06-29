@@ -40,8 +40,11 @@ Conteúdo do `.env`:
 
 ```env
 VITE_API_URL=http://localhost:8001
+VITE_TS1_API_URL=http://localhost:8000
 VITE_DEV_PORT=5174
 ```
+
+> Em `src/services/api.ts`, se `VITE_API_URL` não estiver definido, o fallback é `'/api'` (proxy do Vite).
 
 ---
 

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 TS1_DATABASE_URL = os.getenv(
     "TS1_DATABASE_URL",
-    "postgresql+psycopg://admin:sprb_ts1_local@localhost:5432/sprbbd-db",
+    "postgresql+psycopg://admin:sprbbd-dev@localhost:5432/sprbbd-db",
 )
 
 

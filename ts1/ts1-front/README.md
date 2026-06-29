@@ -43,6 +43,12 @@ VITE_API_URL=http://localhost:8000
 VITE_DEV_PORT=5173
 ```
 
+Em produção, configure `VITE_API_URL` no ambiente do serviço com a URL pública do backend:
+
+```env
+VITE_API_URL=https://seu-backend-publicado
+```
+
 ---
 
 ## 🚀 Execução

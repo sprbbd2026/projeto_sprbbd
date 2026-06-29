@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import asyncio
+import os
 from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
@@ -15,6 +16,26 @@ from app.routes.constellation_routes import router as constellation_router
 from app.routes.cobertura_routes import router as cobertura_router
 from app.routes.dashboard_routes import router as dashboard_router
 from simulation.telemetry_simulation import run as run_simulation
+
+
+DEFAULT_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:3000",
+]
+
+
+def get_allowed_origins() -> list[str]:
+    configured_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    custom_origins = [
+        origin.strip().rstrip("/")
+        for origin in configured_origins.split(",")
+        if origin.strip()
+    ]
+
+    return [*DEFAULT_ALLOWED_ORIGINS, *custom_origins]
 
 
 async def simulation_loop():
@@ -68,15 +89,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    "http://localhost:3000",
-    "https://projeto-sprbbd-ts1-front.onrender.com",
-    "https://projeto-sprbbd-ts2-front.onrender.com",
-]
+ALLOWED_ORIGINS = get_allowed_origins()
 
 app.add_middleware(
     CORSMiddleware,

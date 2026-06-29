@@ -77,6 +77,27 @@ function Start-RootDocker {
     }
 }
 
+function Ensure-EnvFile {
+    param(
+        [string]$ProjectPath,
+        [string]$Label
+    )
+
+    $envFile = Join-Path $ProjectPath '.env'
+    if (Test-Path $envFile) {
+        return
+    }
+
+    $exampleFile = Join-Path $ProjectPath '.env.example'
+    if (-not (Test-Path $exampleFile)) {
+        Write-Warning "Arquivo .env ausente em $Label e nao ha .env.example para copiar."
+        return
+    }
+
+    Copy-Item $exampleFile $envFile
+    Write-Host "Criado $envFile a partir de .env.example ($Label)." -ForegroundColor Yellow
+}
+
 function Start-LocalDatabases {
     if (-not (Test-Command docker)) {
         Write-Warning "Docker nao encontrado. Suba os PostgreSQL manualmente (5432 e 5433)."
@@ -170,6 +191,11 @@ if (Test-Path $stopScript) {
     Write-Host "Encerrando instancias antigas nas portas 8000/8001/5173/5174..." -ForegroundColor DarkGray
     & $stopScript -SkipDocker | Out-Null
 }
+
+Ensure-EnvFile -ProjectPath $Paths.Ts1Back -Label 'TS1 back'
+Ensure-EnvFile -ProjectPath $Paths.Ts2Back -Label 'TS2 back'
+Ensure-EnvFile -ProjectPath $Paths.Ts1Front -Label 'TS1 front'
+Ensure-EnvFile -ProjectPath $Paths.Ts2Front -Label 'TS2 front'
 
 if (-not $SkipDb) {
     Start-LocalDatabases

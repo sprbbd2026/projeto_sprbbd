@@ -42,6 +42,7 @@ APP_NAME=ts1-back
 DEBUG=true
 HOST=0.0.0.0
 PORT=8000
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
@@ -55,6 +56,7 @@ JWT_EXPIRE_MINUTES=60
 ```
 
 > `POSTGRES_PASSWORD` é usada também pelo Docker Compose.
+> Em produção, inclua em `CORS_ALLOWED_ORIGINS` as URLs públicas dos frontends que poderão chamar a API.
 
 Gere uma chave JWT:
 

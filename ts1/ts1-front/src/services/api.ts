@@ -1,6 +1,14 @@
 // services/api.ts
 
-const BASE_URL = import.meta.env.VITE_API_URL as string;
+const LOCAL_API_URL = "http://localhost:8000";
+
+function stripTrailingSlash(url: string): string {
+    return url.replace(/\/+$/, "");
+}
+
+const BASE_URL = stripTrailingSlash(
+    import.meta.env.VITE_API_URL?.trim() || LOCAL_API_URL
+);
 
 type ApiOptions = Omit<RequestInit, "body"> & {
     body?: any;
