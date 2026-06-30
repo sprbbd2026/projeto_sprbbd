@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
     CircleMarker,
     GeoJSON,
     MapContainer,
-    Polygon,
     Tooltip,
+    useMap,
     useMapEvents,
 } from "react-leaflet";
+import L from "leaflet";
 import type { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Regiao, SateliteCobertura } from "../../services/cobertura";
 import { calcularFootprint } from "../../utils/satelliteFootprint";
+import type { LatLngTuple } from "../../utils/satelliteFootprint";
+import { drawCoverageMask } from "../../utils/coverageCanvas";
 import styles from "./coberturaMap.module.css";
 
 const BRAZIL_CENTER: LatLngExpression = [-14.2, -51.9];
@@ -43,10 +46,54 @@ function MapClickHandler({
     return null;
 }
 
+function CoverageCanvasLayer({ footprints }: { footprints: LatLngTuple[][] }) {
+    const map = useMap();
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const footprintsRef = useRef<LatLngTuple[][]>(footprints);
+    const redrawRef = useRef<(() => void) | null>(null);
+
+    useEffect(() => {
+        footprintsRef.current = footprints;
+        redrawRef.current?.();
+    }, [footprints]);
+
+    useEffect(() => {
+        const pane = map.getPane("coveragePane") ?? map.createPane("coveragePane");
+        pane.style.zIndex = "450";
+        pane.style.pointerEvents = "none";
+
+        const canvas = L.DomUtil.create(
+            "canvas",
+            "leaflet-coverage-canvas",
+        ) as HTMLCanvasElement;
+        canvas.style.pointerEvents = "none";
+        pane.appendChild(canvas);
+        canvasRef.current = canvas;
+
+        const redraw = () => {
+            const currentCanvas = canvasRef.current;
+            if (!currentCanvas) return;
+            drawCoverageMask(map, currentCanvas, footprintsRef.current);
+        };
+        redrawRef.current = redraw;
+
+        map.on("moveend zoomend zoom resize viewreset", redraw);
+        requestAnimationFrame(redraw);
+
+        return () => {
+            map.off("moveend zoomend zoom resize viewreset", redraw);
+            canvas.remove();
+            canvasRef.current = null;
+            redrawRef.current = null;
+        };
+    }, [map]);
+
+    return null;
+}
+
 type CoberturaMapProps = {
     regioes: Regiao[];
     posicoes: SateliteCobertura[];
-    cobrindoIds: Set<number>;
     selRegiaoId: string | null;
     selSatId: number | null;
     pontoConsulta: { lat: number; lng: number } | null;
@@ -59,16 +106,23 @@ type CoberturaMapProps = {
 export default function CoberturaMap({
     regioes,
     posicoes,
-    cobrindoIds,
     selRegiaoId,
     selSatId,
     pontoConsulta,
-    temConsulta,
     onMapClick,
     onRegiaoClick,
     onSatelliteClick,
 }: CoberturaMapProps) {
     const [geoData, setGeoData] = useState<GeoJSON.GeoJsonObject | null>(null);
+    const coverageFootprints = useMemo(() => {
+        const visiveis =
+            selSatId === null
+                ? posicoes
+                : posicoes.filter((s) => s.sat_id === selSatId);
+        return visiveis.map((s) =>
+            calcularFootprint(s.posicao.lat, s.posicao.lng),
+        );
+    }, [posicoes, selSatId]);
 
     useEffect(() => {
         fetch(GEOJSON_URL)
@@ -97,36 +151,7 @@ export default function CoberturaMap({
                 )}
 
                 <MapClickHandler onMapClick={onMapClick} />
-
-                {posicoes.map((s) => {
-                    const cor = corSatelite(s.sat_id);
-                    const cobre =
-                        !temConsulta || cobrindoIds.has(s.sat_id);
-                    const destacado =
-                        selSatId === null || selSatId === s.sat_id;
-                    const visivel = cobre && destacado;
-            const footprint = calcularFootprint(s.posicao.lat, s.posicao.lng);
-
-                    return (
-                        <Polygon
-                            key={`fp-${s.sat_id}`}
-                            positions={footprint}
-                            pathOptions={{
-                                color: cor,
-                                fillColor: cor,
-                                fillOpacity: visivel ? 0.22 : 0.04,
-                                weight: visivel ? 1.4 : 0.6,
-                                opacity: visivel ? 0.85 : 0.2,
-                            }}
-                            eventHandlers={{
-                                click: (e) => {
-                                    e.originalEvent.stopPropagation();
-                                    onSatelliteClick(s.sat_id);
-                                },
-                            }}
-                        />
-                    );
-                })}
+                <CoverageCanvasLayer footprints={coverageFootprints} />
 
                 {posicoes.map((s) => {
                     const cor = corSatelite(s.sat_id);

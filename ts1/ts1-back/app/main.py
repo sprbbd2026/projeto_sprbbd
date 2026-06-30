@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import asyncio
 import os
+import re
 from app.routes.health import router as health_router
 from app.routes.user_routes import router as user_router
 from app.routes.auth_routes import router as auth_router
@@ -26,6 +27,8 @@ DEFAULT_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
+DEFAULT_ALLOWED_ORIGIN_REGEX = r"https://.*"
+
 
 def get_allowed_origins() -> list[str]:
     configured_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -36,6 +39,19 @@ def get_allowed_origins() -> list[str]:
     ]
 
     return [*DEFAULT_ALLOWED_ORIGINS, *custom_origins]
+
+
+def get_allowed_origin_regex() -> str | None:
+    configured_regex = os.getenv("CORS_ALLOWED_ORIGIN_REGEX")
+    if configured_regex is not None:
+        return configured_regex.strip() or None
+    return DEFAULT_ALLOWED_ORIGIN_REGEX
+
+
+def is_allowed_origin(origin: str) -> bool:
+    if origin in ALLOWED_ORIGINS:
+        return True
+    return bool(ALLOWED_ORIGIN_REGEX and re.fullmatch(ALLOWED_ORIGIN_REGEX, origin))
 
 
 async def simulation_loop():
@@ -90,10 +106,12 @@ app = FastAPI(
 )
 
 ALLOWED_ORIGINS = get_allowed_origins()
+ALLOWED_ORIGIN_REGEX = get_allowed_origin_regex()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,7 +131,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     response = JSONResponse(status_code=400, content={"detail": message})
     origin = request.headers.get("origin", "")
-    if origin in ALLOWED_ORIGINS:
+    if is_allowed_origin(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
     return response

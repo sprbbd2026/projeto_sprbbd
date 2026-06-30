@@ -112,11 +112,6 @@ export default function CoberturaPage() {
     }
 
     const satelites = result?.satelites ?? [];
-    const cobrindoIds = useMemo(
-        () => new Set(satelites.map((s) => s.sat_id)),
-        [satelites],
-    );
-
     return (
         <main className="min-h-screen px-4 py-10">
             <div className="mx-auto w-full max-w-6xl space-y-6">
@@ -174,7 +169,6 @@ export default function CoberturaPage() {
                         <CoberturaMap
                             regioes={regioes}
                             posicoes={posicoes}
-                            cobrindoIds={cobrindoIds}
                             selRegiaoId={selId}
                             selSatId={selSatId}
                             pontoConsulta={result?.ponto ?? null}
