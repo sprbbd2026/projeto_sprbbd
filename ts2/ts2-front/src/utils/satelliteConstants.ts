@@ -24,6 +24,10 @@ export function toDateInput(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+export function toDateTimeInput(d: Date): string {
+  return `${toDateInput(d)}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 /** Converte data (YYYY-MM-DD) → início do dia para API (datetime-local). */
 export function dateToDayStart(dateStr: string): string {
   return `${dateStr}T00:00`
@@ -68,6 +72,14 @@ export function defaultHistoricoStartDate(): string {
 /** Histórico: fim (hoje). */
 export function defaultHistoricoEndDate(): string {
   return toDateInput(new Date())
+}
+
+export function defaultHistoricoStartDateTime(): string {
+  return dateToDayStart(defaultHistoricoStartDate())
+}
+
+export function defaultHistoricoEndDateTime(): string {
+  return dateToDayEnd(defaultHistoricoEndDate())
 }
 
 /** @deprecated use defaultTodayDate + dateToDayStart/End */

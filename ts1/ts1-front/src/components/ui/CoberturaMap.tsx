@@ -105,11 +105,7 @@ export default function CoberturaMap({
                     const destacado =
                         selSatId === null || selSatId === s.sat_id;
                     const visivel = cobre && destacado;
-                    const footprint = calcularFootprint(
-                        s.posicao.lat,
-                        s.posicao.lng,
-                        s.posicao.alt_km,
-                    );
+            const footprint = calcularFootprint(s.posicao.lat, s.posicao.lng);
 
                     return (
                         <Polygon
