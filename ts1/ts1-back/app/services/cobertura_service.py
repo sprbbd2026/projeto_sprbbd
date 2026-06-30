@@ -18,6 +18,7 @@ from app.services.orbit_igso import posicao_em as posicao_igso_em
 GM = 398600.4418  # km³/s²
 R_TERRA = 6371.0  # km
 ANGULO_ELEVACAO_MIN = math.radians(5)  # 5° mínimo de elevação
+ALTITUDE_FOOTPRINT_TS2_KM = 512.0
 
 # Bounding box Brasil com +2° de margem
 BRASIL_BBOX = {
@@ -340,7 +341,13 @@ def _posicao_e_footprint_igso(
     sat_id: int, instante: datetime
 ) -> tuple[float, float, float, Polygon] | None:
     lat, lng, alt = posicao_igso_em(sat_id, instante)
-    footprint_coords = _calcular_footprint(lat, lng, alt)
+    # Mesma regra visual usada no TS2 (/mapa e /rota): raio padrao de 512 km.
+    footprint_coords = _calcular_footprint(
+        lat,
+        lng,
+        ALTITUDE_FOOTPRINT_TS2_KM,
+        n_pontos=48,
+    )
     return lat, lng, alt, Polygon(footprint_coords)
 
 
@@ -469,7 +476,13 @@ def cobertura_por_regiao(
 
     ref = _normalizar_instante(instante)
     usar_igso = instante is not None
-    satelites = satelites_que_atendem_regiao(db, lat, lng, ref, usar_orbita_igso=usar_igso)
+    satelites = satelites_que_atendem_regiao(
+        db,
+        lat,
+        lng,
+        ref if usar_igso else None,
+        usar_orbita_igso=usar_igso,
+    )
 
     return {
         "instante": ref.isoformat(),

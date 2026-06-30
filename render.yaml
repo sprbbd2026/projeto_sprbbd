@@ -11,6 +11,8 @@ services:
     envVars:
       - key: CORS_ALLOWED_ORIGINS
         sync: false
+      - key: CORS_ALLOWED_ORIGIN_REGEX
+        sync: false
 
   - type: web
     name: ts1-front
@@ -38,6 +40,8 @@ services:
       - render.yaml
     envVars:
       - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      - key: CORS_ALLOWED_ORIGIN_REGEX
         sync: false
       - key: TS1_DATABASE_URL
         sync: false

@@ -14,10 +14,8 @@ import {
   ALL_SATELLITES_LABEL,
   ALL_SATELLITES_VALUE,
   colorForSatellite,
-  dateToDayEnd,
-  dateToDayStart,
-  defaultHistoricoEndDate,
-  defaultHistoricoStartDate,
+  defaultHistoricoEndDateTime,
+  defaultHistoricoStartDateTime,
   isAllSatellites,
 } from '../utils/satelliteConstants'
 import { useMapPreferencesStore } from '../store/mapPreferencesStore'
@@ -31,8 +29,8 @@ export default function MapPage() {
   )
   const [satelites, setSatelites] = useState<SatellitePoint[]>([])
   const [sateliteId, setSateliteId] = useState(ALL_SATELLITES_VALUE)
-  const [dataInicio, setDataInicio] = useState(defaultHistoricoStartDate)
-  const [dataFim, setDataFim] = useState(defaultHistoricoEndDate)
+  const [dataInicio, setDataInicio] = useState(defaultHistoricoStartDateTime)
+  const [dataFim, setDataFim] = useState(defaultHistoricoEndDateTime)
   const [visualizacao, setVisualizacao] = useState<VisualizationMode>('fixed')
   const [pontos, setPontos] = useState<Localizacao[]>([])
   const [status, setStatus] = useState<FetchStatus>('idle')
@@ -40,12 +38,19 @@ export default function MapPage() {
   const [usandoDemo, setUsandoDemo] = useState(false)
 
   useEffect(() => {
-    setDataInicio(defaultHistoricoStartDate())
-    setDataFim(defaultHistoricoEndDate())
+    setDataInicio(defaultHistoricoStartDateTime())
+    setDataFim(defaultHistoricoEndDateTime())
   }, [])
 
   const fetchHistorico = useCallback(async () => {
     if (!sateliteId.trim()) return
+
+    if (dataInicio && dataFim && new Date(dataFim) < new Date(dataInicio)) {
+      setStatus('error')
+      setErrorMsg('Data fim nÃ£o pode ser menor que Data inÃ­cio.')
+      return
+    }
+
     setStatus('loading')
     setErrorMsg('')
     setUsandoDemo(false)
@@ -61,8 +66,8 @@ export default function MapPage() {
       return
     }
 
-    const inicio = dateToDayStart(dataInicio)
-    const fim = dateToDayEnd(dataFim)
+    const inicio = dataInicio
+    const fim = dataFim
 
     const batches = await Promise.all(
       ids.map((id) => fetchHistoricoForSatellite(id, inicio, fim, limit)),
@@ -90,6 +95,29 @@ export default function MapPage() {
   const isLoading = status === 'loading'
   const multi = isAllSatellites(sateliteId)
   const uniqueSats = new Set(pontos.map((p) => p.satelite_id)).size
+  const intervaloInvalido = Boolean(
+    dataInicio && dataFim && new Date(dataFim) < new Date(dataInicio),
+  )
+
+  function handleDataInicioChange(value: string) {
+    setDataInicio(value)
+    if (value && dataFim && new Date(dataFim) < new Date(value)) {
+      setDataFim(value)
+    }
+  }
+
+  function handleDataFimChange(value: string) {
+    if (value && dataInicio && new Date(value) < new Date(dataInicio)) {
+      setErrorMsg('Data fim nÃ£o pode ser menor que Data inÃ­cio.')
+      setStatus('error')
+      return
+    }
+    setDataFim(value)
+    if (status === 'error') {
+      setErrorMsg('')
+      setStatus('idle')
+    }
+  }
 
   function nomeSatelite(id: string): string {
     const sat = satelites.find((s) => String(s.sat_id) === id)
@@ -145,10 +173,11 @@ export default function MapPage() {
                 <label htmlFor="data-inicio">Data início</label>
                 <input
                   id="data-inicio"
-                  type="date"
+                  type="datetime-local"
                   className={styles.dateInput}
                   value={dataInicio}
-                  onChange={(e) => setDataInicio(e.target.value)}
+                  max={dataFim || undefined}
+                  onChange={(e) => handleDataInicioChange(e.target.value)}
                 />
               </div>
 
@@ -156,10 +185,11 @@ export default function MapPage() {
                 <label htmlFor="data-fim">Data fim</label>
                 <input
                   id="data-fim"
-                  type="date"
+                  type="datetime-local"
                   className={styles.dateInput}
                   value={dataFim}
-                  onChange={(e) => setDataFim(e.target.value)}
+                  min={dataInicio || undefined}
+                  onChange={(e) => handleDataFimChange(e.target.value)}
                 />
               </div>
 
@@ -167,7 +197,7 @@ export default function MapPage() {
                 id="btn-consultar-historico"
                 className={styles.searchBtn}
                 onClick={() => void fetchHistorico()}
-                disabled={isLoading || !sateliteId.trim()}
+                disabled={isLoading || !sateliteId.trim() || intervaloInvalido}
               >
                 <RefreshCw size={15} className={isLoading ? styles.spinner : ''} />
                 {isLoading ? 'Consultando…' : 'Consultar'}

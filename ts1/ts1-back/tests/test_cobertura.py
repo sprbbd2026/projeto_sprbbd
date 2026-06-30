@@ -157,6 +157,32 @@ async def test_regiao_sem_cobertura_retorna_vazio():
 
 
 @pytest.mark.asyncio
+async def test_consulta_com_instante_usa_mesmo_raio_visual_do_ts2(monkeypatch):
+    _seed_sat_com_efemeride(PARAMS_ORBITA)
+    monkeypatch.setattr(
+        cobertura_service,
+        "posicao_igso_em",
+        lambda sat_id, instante: (0.0, 0.0, 35786.0),
+    )
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        centro = await client.get(
+            "/cobertura/regiao",
+            params={"lat": 0.0, "lng": 0.0, "instante": "2026-01-01T00:00:00Z"},
+        )
+        fora_do_raio_desenhado = await client.get(
+            "/cobertura/regiao",
+            params={"lat": 0.0, "lng": 20.0, "instante": "2026-01-01T00:00:00Z"},
+        )
+
+    assert centro.status_code == 200
+    assert centro.json()["coberta"] is True
+    assert fora_do_raio_desenhado.status_code == 200
+    assert fora_do_raio_desenhado.json()["coberta"] is False
+
+
+@pytest.mark.asyncio
 async def test_satelite_nao_operacional_e_ignorado():
     _seed_sat_com_efemeride(PARAMS_ORBITA, sat_status="manutencao")
     lat, lng = _ponto_sob_satelite()

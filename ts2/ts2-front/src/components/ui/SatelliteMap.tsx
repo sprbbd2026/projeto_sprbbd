@@ -57,9 +57,9 @@ const satelliteIcon = L.divIcon({
   popupAnchor: [0, -14],
 })
 
-/** Footprints geodésicos completos em cada ponto do histórico (sem recorte ao Brasil da API TS1). */
-function collectLocalFootprints(pontos: Localizacao[]): LatLngTuple[][] {
-  return pontos.map((p) => calcularFootprint(p.latitude, p.longitude, p.altitude_km))
+/** Cobertura historica acumulada, usando o mesmo footprint da tela /rota para cada ponto filtrado. */
+function collectHistoricalFootprints(pontos: Localizacao[]): LatLngTuple[][] {
+  return pontos.map((p) => calcularFootprint(p.latitude, p.longitude))
 }
 
 interface SatelliteMapProps {
@@ -302,7 +302,7 @@ export default function SatelliteMap({
       redrawCoverageRef.current?.()
       addFixedModeMarkers(group, groups, multi)
     } else {
-      footprintsRef.current = collectLocalFootprints(pontos)
+      footprintsRef.current = collectHistoricalFootprints(pontos)
       addCoverageModeMarkers(group, groups)
       redrawCoverageRef.current?.()
     }

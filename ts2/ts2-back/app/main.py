@@ -21,6 +21,8 @@ DEFAULT_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
 ]
 
+DEFAULT_ALLOWED_ORIGIN_REGEX = r"https://.*"
+
 
 def get_allowed_origins() -> list[str]:
     configured_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
@@ -31,6 +33,13 @@ def get_allowed_origins() -> list[str]:
     ]
 
     return [*DEFAULT_ALLOWED_ORIGINS, *custom_origins]
+
+
+def get_allowed_origin_regex() -> str | None:
+    configured_regex = os.getenv("CORS_ALLOWED_ORIGIN_REGEX")
+    if configured_regex is not None:
+        return configured_regex.strip() or None
+    return DEFAULT_ALLOWED_ORIGIN_REGEX
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -69,10 +78,12 @@ app = FastAPI(
 )
 
 ALLOWED_ORIGINS = get_allowed_origins()
+ALLOWED_ORIGIN_REGEX = get_allowed_origin_regex()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
