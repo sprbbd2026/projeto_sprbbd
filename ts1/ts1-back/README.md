@@ -100,3 +100,19 @@ docker compose down
 ```
 
 Para encerrar a API: `Ctrl+C` no terminal do Uvicorn.
+
+---
+
+## US312 — Consultas Spark de logs de rotas
+
+O job analítico e os exemplos de consulta estão documentados em
+[`../../docs/US312_Consultas_Spark_Rotas.md`](../../docs/US312_Consultas_Spark_Rotas.md).
+
+Exemplo rápido:
+
+```bash
+uv run python scripts/consultar_logs_rotas_spark.py \
+  --dataset-path tests/fixtures/logs_rotas_us312.csv \
+  --dataset-format csv \
+  --satelite-id SAT-01
+```
